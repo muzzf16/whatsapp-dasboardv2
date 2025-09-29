@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 4000;
 
 const io = new Server(server, {
     cors: {
-        origin: "*",  // Untuk sementara allow all (bisa disesuaikan production)
+        origin: ["http://localhost:3003", "http://localhost:3333"], // Izinkan koneksi dari frontend React
         methods: ["GET", "POST"]
     }
 });
