@@ -2,32 +2,35 @@ const express = require('express');
 const {
     startConnectionController,
     disconnectConnectionController,
-    disconnectAllConnectionsController,
+    getAllConnectionsController,
     sendMessageController,
-    sendBroadcastMessageController,
     getStatusController,
     getMessagesController,
-    getOutgoingMessagesController,
     getQRCodeController,
-    getAllConnectionsController,
     getWebhookController,
     updateWebhookController,
+    broadcastMessageController,
+    getAllBroadcastsController,
 } = require('../controllers/whatsappController');
 
 const router = express.Router();
 
-router.post('/connections/start', startConnectionController);
-router.post('/connections/disconnect', disconnectConnectionController);
-router.post('/connections/disconnect-all', disconnectAllConnectionsController);
+// Session management
 router.get('/connections', getAllConnectionsController);
+router.post('/connections/start', startConnectionController);
+router.post('/connections/:connectionId/disconnect', disconnectConnectionController);
 
+// Broadcast management
+router.get('/broadcasts', getAllBroadcastsController);
+router.post('/:connectionId/broadcast-message', broadcastMessageController);
+
+// Per-connection actions
 router.post('/:connectionId/send-message', sendMessageController);
-router.post('/:connectionId/broadcast-message', sendBroadcastMessageController);
 router.get('/:connectionId/status', getStatusController);
 router.get('/:connectionId/messages', getMessagesController);
-router.get('/:connectionId/outgoing-messages', getOutgoingMessagesController);
 router.get('/:connectionId/qrcode', getQRCodeController);
 
+// Webhook (global)
 router.get('/webhook', getWebhookController);
 router.post('/webhook', updateWebhookController);
 

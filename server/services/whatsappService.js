@@ -1,6 +1,4 @@
 const axios = require('axios');
-const crypto = require('crypto');
-const path = require('path');
 const {
     default: makeWASocket,
     useMultiFileAuthState,
@@ -8,335 +6,230 @@ const {
     fetchLatestBaileysVersion
 } = require('@whiskeysockets/baileys');
 const pino = require('pino');
-const qrcode = require('qrcode');
 const configService = require('./configService');
-const fs = require('fs');
 
-class Connection {
-    constructor(connectionId, io) {
-        if (!connectionId || typeof connectionId !== 'string' || connectionId.trim() === '') {
-            console.error('FATAL: Invalid connectionId provided to Connection constructor', connectionId);
-            throw new Error('Invalid connectionId');
-        }
-        this.connectionId = connectionId;
-        this.io = io;
-        this.sock = null;
-        this.qrCodeData = null;
-        this.connectionStatus = 'disconnected';
-        this.messageLogs = [];
-        this.outgoingMessageLogs = [];
-        this.authDir = path.join('auth_info_multi_device', this.connectionId);
+// Store multiple sessions
+const sessions = new Map();
+const broadcasts = new Map(); // Untuk melacak progres broadcast
+let io;
+
+// Initialize the service with the socket.io instance
+const init = (socketIo) => {
+    io = socketIo;
+};
+
+// Call webhook with a payload
+async function callWebhook(payload) {
+    const webhookUrl = await configService.getWebhookUrl();
+    if (!webhookUrl) return;
+
+    console.log(`[WEBHOOK] Sending to: ${webhookUrl} for connection: ${payload.connectionId}`);
+    try {
+        // Here you could add a signature for security
+        await axios.post(webhookUrl, payload, { headers: { 'Content-Type': 'application/json' } });
+        console.log(`[WEBHOOK] Successfully sent payload for ${payload.connectionId}.`);
+    } catch (error) {
+        console.error(`[WEBHOOK] Error sending payload for ${payload.connectionId}:`, error.message);
+    }
+}
+
+// Start a new session or reconnect
+async function startSession(connectionId) {
+    if (!io) {
+        console.error("Socket.IO not initialized!");
+        return;
     }
 
-    async connect() {
-        try {
-            const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
-            const { version } = await fetchLatestBaileysVersion();
-
-            this.sock = makeWASocket({
-                version,
-                auth: state,
-                printQRInTerminal: false,
-                logger: pino({ level: 'silent' }),
-            });
-
-            this.sock.ev.on('connection.update', async (update) => {
-                const { connection, lastDisconnect, qr } = update;
-
-                if (qr) {
-                    this.qrCodeData = qr;
-                    this.connectionStatus = 'waiting for QR scan';
-                    try {
-                        const qrUrl = await qrcode.toDataURL(qr);
-                        this.io.emit('qr_code', { connectionId: this.connectionId, qrUrl });
-                        this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
-                    } catch (err) {
-                        console.error(`[${this.connectionId}] Failed to generate QR code URL`, err);
-                    }
-                }
-
-                if (connection === 'close') {
-                    const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
-                    this.connectionStatus = 'disconnected';
-                    this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
-                    if (shouldReconnect) {
-                        console.log(`[${this.connectionId}] Reconnecting...`);
-                        this.connect();
-                    } else {
-                        console.log(`[${this.connectionId}] Logged out, not reconnecting.`);
-                        this.io.emit('status', { connectionId: this.connectionId, status: 'logged out' });
-                        this.destroy();
-                    }
-                } else if (connection === 'open') {
-                    this.connectionStatus = 'connected';
-                    this.qrCodeData = null;
-                    this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
-                    this.io.emit('qr_code', { connectionId: this.connectionId, qrUrl: null });
-                }
-            });
-
-            this.sock.ev.on('creds.update', saveCreds);
-
-            this.sock.ev.on('messages.upsert', async (m) => {
-                const msg = m.messages[0];
-                if (!msg.key.fromMe && m.type === 'notify') {
-                    const sender = msg.key.remoteJid;
-                    const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 'No text content';
-                    
-                    let groupName = null;
-                    if (sender.endsWith('@g.us')) {
-                        const group = await this.sock.groupMetadata(sender);
-                        groupName = group.subject;
-                    }
-
-                    const log = { 
-                        from: sender, 
-                        text, 
-                        timestamp: new Date().toISOString(),
-                        groupName: groupName,
-                        senderName: msg.pushName,
-                    };
-                    this.messageLogs.unshift(log);
-                    if (this.messageLogs.length > 100) this.messageLogs.pop();
-
-                    this.io.emit('new_message', { connectionId: this.connectionId, log });
-
-                    const webhookPayload = {
-                        event: 'new_message',
-                        connectionId: this.connectionId,
-                        sender: sender.split('@')[0],
-                        message: text,
-                        timestamp: log.timestamp,
-                        groupName: groupName,
-                        senderName: msg.pushName,
-                        originalMessage: msg
-                    };
-                    this.callWebhook(webhookPayload);
-                }
-            });
-        } catch (error) {
-            console.error(`[${this.connectionId}] Error connecting:`, error);
-            this.io.emit('status', { connectionId: this.connectionId, status: 'disconnected' });
-        }
+    if (sessions.has(connectionId) && sessions.get(connectionId).sock) {
+        console.log(`Session ${connectionId} already exists.`);
+        io.emit('status', { connectionId, status: sessions.get(connectionId).status });
+        return;
     }
 
-    async callWebhook(payload) {
-        const webhookUrl = await configService.getWebhookUrl();
-        const webhookSecret = await configService.getWebhookSecret();
-        if (!webhookUrl) {
-            return;
-        }
-        console.log(`[WEBHOOK] Sending to: ${webhookUrl}`);
-        try {
-            const headers = { 'Content-Type': 'application/json' };
-            if (webhookSecret) {
-                const signature = crypto.createHmac('sha256', webhookSecret).update(JSON.stringify(payload)).digest('hex');
-                headers['X-Webhook-Signature'] = signature;
-            }
-            await axios.post(webhookUrl, payload, { headers });
-            console.log(`[WEBHOOK] Successfully sent payload.`);
-        } catch (error) {
-            console.error(`[WEBHOOK] Error sending payload:`, error.message);
-        }
-    }
+    console.log(`Starting session: ${connectionId}`);
+    const { state, saveCreds } = await useMultiFileAuthState(`auth_info_baileys/${connectionId}`);
+    const { version } = await fetchLatestBaileysVersion();
 
-    async sendMessage(to, message, file) {
-        if (this.connectionStatus !== 'connected' || !this.sock) {
-            throw new Error('WhatsApp is not connected.');
-        }
-        const jid = to.includes('@') ? to : `${to}@s.whatsapp.net`;
+    const sock = makeWASocket({
+        version,
+        auth: state,
+        printQRInTerminal: false,
+        logger: pino({ level: 'silent' }),
+    });
 
-        let messageOptions = {};
-        if (file) {
-            const buffer = Buffer.from(file.base64, 'base64');
-            if (file.type.startsWith('image/')) {
-                messageOptions = { image: buffer, caption: message };
+    sessions.set(connectionId, {
+        sock,
+        qr: null,
+        status: 'connecting',
+        messages: [],
+    });
+
+    sock.ev.on('connection.update', async (update) => {
+        const session = sessions.get(connectionId);
+        if (!session) return;
+
+        const { connection, lastDisconnect, qr } = update;
+
+        if (qr) {
+            session.qr = qr;
+            session.status = 'waiting for QR scan';
+            io.emit('qr_code', { connectionId, qr: session.qr });
+            io.emit('status', { connectionId, status: session.status });
+        }
+
+        if (connection === 'close') {
+            const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+            session.status = 'disconnected';
+            io.emit('status', { connectionId, status: session.status });
+            
+            if (shouldReconnect) {
+                console.log(`Reconnecting session: ${connectionId}`);
+                startSession(connectionId);
             } else {
-                messageOptions = { document: buffer, mimetype: file.type, fileName: file.name, caption: message };
+                console.log(`Session ${connectionId} logged out.`);
+                session.status = 'logged out';
+                io.emit('status', { connectionId, status: session.status });
+                sessions.delete(connectionId);
             }
-        } else {
-            messageOptions = { text: message };
+        } else if (connection === 'open') {
+            session.status = 'connected';
+            session.qr = null;
+            io.emit('status', { connectionId, status: session.status });
+            io.emit('qr_code', { connectionId, qrUrl: null });
         }
-        
-        const sentMessage = await this.sock.sendMessage(jid, messageOptions);
+    });
 
-        const log = {
-            to: jid,
-            text: message,
-            timestamp: new Date().toISOString(),
-            file: file ? file.name : null,
-            status: sentMessage ? 'sent' : 'failed',
-        };
-        this.outgoingMessageLogs.unshift(log);
-        if (this.outgoingMessageLogs.length > 100) this.outgoingMessageLogs.pop();
-        this.io.emit('new_outgoing_message', { connectionId: this.connectionId, log });
-    }
+    sock.ev.on('creds.update', saveCreds);
 
-    async sendBroadcastMessage(numbers, message, file) {
-        if (this.connectionStatus !== 'connected' || !this.sock) {
-            throw new Error('WhatsApp is not connected.');
+    sock.ev.on('messages.upsert', async (m) => {
+        const session = sessions.get(connectionId);
+        const msg = m.messages[0];
+        if (!msg.key.fromMe && m.type === 'notify') {
+            const sender = msg.key.remoteJid;
+            const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 'No text content';
+            const log = {
+                connectionId,
+                sender,
+                message: text,
+                timestamp: new Date().toISOString(),
+            };
+            
+            session.messages.unshift(log);
+            if (session.messages.length > 100) session.messages.pop();
+            
+            io.emit('new_message', log);
+
+            const webhookPayload = {
+                event: 'new_message',
+                connectionId,
+                sender: sender.split('@')[0],
+                message: text,
+                timestamp: log.timestamp,
+                originalMessage: msg
+            };
+            await callWebhook(webhookPayload);
         }
-        for (const number of numbers) {
-            // Add a delay to avoid being flagged as spam
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            await this.sendMessage(number, message, file);
-        }
-    }
-
-    getStatus() {
-        return { status: this.connectionStatus };
-    }
-
-    getQRCode() {
-        return { qr: this.qrCodeData };
-    }
-
-    getMessages() {
-        return { messages: this.messageLogs };
-    }
-
-    getOutgoingMessages() {
-        return { messages: this.outgoingMessageLogs };
-    }
-
-    disconnect() {
-        if (this.sock) {
-            this.sock.logout();
-        }
-    }
-
-    destroy() {
-        this.disconnect();
-        if (fs.existsSync(this.authDir)) {
-            fs.rmSync(this.authDir, { recursive: true, force: true });
-        }
-    }
+    });
 }
 
-class MultiDeviceManager {
-    constructor(io) {
-        this.connections = new Map();
-        this.io = io;
+async function disconnectSession(connectionId) {
+    const session = sessions.get(connectionId);
+    if (session && session.sock) {
+        console.log(`Logging out session: ${connectionId}`);
+        await session.sock.logout();
+        sessions.delete(connectionId);
+        return true;
     }
-
-    startConnection(connectionId) {
-        if (this.connections.has(connectionId)) {
-            return this.connections.get(connectionId);
-        }
-        const connection = new Connection(connectionId, this.io);
-        this.connections.set(connectionId, connection);
-        connection.connect();
-        return connection;
-    }
-
-    disconnectConnection(connectionId) {
-        if (this.connections.has(connectionId)) {
-            const connection = this.connections.get(connectionId);
-            connection.destroy();
-            this.connections.delete(connectionId);
-        }
-    }
-
-    disconnectAll() {
-        for (const connectionId of this.connections.keys()) {
-            this.disconnectConnection(connectionId);
-        }
-    }
-
-    getConnection(connectionId) {
-        return this.connections.get(connectionId);
-    }
-
-    getAllConnections() {
-        return Array.from(this.connections.values()).map(conn => ({
-            connectionId: conn.connectionId,
-            status: conn.connectionStatus,
-        }));
-    }
+    return false;
 }
 
-let manager;
-
-const initWhatsApp = (socketIo) => {
-    manager = new MultiDeviceManager(socketIo);
-};
-
-const startConnection = (connectionId) => {
-    return manager.startConnection(connectionId);
-};
-
-const disconnectConnection = (connectionId) => {
-    manager.disconnectConnection(connectionId);
-};
-
-const disconnectAllConnections = () => {
-    manager.disconnectAll();
-};
-
-const sendMessage = async (connectionId, to, message, file) => {
-    const connection = manager.getConnection(connectionId);
-    if (connection) {
-        await connection.sendMessage(to, message, file);
-    } else {
-        throw new Error('Connection not found.');
+const sendMessage = async (connectionId, to, message) => {
+    const session = sessions.get(connectionId);
+    if (!session || session.status !== 'connected' || !session.sock) {
+        throw new Error(`Session ${connectionId} is not connected.`);
     }
+    const jid = to.includes('@') ? to : `${to}@s.whatsapp.net`;
+    await session.sock.sendMessage(jid, { text: message });
 };
 
-const sendBroadcastMessage = async (connectionId, numbers, message, file) => {
-    const connection = manager.getConnection(connectionId);
-    if (connection) {
-        await connection.sendBroadcastMessage(numbers, message, file);
-    } else {
-        throw new Error('Connection not found.');
+const broadcastMessage = async (connectionId, messages) => {
+    const session = sessions.get(connectionId);
+    if (!session || session.status !== 'connected') {
+        throw new Error(`Session ${connectionId} is not connected.`);
     }
+
+    const broadcastId = `brd-${Date.now()}`;
+    const broadcastJob = {
+        id: broadcastId,
+        connectionId,
+        status: 'running',
+        total: messages.length,
+        sent: 0,
+        failed: 0,
+        startTime: new Date(),
+    };
+    broadcasts.set(broadcastId, broadcastJob);
+    io.emit('broadcast_update', broadcastJob);
+
+    console.log(`[BROADCAST] Starting job ${broadcastId} on session ${connectionId} to ${messages.length} numbers.`);
+
+    for (const msg of messages) {
+        try {
+            await sendMessage(connectionId, msg.to, msg.text);
+            broadcastJob.sent++;
+            console.log(`[BROADCAST] Job ${broadcastId}: Message sent to ${msg.to}`);
+        } catch (error) {
+            broadcastJob.failed++;
+            console.error(`[BROADCAST] Job ${broadcastId}: Failed to send to ${msg.to}:`, error.message);
+        } finally {
+            io.emit('broadcast_update', broadcastJob);
+            const delay = Math.floor(Math.random() * (7000 - 2000 + 1)) + 2000; // 2-7 seconds delay
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+
+    broadcastJob.status = 'completed';
+    broadcastJob.endTime = new Date();
+    io.emit('broadcast_update', broadcastJob);
+    console.log(`[BROADCAST] Finished job ${broadcastId}.`);
+    return broadcastId;
 };
 
 const getStatus = (connectionId) => {
-    const connection = manager.getConnection(connectionId);
-    if (connection) {
-        return connection.getStatus();
-    }
-    return { status: 'disconnected' };
+    const session = sessions.get(connectionId);
+    return { status: session ? session.status : 'not found' };
 };
 
 const getQRCode = (connectionId) => {
-    const connection = manager.getConnection(connectionId);
-    if (connection) {
-        return connection.getQRCode();
-    }
-    return { qr: null };
+    const session = sessions.get(connectionId);
+    return { qr: session ? session.qr : null };
 };
 
 const getMessages = (connectionId) => {
-    const connection = manager.getConnection(connectionId);
-    if (connection) {
-        return connection.getMessages();
-    }
-    return { messages: [] };
-};
-
-const getOutgoingMessages = (connectionId) => {
-    const connection = manager.getConnection(connectionId);
-    if (connection) {
-        return connection.getOutgoingMessages();
-    }
-    return { messages: [] };
+    const session = sessions.get(connectionId);
+    return { messages: session ? session.messages : [] };
 };
 
 const getAllConnections = () => {
-    return manager.getAllConnections();
+    return Array.from(sessions.keys()).map(id => ({
+        id,
+        status: sessions.get(id).status,
+    }));
+};
+
+const getAllBroadcasts = () => {
+    return Array.from(broadcasts.values()).sort((a, b) => b.startTime - a.startTime);
 };
 
 module.exports = {
-    initWhatsApp,
-    startConnection,
-    disconnectConnection,
-    disconnectAllConnections,
+    init,
+    startSession,
+    disconnectSession,
     sendMessage,
-    sendBroadcastMessage,
     getStatus,
     getQRCode,
     getMessages,
-    getOutgoingMessages,
     getAllConnections,
+    broadcastMessage,
+    getAllBroadcasts, // Ekspor baru
 };

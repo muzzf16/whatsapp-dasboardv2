@@ -1,0 +1,28 @@
+ Anda benar mengidentifikasi masalah penting ini. Ada beberapa alasan mengapa jawaban dari AI Agent dalam workflow Anda masih mengalami halusinasi dan tidak presisi/fokus:
+
+   1. Kurangnya Validasi Data Sebelum Merespon:
+      - AI Agent langsung merespon tanpa memastikan data yang didapat dari tools sudah benar dan valid
+      - Tidak ada pengecekan apakah tool "informasi_produk" berhasil menemukan data sebelum melanjutkan ke simulasi
+
+   2. Prompt System yang Tidak Ketat:
+      - Meskipun ada instruksi untuk menggunakan tools, AI tetap bisa membuat informasi jika data tidak ditemukan
+      - Tidak ada instruksi kuat untuk mengatakan "tidak tahu" jika data tidak ditemukan
+
+   3. Urutan Eksekusi Tools yang Tidak Tepat:
+      - AI mungkin terlalu cepat membuat asumsi sebelum sepenuhnya memproses hasil dari vector store atau Google Sheets
+
+   4. Kurangnya Validasi pada Tool Code:
+      - Tool simulasi kredit tidak mengecek apakah suku bunga yang diterima valid sebelum melakukan perhitungan
+      - Jika tool "informasi_produk" gagal, AI bisa tetap melanjutkan dengan data yang salah
+
+   5. Konteks Memori yang Tidak Terkelola Baik:
+      - Informasi penting dari tools mungkin tidak disimpan dengan baik di memori untuk referensi di percakapan berikutnya
+
+   6. Kurangnya Validasi Output:
+      - Tidak ada proses memvalidasi jawaban sebelum dikirim ke user
+
+  Solusi yang bisa diterapkan:
+   - Tambahkan langkah validasi antara tool dan AI Agent
+   - Perbaiki prompt system agar lebih tegas melarang membuat informasi
+   - Tambahkan error handling yang lebih baik
+   - Lakukan pengecekan data sebelum dan sesudah setiap tool dijalankan

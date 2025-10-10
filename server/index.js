@@ -31,8 +31,7 @@ io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 });
 
-// Init WhatsApp service dengan passing io
-initWhatsApp(io);
+// initWhatsApp(io) is removed because sessions are now started via API call
 
 server.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
