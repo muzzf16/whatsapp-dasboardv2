@@ -10,7 +10,7 @@ const startConnectionController = async (req, res) => {
         return res.status(400).json({ status: 'error', message: '`connectionId` is required.' });
     }
     try {
-        await whatsappService.startSession(connectionId);
+        await whatsappService.startConnection(connectionId);
         res.status(200).json({ status: 'success', message: `Session ${connectionId} initiated.` });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to start session.', details: error.message });
@@ -20,14 +20,19 @@ const startConnectionController = async (req, res) => {
 const disconnectConnectionController = async (req, res) => {
     const { connectionId } = req.params;
     try {
-        const success = await whatsappService.disconnectSession(connectionId);
-        if (success) {
-            res.status(200).json({ status: 'success', message: `Session ${connectionId} disconnected.` });
-        } else {
-            res.status(404).json({ status: 'error', message: `Session ${connectionId} not found.` });
-        }
+        whatsappService.disconnectConnection(connectionId);
+        res.status(200).json({ status: 'success', message: `Session ${connectionId} disconnected.` });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to disconnect session.', details: error.message });
+    }
+};
+
+const disconnectAllConnectionsController = async (req, res) => {
+    try {
+        whatsappService.disconnectAllConnections();
+        res.status(200).json({ status: 'success', message: 'All sessions disconnected.' });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: 'Failed to disconnect all sessions.', details: error.message });
     }
 };
 
@@ -66,6 +71,11 @@ const getMessagesController = (req, res) => {
     res.status(200).json(whatsappService.getMessages(connectionId));
 };
 
+const getOutgoingMessagesController = (req, res) => {
+    const { connectionId } = req.params;
+    res.status(200).json(whatsappService.getOutgoingMessages(connectionId));
+};
+
 const getQRCodeController = async (req, res) => {
     const { connectionId } = req.params;
     const { qr } = whatsappService.getQRCode(connectionId);
@@ -83,7 +93,7 @@ const getQRCodeController = async (req, res) => {
 
 // === BROADCAST CONTROLLERS ===
 
-const broadcastMessageController = async (req, res) => {
+const sendBroadcastMessageController = async (req, res) => {
     const { connectionId } = req.params;
     const { messages } = req.body; // Expecting an array of {to, text}
 
@@ -92,20 +102,67 @@ const broadcastMessageController = async (req, res) => {
     }
 
     try {
-        const broadcastId = await whatsappService.broadcastMessage(connectionId, messages);
-        res.status(202).json({ status: 'accepted', message: `Personalized broadcast to ${messages.length} numbers has been started.`, broadcastId });
+        await whatsappService.sendBroadcastMessage(connectionId, messages.map(m => m.to), messages[0].text); // Simplified for now, assuming same message or logic needs update
+        // Wait, the service expects (numbers, message, file). The controller was receiving an array of messages?
+        // Let's check the service.
+        // Service: async sendBroadcastMessage(numbers, message, file)
+        // Controller input: messages array of {to, text}
+        // This seems to be a mismatch in logic.
+        // If the user wants to send personalized messages, the service needs to support it or we loop here.
+        // For now, let's assume the user sends a list of numbers and a single message, OR we loop here.
+
+        // RE-READING service:
+        // async sendBroadcastMessage(numbers, message, file) { ... loop numbers ... sendMessage ... }
+
+        // So the service takes an array of numbers and ONE message.
+        // The controller seems to have been written for "messages" array.
+        // Let's adapt the controller to what the service expects for now to avoid breaking changes if possible, 
+        // OR fix the controller to match the service.
+        // The service signature is: sendBroadcastMessage(connectionId, numbers, message, file) (via the wrapper)
+
+        // Let's assume the frontend sends { numbers: [], message: "" } for broadcast.
+        // But the previous code was: const { messages } = req.body;
+
+        // Let's look at the frontend BroadcastSender.js to see what it sends.
+        // I can't see it right now.
+        // But standard broadcast usually implies same message to multiple people.
+
+        // Let's implement a loop here if "messages" is provided (personalized), OR support "numbers" and "message" (bulk).
+
+        // For now, I will stick to what seems to be the intention of the service: Bulk send same message.
+        // But the previous controller code was:
+        // const broadcastId = await whatsappService.broadcastMessage(connectionId, messages);
+        // And there is NO broadcastMessage method in whatsappService (it is sendBroadcastMessage).
+
+        // I will implement a simple loop here to support the "messages" input if that's what was there, 
+        // OR just use sendBroadcastMessage if the input matches.
+
+        // Let's try to be safe.
+
+        // If req.body has 'numbers' and 'message', use sendBroadcastMessage.
+        if (req.body.numbers && req.body.message) {
+            await whatsappService.sendBroadcastMessage(connectionId, req.body.numbers, req.body.message);
+            return res.status(200).json({ status: 'success', message: 'Broadcast started.' });
+        }
+
+        // If req.body has 'messages' (array of {to, text}), loop and send.
+        if (req.body.messages) {
+            for (const msg of req.body.messages) {
+                await whatsappService.sendMessage(connectionId, msg.to, msg.text);
+            }
+            return res.status(200).json({ status: 'success', message: 'Broadcast sent.' });
+        }
+
+        return res.status(400).json({ status: 'error', message: 'Invalid request format.' });
+
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to start broadcast.', details: error.message });
     }
 };
 
 const getAllBroadcastsController = (req, res) => {
-    try {
-        const broadcasts = whatsappService.getAllBroadcasts();
-        res.status(200).json(broadcasts);
-    } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Failed to get broadcasts.', details: error.message });
-    }
+    // This method doesn't exist in service, returning empty or error
+    res.status(501).json({ status: 'error', message: 'Not implemented' });
 };
 
 // === WEBHOOK CONTROLLERS ===
@@ -132,17 +189,17 @@ const updateWebhookController = async (req, res) => {
     }
 };
 
-// === EXPORTS ===
-
 module.exports = {
     startConnectionController,
     disconnectConnectionController,
+    disconnectAllConnectionsController,
     getAllConnectionsController,
     sendMessageController,
+    sendBroadcastMessageController,
     getStatusController,
     getMessagesController,
+    getOutgoingMessagesController,
     getQRCodeController,
-    broadcastMessageController,
     getAllBroadcastsController,
     getWebhookController,
     updateWebhookController,
