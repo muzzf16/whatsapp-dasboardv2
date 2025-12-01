@@ -44,10 +44,12 @@ class Connection {
                 const { connection, lastDisconnect, qr } = update;
 
                 if (qr) {
+                    console.log(`[${this.connectionId}] QR Code received from Baileys`);
                     this.qrCodeData = qr;
                     this.connectionStatus = 'waiting for QR scan';
                     try {
                         const qrUrl = await qrcode.toDataURL(qr);
+                        console.log(`[${this.connectionId}] QR Code URL generated`);
                         this.io.emit('qr_code', { connectionId: this.connectionId, qrUrl });
                         this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
                     } catch (err) {
@@ -65,7 +67,7 @@ class Connection {
                     } else {
                         console.log(`[${this.connectionId}] Logged out, not reconnecting.`);
                         this.io.emit('status', { connectionId: this.connectionId, status: 'logged out' });
-                        this.destroy();
+                        this.destroy(true);
                     }
                 } else if (connection === 'open') {
                     this.connectionStatus = 'connected';
@@ -82,16 +84,16 @@ class Connection {
                 if (!msg.key.fromMe && m.type === 'notify') {
                     const sender = msg.key.remoteJid;
                     const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 'No text content';
-                    
+
                     let groupName = null;
                     if (sender.endsWith('@g.us')) {
                         const group = await this.sock.groupMetadata(sender);
                         groupName = group.subject;
                     }
 
-                    const log = { 
-                        from: sender, 
-                        text, 
+                    const log = {
+                        from: sender,
+                        text,
                         timestamp: new Date().toISOString(),
                         groupName: groupName,
                         senderName: msg.pushName,
@@ -157,7 +159,7 @@ class Connection {
         } else {
             messageOptions = { text: message };
         }
-        
+
         const sentMessage = await this.sock.sendMessage(jid, messageOptions);
 
         const log = {
@@ -200,13 +202,20 @@ class Connection {
     }
 
     disconnect() {
-        if (this.sock) {
-            this.sock.logout();
+        try {
+            if (this.sock) {
+                this.sock.logout();
+            }
+        } catch (err) {
+            console.error(`[${this.connectionId}] Error during logout (ignored):`, err.message);
         }
+        this.sock = null;
     }
 
-    destroy() {
-        this.disconnect();
+    destroy(skipLogout = false) {
+        if (!skipLogout) {
+            this.disconnect();
+        }
         if (fs.existsSync(this.authDir)) {
             fs.rmSync(this.authDir, { recursive: true, force: true });
         }

@@ -3,6 +3,7 @@ const http = require('http');
 const { Server } = require("socket.io");
 const cors = require('cors');
 const whatsappRoutes = require('./routes/whatsappRoutes');
+const schedulerRoutes = require('./routes/schedulerRoutes');
 const { initWhatsApp } = require('./services/whatsappService');
 
 const app = express();
@@ -12,7 +13,7 @@ const PORT = process.env.PORT || 4000;
 
 const io = new Server(server, {
     cors: {
-        origin: "*",  // Untuk sementara allow all (bisa disesuaikan production)
+        origin: "*",
         methods: ["GET", "POST"]
     }
 });
@@ -21,6 +22,7 @@ const io = new Server(server, {
 app.use(cors());
 app.use(express.json({ limit: '35mb' }));
 app.use('/api', whatsappRoutes);
+app.use('/api', schedulerRoutes);
 
 app.get('/', (req, res) => {
     res.send('<h1>WhatsApp API Backend</h1>');
