@@ -58,9 +58,7 @@ class SchedulerService {
                 this.scheduledMessages = JSON.parse(data);
                 // Re-schedule messages that were active before shutdown
                 this.scheduledMessages.forEach(msg => {
-                    if (new Date(msg.scheduledTime) > new Date()) {
-                        this.scheduleMessage(msg.id, msg.connectionId, msg.recipient, msg.message, msg.scheduledTime, false);
-                    }
+                    this.scheduleMessage(msg.id, msg.connectionId, msg.recipient, msg.message, msg.scheduledTime, false);
                 });
             } catch (error) {
                 console.error("Error loading scheduled messages:", error);
@@ -95,13 +93,13 @@ class SchedulerService {
         // Use node-cron's Date object scheduling which is simpler and handles timezones better (uses system time by default)
 
         const job = cron.schedule(
-            `${date.getSeconds()} ${date.getMinutes()} ${date.getHours()} ${date.getDate()} ${date.getMonth() + 1} *`,
+            `${date.getSeconds()} ${date.getMinutes()} ${date.getHours()} ${date.getDate()} * *`,
             async () => {
                 console.log(`Sending scheduled message to ${recipient}: ${message}`);
                 try {
                     await whatsappService.sendMessage(connectionId, recipient, message);
                     console.log('Message sent successfully.');
-                    this.deleteScheduledMessage(id); // Remove from list after sending
+                    // this.deleteScheduledMessage(id); // Keep for recurring
                 } catch (error) {
                     console.error(`Failed to send message to ${recipient}:`, error);
                 }
