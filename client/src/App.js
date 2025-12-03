@@ -8,6 +8,7 @@ import BroadcastSender from './components/BroadcastSender';
 import WebhookManager from './components/WebhookManager';
 import MessageLog from './components/MessageLog';
 import ScheduledMessageManager from './components/ScheduledMessageManager';
+import ExcelUpload from './components/ExcelUpload';
 import Layout from './components/Layout';
 
 const API_URL = 'http://localhost:4000';
@@ -329,10 +330,16 @@ export default function App() {
                 );
             case 'schedule':
                 return (
-                    <ScheduledMessageManager
-                        activeConnectionId={activeConnectionId}
-                        status={activeConnection?.status}
-                    />
+                    <div className="space-y-6">
+                        <ExcelUpload
+                            activeConnectionId={activeConnectionId}
+                            status={activeConnection?.status}
+                        />
+                        <ScheduledMessageManager
+                            activeConnectionId={activeConnectionId}
+                            status={activeConnection?.status}
+                        />
+                    </div>
                 );
             case 'webhook':
                 return (

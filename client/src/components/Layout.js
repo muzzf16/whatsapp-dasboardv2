@@ -7,7 +7,6 @@ import {
     Webhook,
     FileText,
     Menu,
-    X,
     LogOut
 } from 'lucide-react';
 import StatusBadge from './StatusBadge';
@@ -56,8 +55,8 @@ const Layout = ({ children, activeTab, setActiveTab, activeConnection, onDisconn
                                             setIsSidebarOpen(false);
                                         }}
                                         className={`flex items-center w-full px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-150 ${activeTab === item.id
-                                                ? 'bg-primary-50 text-primary-700'
-                                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                            ? 'bg-primary-50 text-primary-700'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                             }`}
                                     >
                                         <Icon className={`w-5 h-5 mr-3 ${activeTab === item.id ? 'text-primary-600' : 'text-gray-400'}`} />

@@ -49,12 +49,13 @@ const getAllConnectionsController = (req, res) => {
 
 const sendMessageController = async (req, res) => {
     const { connectionId } = req.params;
-    const { number, message } = req.body;
-    if (!number || !message) {
-        return res.status(400).json({ status: 'error', message: '`number` and `message` are required.' });
+    const { number, message, file } = req.body;
+
+    if (!number || (!message && !file)) {
+        return res.status(400).json({ status: 'error', message: '`number` and `message` (or file) are required.' });
     }
     try {
-        await whatsappService.sendMessage(connectionId, number, message);
+        await whatsappService.sendMessage(connectionId, number, message, file);
         res.status(200).json({ status: 'success', message: `Message sent to ${number} via ${connectionId}` });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to send message.', details: error.message });
@@ -87,7 +88,8 @@ const getQRCodeController = async (req, res) => {
             res.status(500).json({ status: 'error', message: 'Failed to generate QR code.' });
         }
     } else {
-        res.status(404).json({ status: 'error', message: 'QR code not available for this session.' });
+        // Return 200 with null to indicate no QR code yet (e.g. connected or loading), avoiding frontend 404 errors
+        res.status(200).json({ qrUrl: null, message: 'QR code not available for this session.' });
     }
 };
 
@@ -95,65 +97,21 @@ const getQRCodeController = async (req, res) => {
 
 const sendBroadcastMessageController = async (req, res) => {
     const { connectionId } = req.params;
-    const { messages } = req.body; // Expecting an array of {to, text}
-
-    if (!Array.isArray(messages) || messages.length === 0) {
-        return res.status(400).json({ status: 'error', message: '`messages` (array of {to, text}) is required.' });
-    }
 
     try {
-        await whatsappService.sendBroadcastMessage(connectionId, messages.map(m => m.to), messages[0].text); // Simplified for now, assuming same message or logic needs update
-        // Wait, the service expects (numbers, message, file). The controller was receiving an array of messages?
-        // Let's check the service.
-        // Service: async sendBroadcastMessage(numbers, message, file)
-        // Controller input: messages array of {to, text}
-        // This seems to be a mismatch in logic.
-        // If the user wants to send personalized messages, the service needs to support it or we loop here.
-        // For now, let's assume the user sends a list of numbers and a single message, OR we loop here.
-
-        // RE-READING service:
-        // async sendBroadcastMessage(numbers, message, file) { ... loop numbers ... sendMessage ... }
-
-        // So the service takes an array of numbers and ONE message.
-        // The controller seems to have been written for "messages" array.
-        // Let's adapt the controller to what the service expects for now to avoid breaking changes if possible, 
-        // OR fix the controller to match the service.
-        // The service signature is: sendBroadcastMessage(connectionId, numbers, message, file) (via the wrapper)
-
-        // Let's assume the frontend sends { numbers: [], message: "" } for broadcast.
-        // But the previous code was: const { messages } = req.body;
-
-        // Let's look at the frontend BroadcastSender.js to see what it sends.
-        // I can't see it right now.
-        // But standard broadcast usually implies same message to multiple people.
-
-        // Let's implement a loop here if "messages" is provided (personalized), OR support "numbers" and "message" (bulk).
-
-        // For now, I will stick to what seems to be the intention of the service: Bulk send same message.
-        // But the previous controller code was:
-        // const broadcastId = await whatsappService.broadcastMessage(connectionId, messages);
-        // And there is NO broadcastMessage method in whatsappService (it is sendBroadcastMessage).
-
-        // I will implement a simple loop here to support the "messages" input if that's what was there, 
-        // OR just use sendBroadcastMessage if the input matches.
-
-        // Let's try to be safe.
-
-        // If req.body has 'numbers' and 'message', use sendBroadcastMessage.
         if (req.body.numbers && req.body.message) {
             await whatsappService.sendBroadcastMessage(connectionId, req.body.numbers, req.body.message);
             return res.status(200).json({ status: 'success', message: 'Broadcast started.' });
         }
 
-        // If req.body has 'messages' (array of {to, text}), loop and send.
-        if (req.body.messages) {
+        if (req.body.messages && Array.isArray(req.body.messages)) {
             for (const msg of req.body.messages) {
                 await whatsappService.sendMessage(connectionId, msg.to, msg.text);
             }
             return res.status(200).json({ status: 'success', message: 'Broadcast sent.' });
         }
 
-        return res.status(400).json({ status: 'error', message: 'Invalid request format.' });
+        return res.status(400).json({ status: 'error', message: 'Invalid request format. Provide `numbers` and `message` OR `messages` array.' });
 
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to start broadcast.', details: error.message });
@@ -161,7 +119,6 @@ const sendBroadcastMessageController = async (req, res) => {
 };
 
 const getAllBroadcastsController = (req, res) => {
-    // This method doesn't exist in service, returning empty or error
     res.status(501).json({ status: 'error', message: 'Not implemented' });
 };
 
@@ -177,15 +134,18 @@ const getWebhookController = async (req, res) => {
 };
 
 const updateWebhookController = async (req, res) => {
-    const { url } = req.body;
+    const { url, secret } = req.body;
     if (typeof url !== 'string') {
         return res.status(400).json({ status: 'error', message: '`url` (string) is required.' });
     }
     try {
         await configService.setWebhookUrl(url);
-        res.status(200).json({ status: 'success', message: 'Webhook URL updated successfully.' });
+        if (secret !== undefined) {
+            await configService.setWebhookSecret(secret);
+        }
+        res.status(200).json({ status: 'success', message: 'Webhook settings updated successfully.' });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Failed to update webhook URL.' });
+        res.status(500).json({ status: 'error', message: 'Failed to update webhook settings.' });
     }
 };
 

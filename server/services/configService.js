@@ -31,13 +31,26 @@ const getWebhookUrl = async () => {
     return config.webhookUrl || "";
 };
 
+const getWebhookSecret = async () => {
+    const config = await readConfig();
+    return config.webhookSecret || "";
+};
+
 const setWebhookUrl = async (url) => {
     const config = await readConfig();
     config.webhookUrl = url;
     await writeConfig(config);
 };
 
+const setWebhookSecret = async (secret) => {
+    const config = await readConfig();
+    config.webhookSecret = secret;
+    await writeConfig(config);
+};
+
 module.exports = {
     getWebhookUrl,
     setWebhookUrl,
+    getWebhookSecret,
+    setWebhookSecret,
 };

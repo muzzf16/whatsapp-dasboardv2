@@ -210,7 +210,7 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
                             scheduledMessages.map((msg) => (
                                 <div key={msg.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-start hover:shadow-sm transition-shadow">
                                     <div>
-                                        <p className="font-semibold text-sm text-gray-900">To: {msg.number}</p>
+                                        <p className="font-semibold text-sm text-gray-900">To: {msg.recipient}</p>
                                         <p className="text-sm text-gray-600 mt-1">{msg.message}</p>
                                         <div className="flex items-center mt-2 text-xs text-primary-600 font-medium">
                                             <Calendar className="w-3 h-3 mr-1" />
