@@ -12,7 +12,7 @@ import ExcelUpload from './components/ExcelUpload';
 import Layout from './components/Layout';
 
 // ⬇️ INI YANG PENTING
-export const API_URL = 'https://api.kenes.biz.id';
+const API_URL = 'https://api.kenes.biz.id';
 
 const socket = io(API_URL, {
     path: '/socket.io',
