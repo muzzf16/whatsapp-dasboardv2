@@ -11,8 +11,15 @@ import ScheduledMessageManager from './components/ScheduledMessageManager';
 import ExcelUpload from './components/ExcelUpload';
 import Layout from './components/Layout';
 
-const API_URL = 'http://localhost:4000';
-const socket = io(API_URL);
+// ⬇️ INI YANG PENTING
+export const API_URL = 'https://api.kenes.biz.id';
+
+const socket = io(API_URL, {
+    path: '/socket.io',
+    transports: ['websocket', 'polling'],
+    withCredentials: true,
+});
+
 
 export default function App() {
     const [connections, setConnections] = useState([]);
