@@ -12,7 +12,7 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
     const [isSyncing, setIsSyncing] = useState(false);
     const [notification, setNotification] = useState({ message: '', type: '' });
 
-    const API_URL = 'http://localhost:4000';
+    const API_URL = 'https://api.kenes.biz.id';
 
     const showNotification = (message, type) => {
         setNotification({ message, type });

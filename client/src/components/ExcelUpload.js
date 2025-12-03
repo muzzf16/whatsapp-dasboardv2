@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:4000';
+const API_URL = 'https://api.kenes.biz.id';
 
 export default function ExcelUpload({ activeConnectionId, status }) {
     const [file, setFile] = useState(null);
@@ -95,8 +95,8 @@ export default function ExcelUpload({ activeConnectionId, status }) {
 
             {uploadStatus.message && (
                 <div className={`mt-4 p-3 rounded ${uploadStatus.type === 'success' ? 'bg-green-100 text-green-700' :
-                        uploadStatus.type === 'warning' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
+                    uploadStatus.type === 'warning' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
                     }`}>
                     {uploadStatus.message}
                 </div>

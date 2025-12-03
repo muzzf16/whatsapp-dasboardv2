@@ -4,7 +4,7 @@ import { Send, FileText } from 'lucide-react';
 import { getTemplates } from '../lib/templateStore';
 import BroadcastTracker from './BroadcastTracker'; // Impor baru
 
-const API_URL = 'http://localhost:4000/api';
+const API_URL = 'https://api.kenes.biz.id/api';
 
 const Campaign = ({ sessions, showNotification, broadcasts }) => {
     const [templates, setTemplates] = useState([]);
@@ -80,7 +80,7 @@ const Campaign = ({ sessions, showNotification, broadcasts }) => {
     return (
         <div className="bg-white p-6 rounded-lg shadow-md space-y-8">
             <h2 className="text-2xl font-semibold text-gray-700">Buat Campaign Broadcast</h2>
-            
+
             <form onSubmit={handleBroadcast} className="space-y-6">
                 <div>
                     <label htmlFor="session" className="block text-sm font-medium text-gray-700">1. Pilih Sesi Pengirim</label>

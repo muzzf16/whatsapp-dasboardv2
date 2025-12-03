@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Power, Eye } from 'lucide-react';
 
-const API_URL = 'http://localhost:4000/api';
+const API_URL = 'https://api.kenes.biz.id/api';
 
 const Sessions = ({ sessions, fetchSessions, handleSelectSession }) => {
     const [newSessionId, setNewSessionId] = useState('');
@@ -76,14 +76,14 @@ const Sessions = ({ sessions, fetchSessions, handleSelectSession }) => {
                                     onClick={() => handleSelectSession(session.id)}
                                     className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                                 >
-                                    <Eye className="mr-2 h-4 w-4"/>
+                                    <Eye className="mr-2 h-4 w-4" />
                                     Tampilkan
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => handleDisconnect(session.id)}
                                     className="inline-flex items-center px-3 py-1.5 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50"
                                 >
-                                    <Power className="mr-2 h-4 w-4"/>
+                                    <Power className="mr-2 h-4 w-4" />
                                     Putuskan
                                 </button>
                             </div>

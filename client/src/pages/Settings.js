@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Save } from 'lucide-react';
 
-const API_URL = 'http://localhost:4000/api';
+const API_URL = 'https://api.kenes.biz.id/api';
 
 const Settings = ({ showNotification }) => {
     const [webhookUrl, setWebhookUrl] = useState('');
@@ -39,7 +39,7 @@ const Settings = ({ showNotification }) => {
         <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Pengaturan Webhook</h2>
             <p className="text-gray-600 mb-6">Server akan mengirim event (seperti pesan masuk) ke URL ini melalui metode POST. Pastikan endpoint Anda siap menerima payload JSON.</p>
-            
+
             <form onSubmit={handleSaveWebhook} className="space-y-4">
                 <div>
                     <label htmlFor="webhookUrl" className="block text-sm font-medium text-gray-700">Webhook URL</label>
