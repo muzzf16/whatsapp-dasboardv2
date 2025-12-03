@@ -10,7 +10,9 @@ const {
 const pino = require('pino');
 const qrcode = require('qrcode');
 const configService = require('./configService');
+
 const fs = require('fs');
+const aiService = require('./aiService');
 
 class Connection {
     constructor(connectionId, io) {
@@ -114,6 +116,23 @@ class Connection {
                         originalMessage: msg
                     };
                     this.callWebhook(webhookPayload);
+
+                    // AI Auto-reply
+                    try {
+                        // Only reply to direct messages or mentions (optional refinement, for now all text messages)
+                        // Avoid replying to status updates or very short messages if needed
+                        if (text && text.length > 1) {
+                            const aiResponse = await aiService.generateReply(text);
+                            if (aiResponse) {
+                                console.log(`[AI] Replying to ${sender}`);
+                                // Add a small delay to simulate typing
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                await this.sendMessage(sender, aiResponse);
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`[AI] Error generating/sending reply:`, error);
+                    }
                 }
             });
         } catch (error) {
