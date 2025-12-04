@@ -29,23 +29,17 @@ class SchedulerService {
     }
 
     async syncWithGoogleSheets(spreadsheetId, connectionId) {
-        const rows = await googleSheetsService.getSheetData(spreadsheetId);
+        const messages = await googleSheetsService.getScheduledMessagesFromSheet(spreadsheetId);
         let count = 0;
-        for (const row of rows) {
-            // Assuming row format: [Number, Message, Date, Time]
-            // Date format: YYYY-MM-DD, Time format: HH:mm
-            if (row.length >= 4) {
-                const number = row[0];
-                const message = row[1];
-                const dateStr = row[2];
-                const timeStr = row[3];
-                const scheduledTime = `${dateStr}T${timeStr}:00`;
+        for (const msg of messages) {
+            // msg format: { number, message, date, time }
+            const { number, message, date, time } = msg;
+            const scheduledTime = `${date}T${time}:00`;
 
-                // Basic validation
-                if (number && message && dateStr && timeStr) {
-                    this.addScheduledMessage(connectionId, number, message, scheduledTime);
-                    count++;
-                }
+            // Basic validation
+            if (number && message && date && time) {
+                this.addScheduledMessage(connectionId, number, message, scheduledTime);
+                count++;
             }
         }
         return count;
