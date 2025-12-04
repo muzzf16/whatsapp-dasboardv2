@@ -94,6 +94,7 @@ export default function App() {
         socket.on('new_message', ({ connectionId, log }) => {
             if (connectionId === activeConnectionId) {
                 setMessages(prevMessages => [log, ...prevMessages]);
+                showNotification(`Pesan baru dari ${log.senderName || log.from?.split('@')[0] || 'Seseorang'}`, 'info');
             }
         });
 
@@ -369,6 +370,11 @@ export default function App() {
                         messages={messages}
                         outgoingMessages={outgoingMessages}
                         messagesEndRef={messagesEndRef}
+                        onReply={(to, text) => {
+                            setSendTo(to);
+                            setSendMessageText(text); // Optional: pre-fill text if needed, or just focus
+                            setActiveTab('messages'); // Switch to message sender tab
+                        }}
                     />
                 );
             default:
