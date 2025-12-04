@@ -33,7 +33,7 @@ const MessageLog = ({ activeTab, setActiveTab, messageFilter, setMessageFilter, 
                                         {new Date(msg.timestamp || msg.messageTimestamp * 1000).toLocaleString()}
                                     </p>
                                     <div className="text-sm text-gray-700 whitespace-pre-wrap break-words">
-                                        {msg.message?.conversation || msg.message?.extendedTextMessage?.text || msg.message?.imageMessage?.caption || '[Media/Other]'}
+                                        {msg.text || '[Media/Other]'}
                                     </div>
                                 </div>
                             </div>
@@ -53,8 +53,8 @@ const MessageLog = ({ activeTab, setActiveTab, messageFilter, setMessageFilter, 
                         <button
                             onClick={() => setActiveTab('incoming')}
                             className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'incoming'
-                                    ? 'bg-white text-gray-900 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-900'
+                                ? 'bg-white text-gray-900 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-900'
                                 }`}
                         >
                             Pesan Masuk
@@ -62,8 +62,8 @@ const MessageLog = ({ activeTab, setActiveTab, messageFilter, setMessageFilter, 
                         <button
                             onClick={() => setActiveTab('outgoing')}
                             className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${activeTab === 'outgoing'
-                                    ? 'bg-white text-gray-900 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-900'
+                                ? 'bg-white text-gray-900 shadow-sm'
+                                : 'text-gray-500 hover:text-gray-900'
                                 }`}
                         >
                             Pesan Keluar

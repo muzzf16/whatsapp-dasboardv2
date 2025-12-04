@@ -85,7 +85,24 @@ class Connection {
                 const msg = m.messages[0];
                 if (!msg.key.fromMe && m.type === 'notify') {
                     const sender = msg.key.remoteJid;
-                    const text = msg.message?.conversation || msg.message?.extendedTextMessage?.text || 'No text content';
+                    const messageContent = msg.message;
+                    let text = '';
+                    if (messageContent) {
+                        text = messageContent.conversation
+                            || messageContent.extendedTextMessage?.text
+                            || messageContent.imageMessage?.caption
+                            || messageContent.videoMessage?.caption
+                            || messageContent.documentMessage?.caption
+                            || messageContent.documentMessage?.fileName
+                            || (messageContent.stickerMessage ? '[Sticker]' : null)
+                            || (messageContent.audioMessage ? '[Audio]' : null)
+                            || (messageContent.imageMessage ? '[Image]' : null)
+                            || (messageContent.videoMessage ? '[Video]' : null)
+                            || (messageContent.documentMessage ? '[Document]' : null)
+                            || 'No text content';
+                    } else {
+                        text = 'No text content';
+                    }
 
                     let groupName = null;
                     if (sender.endsWith('@g.us')) {
@@ -183,7 +200,7 @@ class Connection {
 
         const log = {
             to: jid,
-            text: message,
+            text: message || (file ? `[File: ${file.name}]` : '[No Content]'),
             timestamp: new Date().toISOString(),
             file: file ? file.name : null,
             status: sentMessage ? 'sent' : 'failed',
