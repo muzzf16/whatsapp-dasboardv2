@@ -68,3 +68,13 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Environment variables (API base URL)
+
+This client supports setting the backend URL via `REACT_APP_API_URL`. Example for local development:
+
+```
+REACT_APP_API_URL=http://localhost:4000
+```
+
+This will be used by the client to make API requests and to connect to the Socket.IO server. Without a value, the default is `http://localhost:4000`.

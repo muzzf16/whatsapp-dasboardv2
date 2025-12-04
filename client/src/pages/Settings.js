@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Save } from 'lucide-react';
-
-const API_URL = 'https://api.kenes.biz.id/api';
+import { API_BASE } from '../lib/api';
+const API_URL = API_BASE; // includes the /api prefix
 
 const Settings = ({ showNotification }) => {
     const [webhookUrl, setWebhookUrl] = useState('');

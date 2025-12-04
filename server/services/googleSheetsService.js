@@ -8,23 +8,32 @@ class GoogleSheetsService {
     constructor() {
         this.auth = null;
         this.sheets = null;
+        this.enabled = true; // disable if init fails
     }
 
     async init() {
         if (!fs.existsSync(SERVICE_ACCOUNT_FILE)) {
-            throw new Error('Service account file not found. Please place "service-account.json" in the server directory.');
+            console.warn('Google Sheets service: service-account.json not found; Google Sheets integration disabled.');
+            this.enabled = false;
+            return;
         }
 
-        this.auth = new google.auth.GoogleAuth({
+        try {
+            this.auth = new google.auth.GoogleAuth({
             keyFile: SERVICE_ACCOUNT_FILE,
             scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
-
-        const client = await this.auth.getClient();
-        this.sheets = google.sheets({ version: 'v4', auth: client });
+            const client = await this.auth.getClient();
+            this.sheets = google.sheets({ version: 'v4', auth: client });
+        } catch (error) {
+            console.error('Google Sheets service: failed to initialize. Google Sheets integration disabled.', error?.message || error);
+            this.enabled = false;
+            return;
+        }
     }
 
     async appendMessage(spreadsheetId, data) {
+        if (!this.enabled) return; // quietly skip when disabled
         if (!this.sheets) {
             await this.init();
         }
@@ -50,11 +59,12 @@ class GoogleSheetsService {
                 }
             });
         } catch (error) {
-            console.error('Error appending to Google Sheet:', error.message);
+            console.error('Error appending to Google Sheet:', error?.message || error);
         }
     }
 
     async getScheduledMessagesFromSheet(spreadsheetId, range = 'Sheet1!A2:D') {
+        if (!this.enabled) return [];
         if (!this.sheets) {
             await this.init();
         }
@@ -79,7 +89,7 @@ class GoogleSheetsService {
             })).filter(row => row.number && row.message && row.date && row.time);
 
         } catch (error) {
-            console.error('Error fetching data from Google Sheets:', error);
+            console.error('Error fetching data from Google Sheets:', error?.message || error);
             throw new Error('Failed to fetch data from Google Sheets. Check Spreadsheet ID and permissions.');
         }
     }

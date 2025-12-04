@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-
-const API_URL = 'https://api.kenes.biz.id';
+import { API_BASE } from '../lib/api';
 
 export default function ExcelUpload({ activeConnectionId, status }) {
     const [file, setFile] = useState(null);
@@ -33,7 +32,7 @@ export default function ExcelUpload({ activeConnectionId, status }) {
         formData.append('connectionId', activeConnectionId);
 
         try {
-            const res = await axios.post(`${API_URL}/api/upload-excel`, formData, {
+            const res = await axios.post(`${API_BASE}/upload-excel`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },

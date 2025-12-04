@@ -4,7 +4,8 @@ import { Send, FileText } from 'lucide-react';
 import { getTemplates } from '../lib/templateStore';
 import BroadcastTracker from './BroadcastTracker'; // Impor baru
 
-const API_URL = 'https://api.kenes.biz.id/api';
+import { API_BASE } from '../lib/api';
+const API_URL = API_BASE;
 
 const Campaign = ({ sessions, showNotification, broadcasts }) => {
     const [templates, setTemplates] = useState([]);

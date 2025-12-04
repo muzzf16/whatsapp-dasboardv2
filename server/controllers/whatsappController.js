@@ -18,18 +18,32 @@ const startConnectionController = async (req, res) => {
 };
 
 const disconnectConnectionController = async (req, res) => {
-    const { connectionId } = req.params;
+    // connectionId may be provided either in params (older routes) or body (frontend usage)
+    const connectionId = req.params?.connectionId || req.body?.connectionId;
     try {
-        whatsappService.disconnectConnection(connectionId);
+        await whatsappService.disconnectConnection(connectionId);
         res.status(200).json({ status: 'success', message: `Session ${connectionId} disconnected.` });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to disconnect session.', details: error.message });
     }
 };
 
+const reinitConnectionController = async (req, res) => {
+    const { connectionId } = req.params;
+    try {
+        // Ensure the session is stopped and auth state cleared
+        await whatsappService.disconnectConnection(connectionId);
+        // Start the session again to produce a fresh QR
+        await whatsappService.startConnection(connectionId);
+        res.status(200).json({ status: 'success', message: `Session ${connectionId} reinitialized.` });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: 'Failed to reinit session.', details: error.message });
+    }
+};
+
 const disconnectAllConnectionsController = async (req, res) => {
     try {
-        whatsappService.disconnectAllConnections();
+        await whatsappService.disconnectAllConnections();
         res.status(200).json({ status: 'success', message: 'All sessions disconnected.' });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to disconnect all sessions.', details: error.message });
@@ -163,4 +177,5 @@ module.exports = {
     getAllBroadcastsController,
     getWebhookController,
     updateWebhookController,
+    reinitConnectionController,
 };

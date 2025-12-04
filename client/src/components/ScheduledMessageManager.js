@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE } from '../lib/api';
 import { Calendar, Trash2, RefreshCw, Plus } from 'lucide-react';
 
 const ScheduledMessageManager = ({ activeConnectionId, status }) => {
@@ -12,7 +13,8 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
     const [isSyncing, setIsSyncing] = useState(false);
     const [notification, setNotification] = useState({ message: '', type: '' });
 
-    const API_URL = 'https://api.kenes.biz.id';
+    // Use API_BASE so we connect to the configured backend server
+    const API_URL = API_BASE;
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
@@ -21,7 +23,7 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
 
     const fetchScheduledMessages = async () => {
         try {
-            const res = await axios.get(`${API_URL}/api/schedule`);
+            const res = await axios.get(`${API_URL}/schedule`);
             setScheduledMessages(res.data.data);
         } catch (error) {
             console.error("Error fetching scheduled messages:", error);
@@ -47,7 +49,7 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
 
         setIsScheduling(true);
         try {
-            await axios.post(`${API_URL}/api/schedule`, {
+            await axios.post(`${API_URL}/schedule`, {
                 connectionId: activeConnectionId,
                 number,
                 message,
@@ -78,7 +80,7 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
 
         setIsSyncing(true);
         try {
-            const res = await axios.post(`${API_URL}/api/schedule/sync`, {
+            const res = await axios.post(`${API_URL}/schedule/sync`, {
                 connectionId: activeConnectionId,
                 spreadsheetId
             });
@@ -94,7 +96,7 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${API_URL}/api/schedule/${id}`);
+            await axios.delete(`${API_URL}/schedule/${id}`);
             showNotification('Jadwal berhasil dihapus.', 'success');
             fetchScheduledMessages();
         } catch (error) {

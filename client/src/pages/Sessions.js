@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Power, Eye } from 'lucide-react';
-
-const API_URL = 'https://api.kenes.biz.id/api';
+import { API_BASE } from '../lib/api';
+const API_URL = API_BASE;
 
 const Sessions = ({ sessions, fetchSessions, handleSelectSession }) => {
     const [newSessionId, setNewSessionId] = useState('');

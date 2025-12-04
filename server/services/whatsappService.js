@@ -33,6 +33,7 @@ class Connection {
 
     async connect() {
         try {
+            console.log(`[${this.connectionId}] Initiating WhatsApp connection. authDir=${this.authDir}`);
             const { state, saveCreds } = await useMultiFileAuthState(this.authDir);
             const { version } = await fetchLatestBaileysVersion();
 
@@ -59,18 +60,24 @@ class Connection {
                 }
 
                 if (connection === 'close') {
-                    const shouldReconnect = (lastDisconnect.error)?.output?.statusCode !== DisconnectReason.loggedOut;
+                    const statusCode = (lastDisconnect?.error)?.output?.statusCode;
+                    const reason = lastDisconnect?.error || lastDisconnect;
+                    const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
                     this.connectionStatus = 'disconnected';
                     this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
+                    console.warn(`[${this.connectionId}] connection closed. Reason:`, { statusCode, reason });
                     if (shouldReconnect) {
                         console.log(`[${this.connectionId}] Reconnecting...`);
                         this.connect();
                     } else {
                         console.log(`[${this.connectionId}] Logged out, not reconnecting.`);
-                        this.io.emit('status', { connectionId: this.connectionId, status: 'logged out' });
-                        this.destroy(true);
+                        this.io.emit('status', { connectionId: this.connectionId, status: 'logged out', reason: statusCode || (reason && reason.message) || 'unknown' });
+                        // Keep auth files for debugging and allow re-init or manual cleanup by user
+                        // Optionally destroy auth files: this.destroy(true);
+                        // For now we do not automatically destroy authDir so admin can inspect files/refresh auth if needed.
                     }
                 } else if (connection === 'open') {
+                    console.log(`[${this.connectionId}] Connection open.`);
                     this.connectionStatus = 'connected';
                     this.qrCodeData = null;
                     this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
@@ -154,7 +161,7 @@ class Connection {
                             sender: sender.split('@')[0],
                             message: text,
                             type: 'Incoming'
-                        });
+                        }).catch(err => console.error('[GoogleSheets] appendMessage failed:', err?.message || err));
                     }
 
                     // AI Auto-reply
@@ -240,7 +247,7 @@ class Connection {
                 sender: jid.split('@')[0], // Destination number
                 message: log.text,
                 type: 'Outgoing'
-            });
+            }).catch(err => console.error('[GoogleSheets] appendMessage failed:', err?.message || err));
         }
     }
 
@@ -271,20 +278,22 @@ class Connection {
         return { messages: this.outgoingMessageLogs };
     }
 
-    disconnect() {
+    async disconnect() {
         try {
-            if (this.sock) {
-                this.sock.logout();
+            if (this.sock && typeof this.sock.logout === 'function') {
+                // logout() may be async and can throw asynchronously.
+                // Await it to catch any thrown errors and avoid unhandled promise rejections.
+                await this.sock.logout();
             }
         } catch (err) {
-            console.error(`[${this.connectionId}] Error during logout (ignored):`, err.message);
+            console.error(`[${this.connectionId}] Error during logout (ignored):`, err?.message || err);
         }
         this.sock = null;
     }
 
-    destroy(skipLogout = false) {
+    async destroy(skipLogout = false) {
         if (!skipLogout) {
-            this.disconnect();
+            await this.disconnect();
         }
         if (fs.existsSync(this.authDir)) {
             fs.rmSync(this.authDir, { recursive: true, force: true });
@@ -308,17 +317,17 @@ class MultiDeviceManager {
         return connection;
     }
 
-    disconnectConnection(connectionId) {
+    async disconnectConnection(connectionId) {
         if (this.connections.has(connectionId)) {
             const connection = this.connections.get(connectionId);
-            connection.destroy();
+            await connection.destroy();
             this.connections.delete(connectionId);
         }
     }
 
-    disconnectAll() {
-        for (const connectionId of this.connections.keys()) {
-            this.disconnectConnection(connectionId);
+    async disconnectAll() {
+        for (const connectionId of Array.from(this.connections.keys())) {
+            await this.disconnectConnection(connectionId);
         }
     }
 
@@ -344,12 +353,12 @@ const startConnection = (connectionId) => {
     return manager.startConnection(connectionId);
 };
 
-const disconnectConnection = (connectionId) => {
-    manager.disconnectConnection(connectionId);
+const disconnectConnection = async (connectionId) => {
+    await manager.disconnectConnection(connectionId);
 };
 
-const disconnectAllConnections = () => {
-    manager.disconnectAll();
+const disconnectAllConnections = async () => {
+    await manager.disconnectAll();
 };
 
 const sendMessage = async (connectionId, to, message, file) => {

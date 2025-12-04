@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import { API_URL } from './lib/api';
 import Notification from './components/Notification';
 import ConnectionManager from './components/ConnectionManager';
 import MessageSender from './components/MessageSender';
@@ -11,8 +12,7 @@ import ScheduledMessageManager from './components/ScheduledMessageManager';
 import ExcelUpload from './components/ExcelUpload';
 import Layout from './components/Layout';
 
-// ⬇️ INI YANG PENTING
-const API_URL = 'https://api.kenes.biz.id';
+// API_URL is centralized in src/lib/api.js. Make sure REACT_APP_API_URL is configured.
 
 const socket = io(API_URL, {
     path: '/socket.io',
@@ -82,8 +82,20 @@ export default function App() {
 
         fetchInitialData();
 
-        socket.on('status', ({ connectionId, status }) => {
+        socket.on('status', ({ connectionId, status, reason }) => {
             setConnections(prev => prev.map(c => c.connectionId === connectionId ? { ...c, status } : c));
+            if (status === 'logged out') {
+                showNotification(`Koneksi ${connectionId} telah logout. ${reason ? `(${reason})` : ''}`, 'error');
+            }
+        });
+
+        socket.on('connect', () => {
+            console.info('Socket connected to', API_URL, 'id:', socket.id);
+        });
+
+        socket.on('connect_error', (error) => {
+            console.error('Socket connect error:', error);
+            showNotification('Gagal terhubung ke server realtime (websocket). Periksa URL backend atau koneksi.', 'error');
         });
 
         socket.on('qr_code', ({ connectionId, qrUrl }) => {
@@ -174,6 +186,16 @@ export default function App() {
         } catch (error) {
             console.error("Error disconnecting connection:", error);
             showNotification('Gagal memutus koneksi.', 'error');
+        }
+    };
+
+    const handleReinitConnection = async (connectionId) => {
+        try {
+            await axios.post(`${API_URL}/api/connections/${connectionId}/reinit`);
+            showNotification(`Koneksi ${connectionId} diinisiasi ulang. Scan QR baru untuk re-auth.`, 'success');
+        } catch (error) {
+            console.error("Error reinitializing connection:", error);
+            showNotification('Gagal menginisiasi ulang koneksi.', 'error');
         }
     };
 
@@ -306,6 +328,7 @@ export default function App() {
                             onAddConnection={handleAddConnection}
                             onStartConnection={handleStartConnection}
                             onDisconnect={handleDisconnectConnection}
+                            onReinitConnection={handleReinitConnection}
                             onDisconnectAll={handleDisconnectAllConnections}
                             qrCodeUrl={qrCodes[activeConnectionId]}
                         />

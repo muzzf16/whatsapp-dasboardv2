@@ -40,3 +40,17 @@ initWhatsApp(io);
 server.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
 });
+
+// Global handler for unhandled promise rejections to avoid server crash and centralize logs
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+// Global error handlers - log and avoid crashing the process from unhandled rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception thrown:', err);
+});
