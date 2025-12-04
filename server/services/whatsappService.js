@@ -97,13 +97,16 @@ class Connection {
                         // Exponential backoff for reconnects
                         this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.reconnectMaxDelay);
                     } else {
-                        console.log(`[${this.connectionId}] Logged out, not reconnecting.`);
+                        console.log(`[${this.connectionId}] Logged out or disqualified, not reconnecting.`);
                         this.io.emit('status', { connectionId: this.connectionId, status: 'logged out', reason: statusCode || (reason && reason.message) || 'unknown' });
                         // Send webhook specifically for logout events
                         this.callWebhook({ event: 'session_logged_out', connectionId: this.connectionId, reason: this.lastDisconnectInfo });
-                        // Keep auth files for debugging and allow re-init or manual cleanup by user
-                        // Optionally destroy auth files: this.destroy(true);
-                        // For now we do not automatically destroy authDir so admin can inspect files/refresh auth if needed.
+
+                        // Explicitly clear auth if 401 (Unauthorized) or Conflict
+                        if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
+                            console.log(`[${this.connectionId}] Session invalid (401/Logged Out). Clearing auth data.`);
+                            this.destroy(true).catch(err => console.error(`[${this.connectionId}] Failed to destroy session:`, err));
+                        }
                     }
                 } else if (connection === 'open') {
                     // reset reconnect backoff

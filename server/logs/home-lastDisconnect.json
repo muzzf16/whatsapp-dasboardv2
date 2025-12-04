@@ -1,0 +1,25 @@
+{
+  "timestamp": "2025-12-04T19:15:56.038Z",
+  "lastDisconnect": {
+    "error": {
+      "data": {
+        "tag": "stream:error",
+        "attrs": {
+          "code": "515"
+        }
+      },
+      "isBoom": true,
+      "isServer": true,
+      "output": {
+        "statusCode": 515,
+        "payload": {
+          "statusCode": 515,
+          "error": "Unknown",
+          "message": "Stream Errored (restart required)"
+        },
+        "headers": {}
+      }
+    },
+    "date": "2025-12-04T19:15:56.038Z"
+  }
+}
