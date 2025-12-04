@@ -140,7 +140,7 @@ const uploadExcelController = async (req, res) => {
                     }
                 });
             } else {
-                console.log(`Skipping row ${index + 1}: Missing required fields. Keys found: ${Object.keys(row).join(', ')}`);
+                // console.log(`Skipping row ${index + 1}: Missing required fields. Keys found: ${Object.keys(row).join(', ')}`);
             }
         });
 

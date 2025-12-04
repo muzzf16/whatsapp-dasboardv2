@@ -89,10 +89,8 @@ class SchedulerService {
         const job = cron.schedule(
             `${date.getSeconds()} ${date.getMinutes()} ${date.getHours()} ${date.getDate()} * *`,
             async () => {
-                console.log(`Sending scheduled message to ${recipient}: ${message}`);
                 try {
                     await whatsappService.sendMessage(connectionId, recipient, message);
-                    console.log('Message sent successfully.');
                     // this.deleteScheduledMessage(id); // Keep for recurring
                 } catch (error) {
                     console.error(`Failed to send message to ${recipient}:`, error);
@@ -101,7 +99,6 @@ class SchedulerService {
         );
 
         this.jobs.set(id, job);
-        console.log(`Message scheduled for ${scheduledTime} with ID: ${id}`);
     }
 
     cancelMessage(id) {

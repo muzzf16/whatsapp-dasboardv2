@@ -49,7 +49,6 @@ class GoogleSheetsService {
                     values: values
                 }
             });
-            console.log('Logged message to Google Sheet');
         } catch (error) {
             console.error('Error appending to Google Sheet:', error.message);
         }

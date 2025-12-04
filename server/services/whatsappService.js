@@ -47,12 +47,10 @@ class Connection {
                 const { connection, lastDisconnect, qr } = update;
 
                 if (qr) {
-                    console.log(`[${this.connectionId}] QR Code received from Baileys`);
                     this.qrCodeData = qr;
                     this.connectionStatus = 'waiting for QR scan';
                     try {
                         const qrUrl = await qrcode.toDataURL(qr);
-                        console.log(`[${this.connectionId}] QR Code URL generated`);
                         this.io.emit('qr_code', { connectionId: this.connectionId, qrUrl });
                         this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
                     } catch (err) {
@@ -85,7 +83,6 @@ class Connection {
             this.sock.ev.on('messages.upsert', async (m) => {
                 const msg = m.messages[0];
                 if (!msg.key.fromMe && m.type === 'notify') {
-                    console.log('Incoming message:', JSON.stringify(msg, null, 2));
                     const sender = msg.key.remoteJid;
 
                     const unwrapMessage = (m) => {
@@ -186,7 +183,6 @@ class Connection {
 
     async callWebhook(payload) {
         const webhookUrl = await configService.getWebhookUrl();
-        console.log('Current Webhook URL:', webhookUrl);
         const webhookSecret = await configService.getWebhookSecret();
         if (!webhookUrl) {
             return;
