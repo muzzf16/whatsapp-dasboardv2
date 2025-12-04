@@ -3,7 +3,7 @@ require('dotenv').config();
 
 // Initialize Gemini
 // Ensure GEMINI_API_KEY is set in your .env file
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'YOUR_API_KEY_HERE');
+// const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'YOUR_API_KEY_HERE');
 
 const SYSTEM_INSTRUCTION = `
 Role: Staf Bagian Penagihan Kredit PT BPR BAPERA BATANG.
@@ -29,23 +29,36 @@ User: "Berapa sisa utang saya?"
 AI: "Mohon maaf, untuk keamanan data, silakan sebutkan Nomor Rekening dan Nama Lengkap Anda, atau datang langsung ke kantor kami dengan membawa KTP."
 `;
 
-const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
-    systemInstruction: SYSTEM_INSTRUCTION
-});
+let model = null;
+
+function getModel() {
+    if (model) return model;
+
+    if (!process.env.GEMINI_API_KEY) {
+        console.warn("GEMINI_API_KEY is not set.");
+        return null;
+    }
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        systemInstruction: SYSTEM_INSTRUCTION
+    });
+    return model;
+}
 
 async function generateReply(incomingMessage) {
-    if (!process.env.GEMINI_API_KEY) {
-        console.warn("GEMINI_API_KEY is not set. AI reply disabled.");
+    const aiModel = getModel();
+    if (!aiModel) {
         return null;
     }
 
     try {
-        const result = await model.generateContent(incomingMessage);
+        const result = await aiModel.generateContent(incomingMessage);
         const response = await result.response;
         return response.text();
     } catch (error) {
-        console.error("Error generating AI reply:", error);
+        console.error("Error generating AI reply:", error.message);
         return null;
     }
 }
