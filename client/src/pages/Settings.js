@@ -7,6 +7,7 @@ const API_URL = API_BASE; // includes the /api prefix
 const Settings = ({ showNotification }) => {
     const [webhookUrl, setWebhookUrl] = useState('');
     const [isSaving, setIsSaving] = useState(false);
+    const [sheetsDiag, setSheetsDiag] = useState(null);
 
     useEffect(() => {
         const fetchWebhookUrl = async () => {
@@ -18,7 +19,16 @@ const Settings = ({ showNotification }) => {
                 showNotification('Gagal memuat URL webhook.', 'error');
             }
         };
+        const fetchSheetsDiag = async () => {
+            try {
+                const res = await axios.get(`${API_URL}/diagnostics/google-sheets`);
+                setSheetsDiag(res.data.data);
+            } catch (err) {
+                setSheetsDiag(null);
+            }
+        };
         fetchWebhookUrl();
+        fetchSheetsDiag();
     }, [showNotification]);
 
     const handleSaveWebhook = async (e) => {
@@ -63,6 +73,14 @@ const Settings = ({ showNotification }) => {
                     </button>
                 </div>
             </form>
+            {sheetsDiag && (
+                <div className="mt-6 p-4 bg-gray-50 border rounded text-sm">
+                    <h3 className="font-medium">Google Sheets Integration</h3>
+                    <p>Enabled: {sheetsDiag.enabled ? 'Yes' : 'No'}</p>
+                    <p>Initialized: {sheetsDiag.initialized ? 'Yes' : 'No'}</p>
+                    {sheetsDiag.initError && <p className="text-rose-600">Error: {sheetsDiag.initError}</p>}
+                </div>
+            )}
         </div>
     );
 }

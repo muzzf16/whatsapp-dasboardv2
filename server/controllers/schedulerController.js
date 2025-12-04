@@ -53,6 +53,15 @@ const syncScheduledMessagesController = async (req, res) => {
     }
 };
 
+const getGoogleSheetsDiagnosticsController = async (req, res) => {
+    try {
+        const diag = await (require('../services/googleSheetsService')).getDiagnostics();
+        res.status(200).json({ status: 'success', data: diag });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: 'Failed to get Google Sheets diagnostics', details: error.message });
+    }
+};
+
 const xlsx = require('xlsx');
 
 const uploadExcelController = async (req, res) => {
@@ -161,5 +170,6 @@ module.exports = {
     getScheduledMessagesController,
     deleteScheduledMessageController,
     syncScheduledMessagesController,
+    getGoogleSheetsDiagnosticsController,
     uploadExcelController
 };

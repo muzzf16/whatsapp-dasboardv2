@@ -9,6 +9,7 @@ const {
     getMessagesController,
     getOutgoingMessagesController,
     getQRCodeController,
+    getDiagnosticsController,
     reinitConnectionController,
     getAllConnectionsController,
     getWebhookController,
@@ -31,6 +32,7 @@ router.get('/:connectionId/messages', getMessagesController);
 router.get('/:connectionId/outgoing-messages', getOutgoingMessagesController);
 router.get('/:connectionId/qrcode', getQRCodeController);
 router.post('/:connectionId/reinit', reinitConnectionController);
+router.get('/:connectionId/diagnostics', getDiagnosticsController);
 
 // Webhook routes
 router.get('/webhook', getWebhookController);

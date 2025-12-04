@@ -5,6 +5,7 @@ const {
     getScheduledMessagesController,
     deleteScheduledMessageController,
     syncScheduledMessagesController,
+    getGoogleSheetsDiagnosticsController,
     uploadExcelController
 } = require('../controllers/schedulerController');
 
@@ -15,6 +16,7 @@ router.post('/schedule', addScheduledMessageController);
 router.get('/schedule', getScheduledMessagesController);
 router.delete('/schedule/:id', deleteScheduledMessageController);
 router.post('/schedule/sync', syncScheduledMessagesController);
+router.get('/diagnostics/google-sheets', getGoogleSheetsDiagnosticsController);
 router.post('/upload-excel', upload.single('file'), uploadExcelController);
 
 module.exports = router;

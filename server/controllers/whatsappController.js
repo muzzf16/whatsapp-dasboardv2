@@ -107,6 +107,16 @@ const getQRCodeController = async (req, res) => {
     }
 };
 
+const getDiagnosticsController = (req, res) => {
+    const { connectionId } = req.params;
+    try {
+        const diagnostics = whatsappService.getDiagnostics(connectionId);
+        res.status(200).json({ status: 'success', data: diagnostics });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: 'Failed to get diagnostics.', details: error.message });
+    }
+};
+
 // === BROADCAST CONTROLLERS ===
 
 const sendBroadcastMessageController = async (req, res) => {
@@ -174,6 +184,7 @@ module.exports = {
     getMessagesController,
     getOutgoingMessagesController,
     getQRCodeController,
+    getDiagnosticsController,
     getAllBroadcastsController,
     getWebhookController,
     updateWebhookController,

@@ -27,6 +27,7 @@ export default function App() {
     const [newConnectionId, setNewConnectionId] = useState('');
 
     const [qrCodes, setQrCodes] = useState({});
+    const [diagnostics, setDiagnostics] = useState(null);
     const [messages, setMessages] = useState([]);
     const [outgoingMessages, setOutgoingMessages] = useState([]);
     const [messageFilter, setMessageFilter] = useState('');
@@ -82,10 +83,18 @@ export default function App() {
 
         fetchInitialData();
 
-        socket.on('status', ({ connectionId, status, reason }) => {
+        socket.on('status', async ({ connectionId, status, reason }) => {
             setConnections(prev => prev.map(c => c.connectionId === connectionId ? { ...c, status } : c));
             if (status === 'logged out') {
                 showNotification(`Koneksi ${connectionId} telah logout. ${reason ? `(${reason})` : ''}`, 'error');
+                if (connectionId === activeConnectionId) {
+                    try {
+                        const diagRes = await axios.get(`${API_URL}/api/${connectionId}/diagnostics`);
+                        setDiagnostics(diagRes.data.data);
+                    } catch (err) {
+                        // ignore
+                    }
+                }
             }
         });
 
@@ -138,6 +147,14 @@ export default function App() {
                     setOutgoingMessages(outgoingMessagesRes.data.messages);
                     const qrRes = await axios.get(`${API_URL}/api/${activeConnectionId}/qrcode`);
                     setQrCodes(prev => ({ ...prev, [activeConnectionId]: qrRes.data.qrUrl }));
+                    // fetch diagnostics
+                    try {
+                        const diagRes = await axios.get(`${API_URL}/api/${activeConnectionId}/diagnostics`);
+                        setDiagnostics(diagRes.data.data);
+                    } catch (err) {
+                        // ignore diagnostics fetch errors
+                        setDiagnostics(null);
+                    }
                 } catch (error) {
                     console.error(`Error fetching data for ${activeConnectionId}:`, error);
                 }
@@ -190,6 +207,7 @@ export default function App() {
     };
 
     const handleReinitConnection = async (connectionId) => {
+        if (!window.confirm(`Apakah Anda yakin ingin menginisiasi ulang koneksi ${connectionId}? Ini akan menghapus status autentikasi dan menghasilkan QR baru.`)) return;
         try {
             await axios.post(`${API_URL}/api/connections/${connectionId}/reinit`);
             showNotification(`Koneksi ${connectionId} diinisiasi ulang. Scan QR baru untuk re-auth.`, 'success');
@@ -331,6 +349,8 @@ export default function App() {
                             onReinitConnection={handleReinitConnection}
                             onDisconnectAll={handleDisconnectAllConnections}
                             qrCodeUrl={qrCodes[activeConnectionId]}
+                            diagnostics={diagnostics}
+                            onReinitConnection={handleReinitConnection}
                         />
                     </div>
                 );

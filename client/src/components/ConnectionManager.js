@@ -1,12 +1,20 @@
 import React from 'react';
 import { Plus, Smartphone, Trash2, QrCode } from 'lucide-react';
 
-const ConnectionManager = ({ newConnectionId, setNewConnectionId, activeConnectionId, setActiveConnectionId, connections, onAddConnection, onStartConnection, onDisconnect, onDisconnectAll, onReinitConnection, qrCodeUrl }) => {
+const ConnectionManager = ({ newConnectionId, setNewConnectionId, activeConnectionId, setActiveConnectionId, connections, onAddConnection, onStartConnection, onDisconnect, onDisconnectAll, onReinitConnection, qrCodeUrl, diagnostics }) => {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             {/* Debug Info - Remove later */}
             <div className="bg-yellow-50 p-2 text-xs text-yellow-800 border-b border-yellow-100">
                 Debug: ActiveID={activeConnectionId || 'None'}, QR={qrCodeUrl ? 'Yes' : 'No'}
+                {diagnostics?.lastDisconnect && (
+                    <div className="mt-1 text-xs text-rose-700">
+                        <div><strong>Last disconnect:</strong></div>
+                        <div>Time: {diagnostics.lastDisconnect?.timestamp || 'unknown'}</div>
+                        <div>Code: {diagnostics.lastDisconnect?.output?.statusCode || diagnostics.lastDisconnect?.statusCode || 'unknown'}</div>
+                        <div>Message: {diagnostics.lastDisconnect?.output?.payload?.message || diagnostics.lastDisconnect?.toString?.() || 'See server logs'}</div>
+                    </div>
+                )}
             </div>
             <div className="p-6 border-b border-gray-100">
                 <h2 className="text-lg font-semibold text-gray-900 flex items-center">

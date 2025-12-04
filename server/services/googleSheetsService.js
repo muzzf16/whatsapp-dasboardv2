@@ -9,6 +9,8 @@ class GoogleSheetsService {
         this.auth = null;
         this.sheets = null;
         this.enabled = true; // disable if init fails
+        this.initialized = false;
+        this.initError = null;
     }
 
     async init() {
@@ -25,8 +27,11 @@ class GoogleSheetsService {
         });
             const client = await this.auth.getClient();
             this.sheets = google.sheets({ version: 'v4', auth: client });
+            this.initialized = true;
         } catch (error) {
             console.error('Google Sheets service: failed to initialize. Google Sheets integration disabled.', error?.message || error);
+            this.enabled = false;
+            this.initError = error?.message || error;
             this.enabled = false;
             return;
         }
@@ -92,6 +97,14 @@ class GoogleSheetsService {
             console.error('Error fetching data from Google Sheets:', error?.message || error);
             throw new Error('Failed to fetch data from Google Sheets. Check Spreadsheet ID and permissions.');
         }
+    }
+
+    getDiagnostics() {
+        return {
+            enabled: this.enabled,
+            initialized: this.initialized,
+            initError: this.initError,
+        };
     }
 }
 

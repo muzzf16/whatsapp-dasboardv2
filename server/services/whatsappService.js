@@ -29,6 +29,10 @@ class Connection {
         this.messageLogs = [];
         this.outgoingMessageLogs = [];
         this.authDir = path.join('auth_info_multi_device', this.connectionId);
+        this.lastDisconnectInfo = null;
+        this.reconnectDelay = 1000; // ms
+        this.reconnectMaxDelay = 30000; // ms
+        this.reconnectTimer = null;
     }
 
     async connect() {
@@ -60,25 +64,54 @@ class Connection {
                 }
 
                 if (connection === 'close') {
+                    // store the lastDisconnect info for diagnostics and emit event
+                    this.lastDisconnectInfo = lastDisconnect || null;
+                    // Write last disconnect details to a log for debugging
+                    try {
+                        const logsDir = path.join(__dirname, '..', 'logs');
+                        if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
+                        const fn = path.join(logsDir, `${this.connectionId}-lastDisconnect.json`);
+                        fs.writeFileSync(fn, JSON.stringify({ timestamp: new Date().toISOString(), lastDisconnect: this.lastDisconnectInfo }, null, 2));
+                    } catch (err) {
+                        console.warn(`[${this.connectionId}] Failed to write lastDisconnect log:`, err?.message || err);
+                    }
                     const statusCode = (lastDisconnect?.error)?.output?.statusCode;
                     const reason = lastDisconnect?.error || lastDisconnect;
                     const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
                     this.connectionStatus = 'disconnected';
                     this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
+                    // Send webhook about status change so external monitoring can act
+                    this.callWebhook({ event: 'status_change', connectionId: this.connectionId, status: this.connectionStatus, reason: this.lastDisconnectInfo });
                     console.warn(`[${this.connectionId}] connection closed. Reason:`, { statusCode, reason });
                     if (shouldReconnect) {
-                        console.log(`[${this.connectionId}] Reconnecting...`);
-                        this.connect();
+                        this.connectionStatus = 'reconnecting';
+                        this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
+                        console.log(`[${this.connectionId}] Reconnecting in ${this.reconnectDelay}ms...`);
+                        if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+                        this.reconnectTimer = setTimeout(() => {
+                            this.reconnectTimer = null;
+                            this.connect();
+                            // Notify webhook about reconnect attempt
+                            this.callWebhook({ event: 'reconnecting', connectionId: this.connectionId, delayMs: this.reconnectDelay, reason: this.lastDisconnectInfo });
+                        }, this.reconnectDelay);
+                        // Exponential backoff for reconnects
+                        this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.reconnectMaxDelay);
                     } else {
                         console.log(`[${this.connectionId}] Logged out, not reconnecting.`);
                         this.io.emit('status', { connectionId: this.connectionId, status: 'logged out', reason: statusCode || (reason && reason.message) || 'unknown' });
+                        // Send webhook specifically for logout events
+                        this.callWebhook({ event: 'session_logged_out', connectionId: this.connectionId, reason: this.lastDisconnectInfo });
                         // Keep auth files for debugging and allow re-init or manual cleanup by user
                         // Optionally destroy auth files: this.destroy(true);
                         // For now we do not automatically destroy authDir so admin can inspect files/refresh auth if needed.
                     }
                 } else if (connection === 'open') {
+                    // reset reconnect backoff
+                    this.reconnectDelay = 1000;
                     console.log(`[${this.connectionId}] Connection open.`);
                     this.connectionStatus = 'connected';
+                    // Send webhook for open
+                    this.callWebhook({ event: 'session_open', connectionId: this.connectionId });
                     this.qrCodeData = null;
                     this.io.emit('status', { connectionId: this.connectionId, status: this.connectionStatus });
                     this.io.emit('qr_code', { connectionId: this.connectionId, qrUrl: null });
@@ -266,6 +299,17 @@ class Connection {
         return { status: this.connectionStatus };
     }
 
+    getDiagnostics() {
+        return {
+            connectionId: this.connectionId,
+            status: this.connectionStatus,
+            authDir: this.authDir,
+            lastDisconnect: this.lastDisconnectInfo,
+            messagesCount: this.messageLogs.length,
+            outgoingMessagesCount: this.outgoingMessageLogs.length
+        };
+    }
+
     getQRCode() {
         return { qr: this.qrCodeData };
     }
@@ -294,6 +338,15 @@ class Connection {
     async destroy(skipLogout = false) {
         if (!skipLogout) {
             await this.disconnect();
+        }
+        // Clear any pending reconnect timers
+        try {
+            if (this.reconnectTimer) {
+                clearTimeout(this.reconnectTimer);
+                this.reconnectTimer = null;
+            }
+        } catch (err) {
+            // ignore
         }
         if (fs.existsSync(this.authDir)) {
             fs.rmSync(this.authDir, { recursive: true, force: true });
@@ -387,6 +440,14 @@ const getStatus = (connectionId) => {
     return { status: 'disconnected' };
 };
 
+const getDiagnostics = (connectionId) => {
+    const connection = manager.getConnection(connectionId);
+    if (connection) {
+        return connection.getDiagnostics();
+    }
+    return { status: 'disconnected' };
+};
+
 const getQRCode = (connectionId) => {
     const connection = manager.getConnection(connectionId);
     if (connection) {
@@ -427,4 +488,5 @@ module.exports = {
     getMessages,
     getOutgoingMessages,
     getAllConnections,
+    getDiagnostics,
 };

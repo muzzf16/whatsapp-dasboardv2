@@ -56,6 +56,12 @@ process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
 
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception:', err);
+    // Depending on the app requirements, consider restarting the process or exiting
+    // process.exit(1);
+});
+
 // Global error handlers - log and avoid crashing the process from unhandled rejections
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);

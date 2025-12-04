@@ -78,3 +78,9 @@ REACT_APP_API_URL=http://localhost:4000
 ```
 
 This will be used by the client to make API requests and to connect to the Socket.IO server. Without a value, the default is `http://localhost:4000`.
+
+### Diagnostics and Reinit
+
+The UI supports diagnostics for sessions and Google Sheets:
+- In Connection Manager, you can see a small 'Last disconnect' message when a connection is logged out.
+- Use the 'Reinit' button to clear auth files for a connection and generate a new QR code. A confirmation will be shown before running the operation.
