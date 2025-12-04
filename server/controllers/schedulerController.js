@@ -35,10 +35,14 @@ const deleteScheduledMessageController = (req, res) => {
 };
 
 const syncScheduledMessagesController = async (req, res) => {
-    const { connectionId, spreadsheetId } = req.body;
+    let { connectionId, spreadsheetId } = req.body;
+
+    if (!spreadsheetId) {
+        spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+    }
 
     if (!connectionId || !spreadsheetId) {
-        return res.status(400).json({ status: 'error', message: 'connectionId and spreadsheetId are required' });
+        return res.status(400).json({ status: 'error', message: 'connectionId is required, and spreadsheetId must be provided or set in .env' });
     }
 
     try {
