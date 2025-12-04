@@ -85,8 +85,15 @@ class Connection {
                 const msg = m.messages[0];
                 if (!msg.key.fromMe && m.type === 'notify') {
                     const sender = msg.key.remoteJid;
-                    const messageContent = msg.message;
+
+                    const unwrapMessage = (m) => {
+                        if (!m) return null;
+                        return m.ephemeralMessage?.message || m.viewOnceMessage?.message || m.viewOnceMessageV2?.message || m.documentWithCaptionMessage?.message || m;
+                    };
+
+                    const messageContent = unwrapMessage(msg.message);
                     let text = '';
+
                     if (messageContent) {
                         text = messageContent.conversation
                             || messageContent.extendedTextMessage?.text
@@ -99,6 +106,8 @@ class Connection {
                             || (messageContent.imageMessage ? '[Image]' : null)
                             || (messageContent.videoMessage ? '[Video]' : null)
                             || (messageContent.documentMessage ? '[Document]' : null)
+                            || (messageContent.contactMessage ? '[Contact]' : null)
+                            || (messageContent.locationMessage ? '[Location]' : null)
                             || 'No text content';
                     } else {
                         text = 'No text content';

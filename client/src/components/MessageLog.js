@@ -27,7 +27,7 @@ const MessageLog = ({ activeTab, setActiveTab, messageFilter, setMessageFilter, 
                                 </div>
                                 <div>
                                     <p className="text-sm font-semibold text-gray-900">
-                                        {type === 'incoming' ? (msg.pushName || msg.sender) : `To: ${msg.to}`}
+                                        {type === 'incoming' ? (msg.pushName || msg.sender || msg.from?.split('@')[0]) : `To: ${msg.to}`}
                                     </p>
                                     <p className="text-xs text-gray-500 mb-1">
                                         {new Date(msg.timestamp || msg.messageTimestamp * 1000).toLocaleString()}
