@@ -84,6 +84,7 @@ class Connection {
             this.sock.ev.on('messages.upsert', async (m) => {
                 const msg = m.messages[0];
                 if (!msg.key.fromMe && m.type === 'notify') {
+                    console.log('Incoming message:', JSON.stringify(msg, null, 2));
                     const sender = msg.key.remoteJid;
 
                     const unwrapMessage = (m) => {
@@ -119,8 +120,12 @@ class Connection {
                         groupName = group.subject;
                     }
 
+                    if (!text) text = 'No text content';
+
                     const log = {
                         from: sender,
+                        sender: sender,
+                        pushName: msg.pushName,
                         text,
                         timestamp: new Date().toISOString(),
                         groupName: groupName,
