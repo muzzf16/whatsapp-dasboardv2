@@ -6,6 +6,7 @@ const cors = require('cors');
 const whatsappRoutes = require('./routes/whatsappRoutes');
 const schedulerRoutes = require('./routes/schedulerRoutes');
 const { initWhatsApp } = require('./services/whatsappService');
+const googleSheetsService = require('./services/googleSheetsService');
 
 const app = express();
 const server = http.createServer(app);
@@ -36,6 +37,15 @@ io.on('connection', (socket) => {
 
 // Init WhatsApp service dengan passing io
 initWhatsApp(io);
+
+// Initialize Google Sheets integration at startup if configured
+if (process.env.GOOGLE_SPREADSHEET_ID) {
+    googleSheetsService.init().then(() => {
+        console.log('Google Sheets service initialized.');
+    }).catch(err => {
+        console.error('Google Sheets service initialization failed:', err?.message || err);
+    });
+}
 
 server.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
