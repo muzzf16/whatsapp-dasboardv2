@@ -13,6 +13,7 @@ const configService = require('./configService');
 
 const fs = require('fs');
 const aiService = require('./aiService');
+const googleSheetsService = require('./googleSheetsService');
 
 class Connection {
     constructor(connectionId, io) {
@@ -148,6 +149,17 @@ class Connection {
                     };
                     this.callWebhook(webhookPayload);
 
+                    // Log to Google Sheets
+                    if (process.env.GOOGLE_SPREADSHEET_ID) {
+                        googleSheetsService.appendMessage(process.env.GOOGLE_SPREADSHEET_ID, {
+                            timestamp: log.timestamp,
+                            connectionId: this.connectionId,
+                            sender: sender.split('@')[0],
+                            message: text,
+                            type: 'Incoming'
+                        });
+                    }
+
                     // AI Auto-reply
                     try {
                         // Only reply to direct messages or mentions (optional refinement, for now all text messages)
@@ -222,6 +234,17 @@ class Connection {
         this.outgoingMessageLogs.unshift(log);
         if (this.outgoingMessageLogs.length > 100) this.outgoingMessageLogs.pop();
         this.io.emit('new_outgoing_message', { connectionId: this.connectionId, log });
+
+        // Log to Google Sheets
+        if (process.env.GOOGLE_SPREADSHEET_ID) {
+            googleSheetsService.appendMessage(process.env.GOOGLE_SPREADSHEET_ID, {
+                timestamp: log.timestamp,
+                connectionId: this.connectionId,
+                sender: jid.split('@')[0], // Destination number
+                message: log.text,
+                type: 'Outgoing'
+            });
+        }
     }
 
     async sendBroadcastMessage(numbers, message, file) {

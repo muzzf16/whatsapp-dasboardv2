@@ -17,11 +17,42 @@ class GoogleSheetsService {
 
         this.auth = new google.auth.GoogleAuth({
             keyFile: SERVICE_ACCOUNT_FILE,
-            scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
 
         const client = await this.auth.getClient();
         this.sheets = google.sheets({ version: 'v4', auth: client });
+    }
+
+    async appendMessage(spreadsheetId, data) {
+        if (!this.sheets) {
+            await this.init();
+        }
+
+        try {
+            // Data: [Timestamp, ConnectionID, Sender, Message, Type]
+            const values = [
+                [
+                    data.timestamp,
+                    data.connectionId,
+                    data.sender,
+                    data.message,
+                    data.type
+                ]
+            ];
+
+            await this.sheets.spreadsheets.values.append({
+                spreadsheetId,
+                range: 'Sheet1!A:E',
+                valueInputOption: 'USER_ENTERED',
+                resource: {
+                    values: values
+                }
+            });
+            console.log('Logged message to Google Sheet');
+        } catch (error) {
+            console.error('Error appending to Google Sheet:', error.message);
+        }
     }
 
     async getScheduledMessagesFromSheet(spreadsheetId, range = 'Sheet1!A2:D') {
