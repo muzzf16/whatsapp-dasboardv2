@@ -186,6 +186,7 @@ class Connection {
 
     async callWebhook(payload) {
         const webhookUrl = await configService.getWebhookUrl();
+        console.log('Current Webhook URL:', webhookUrl);
         const webhookSecret = await configService.getWebhookSecret();
         if (!webhookUrl) {
             return;

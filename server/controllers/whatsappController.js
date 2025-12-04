@@ -135,6 +135,7 @@ const getWebhookController = async (req, res) => {
 
 const updateWebhookController = async (req, res) => {
     const { url, secret } = req.body;
+    console.log('Received webhook update request:', { url, secret });
     if (typeof url !== 'string') {
         return res.status(400).json({ status: 'error', message: '`url` (string) is required.' });
     }
