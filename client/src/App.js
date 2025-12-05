@@ -41,6 +41,7 @@ export default function App() {
 
     const [broadcastNumbers, setBroadcastNumbers] = useState('');
     const [broadcastMessage, setBroadcastMessage] = useState('');
+    const [broadcastDelay, setBroadcastDelay] = useState(1000);
     const [isBroadcasting, setIsBroadcasting] = useState(false);
 
     const [webhookUrl, setWebhookUrl] = useState('');
@@ -304,6 +305,7 @@ export default function App() {
             await axios.post(`${API_URL}/api/${activeConnectionId}/broadcast-message`, {
                 numbers: numbers,
                 message: broadcastMessage,
+                delay: broadcastDelay,
             });
             showNotification('Pesan broadcast berhasil dikirim!', 'success');
             setBroadcastNumbers('');
@@ -350,7 +352,6 @@ export default function App() {
                             onDisconnectAll={handleDisconnectAllConnections}
                             qrCodeUrl={qrCodes[activeConnectionId]}
                             diagnostics={diagnostics}
-                            onReinitConnection={handleReinitConnection}
                         />
                     </div>
                 );
@@ -377,6 +378,8 @@ export default function App() {
                         activeConnection={activeConnection}
                         isBroadcasting={isBroadcasting}
                         onBroadcastMessage={handleBroadcastMessage}
+                        broadcastDelay={broadcastDelay}
+                        setBroadcastDelay={setBroadcastDelay}
                     />
                 );
             case 'schedule':

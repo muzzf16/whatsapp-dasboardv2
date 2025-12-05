@@ -1,7 +1,7 @@
 import React from 'react';
 import { Radio, Send } from 'lucide-react';
 
-const BroadcastSender = ({ broadcastNumbers, setBroadcastNumbers, broadcastMessage, setBroadcastMessage, activeConnection, isBroadcasting, onBroadcastMessage }) => {
+const BroadcastSender = ({ broadcastNumbers, setBroadcastNumbers, broadcastMessage, setBroadcastMessage, activeConnection, isBroadcasting, onBroadcastMessage, broadcastDelay, setBroadcastDelay }) => {
     return (
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-100">
@@ -36,6 +36,21 @@ const BroadcastSender = ({ broadcastNumbers, setBroadcastNumbers, broadcastMessa
                         className="block w-full px-4 py-2 rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border"
                         disabled={activeConnection?.status !== 'connected'}
                     />
+                </div>
+
+                <div>
+                    <label htmlFor="broadcast-delay" className="block text-sm font-medium text-gray-700 mb-1">Jeda Waktu (ms)</label>
+                    <input
+                        type="number"
+                        id="broadcast-delay"
+                        value={broadcastDelay}
+                        onChange={(e) => setBroadcastDelay(Number(e.target.value))}
+                        min="500"
+                        step="100"
+                        className="block w-full px-4 py-2 rounded-lg border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm border"
+                        disabled={activeConnection?.status !== 'connected'}
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Minimal 500ms untuk menghindari spam.</p>
                 </div>
 
                 <button

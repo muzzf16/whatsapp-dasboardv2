@@ -32,14 +32,34 @@ class SchedulerService {
         const messages = await googleSheetsService.getScheduledMessagesFromSheet(spreadsheetId);
         let count = 0;
         for (const msg of messages) {
-            // msg format: { number, message, date, time }
-            const { number, message, date, time } = msg;
-            const scheduledTime = `${date}T${time}:00`;
+            // msg format: { name, account, amount, dueDate, phoneNumber }
+            const { name, account, amount, dueDate, phoneNumber } = msg;
 
-            // Basic validation
-            if (number && message && date && time) {
-                this.addScheduledMessage(connectionId, number, message, scheduledTime);
+            try {
+                // Parse date - assuming YYYY-MM-DD or similar standard format
+                // If it's already a date string that Date() accepts
+                const dateObj = new Date(dueDate);
+
+                if (isNaN(dateObj.getTime())) {
+                    console.warn(`Skipping invalid date for ${name}: ${dueDate}`);
+                    continue;
+                }
+
+                // Set default time to 09:00:00
+                dateObj.setHours(9, 0, 0, 0);
+
+                // Ensure the date is in the future? Optional, but for now just schedule it.
+                // If date is in past, node-cron might not fire or fire immediately depending on config, 
+                // but usually we want to schedule for future. 
+                // However, let's just trust the date for now or maybe check if it's valid ISO.
+
+                const scheduledTime = dateObj.toISOString();
+                const message = `Halo ${name}, ini adalah pengingat tagihan kredit Anda sebesar ${amount} untuk rekening ${account}. Jatuh tempo pada ${dueDate}.`;
+
+                this.addScheduledMessage(connectionId, phoneNumber, message, scheduledTime);
                 count++;
+            } catch (err) {
+                console.error(`Error processing row for ${name}:`, err.message);
             }
         }
         return count;

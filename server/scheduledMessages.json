@@ -1,44 +1,9 @@
 [
   {
-    "id": "4426b014-ec72-4137-aa59-3f491adfd9c2",
-    "connectionId": "tr",
-    "recipient": 6285201126760,
-    "message": "Halo Jihad, ini adalah pengingat tagihan kredit Anda sebesar 5581750 untuk rekening 102-001-000020212. Jatuh tempo pada 2025-12-03. ",
-    "scheduledTime": "2025-12-02T02:00:00.000Z"
-  },
-  {
-    "id": "f2c626c5-cc18-4903-a111-eb88d64db0fb",
-    "connectionId": "tr",
-    "recipient": 6285201126760,
-    "message": "Halo Jihad, ini adalah pengingat tagihan kredit Anda sebesar 5581750 untuk rekening 102-001-000020212. Jatuh tempo pada 2025-12-03. ",
-    "scheduledTime": "2025-12-03T02:00:00.000Z"
-  },
-  {
-    "id": "3f7afd8b-1bce-4923-a5c7-53804fa4427a",
-    "connectionId": "tr",
-    "recipient": 6285201126760,
-    "message": "Halo Jihad, ini adalah pengingat tagihan kredit Anda sebesar 5581750 untuk rekening 102-001-000020212. Jatuh tempo pada 2025-12-03. ",
-    "scheduledTime": "2025-12-07T02:00:00.000Z"
-  },
-  {
-    "id": "45410506-4823-44df-a858-b61858ef6018",
-    "connectionId": "tr",
-    "recipient": 6285803602434,
-    "message": "Halo DWI ATMA RINTA, ini adalah pengingat tagihan kredit Anda sebesar 7385095 untuk rekening 102-001-000025502. Jatuh tempo pada 2025-03-19. ",
-    "scheduledTime": "2025-03-18T02:00:00.000Z"
-  },
-  {
-    "id": "02d81098-6820-4303-9d4c-8662b98dcac2",
-    "connectionId": "tr",
-    "recipient": 6285803602434,
-    "message": "Halo DWI ATMA RINTA, ini adalah pengingat tagihan kredit Anda sebesar 7385095 untuk rekening 102-001-000025502. Jatuh tempo pada 2025-03-19. ",
-    "scheduledTime": "2025-03-19T02:00:00.000Z"
-  },
-  {
-    "id": "eb1cec80-3025-4ccd-bfda-c979bbc6f413",
-    "connectionId": "tr",
-    "recipient": 6285803602434,
-    "message": "Halo DWI ATMA RINTA, ini adalah pengingat tagihan kredit Anda sebesar 7385095 untuk rekening 102-001-000025502. Jatuh tempo pada 2025-03-19. ",
-    "scheduledTime": "2025-03-23T02:00:00.000Z"
+    "id": "4d175a8b-e64b-4313-8f5b-59fba59371eb",
+    "connectionId": "ipad",
+    "recipient": "UMI NUR FITRI YULIANTI",
+    "message": "102-001-000020212",
+    "scheduledTime": "5581750T2025-10-17:00"
   }
 ]

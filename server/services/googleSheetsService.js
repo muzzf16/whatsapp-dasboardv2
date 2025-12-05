@@ -22,9 +22,9 @@ class GoogleSheetsService {
 
         try {
             this.auth = new google.auth.GoogleAuth({
-            keyFile: SERVICE_ACCOUNT_FILE,
-            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-        });
+                keyFile: SERVICE_ACCOUNT_FILE,
+                scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+            });
             const client = await this.auth.getClient();
             this.sheets = google.sheets({ version: 'v4', auth: client });
             this.initialized = true;
@@ -85,13 +85,14 @@ class GoogleSheetsService {
                 return [];
             }
 
-            // Expected columns: Number, Message, Date (YYYY-MM-DD), Time (HH:mm)
+            // Expected columns: Name, Account, Amount, Date, Empty, Phone
             return rows.map(row => ({
-                number: row[0],
-                message: row[1],
-                date: row[2],
-                time: row[3]
-            })).filter(row => row.number && row.message && row.date && row.time);
+                name: row[0],
+                account: row[1],
+                amount: row[2],
+                dueDate: row[3],
+                phoneNumber: row[5]
+            })).filter(row => row.name && row.account && row.amount && row.dueDate && row.phoneNumber);
 
         } catch (error) {
             console.error('Error fetching data from Google Sheets:', error?.message || error);

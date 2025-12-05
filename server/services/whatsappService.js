@@ -287,13 +287,13 @@ class Connection {
         }
     }
 
-    async sendBroadcastMessage(numbers, message, file) {
+    async sendBroadcastMessage(numbers, message, file, delay = 1000) {
         if (this.connectionStatus !== 'connected' || !this.sock) {
             throw new Error('WhatsApp is not connected.');
         }
         for (const number of numbers) {
             // Add a delay to avoid being flagged as spam
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, delay));
             await this.sendMessage(number, message, file);
         }
     }
@@ -426,10 +426,10 @@ const sendMessage = async (connectionId, to, message, file) => {
     }
 };
 
-const sendBroadcastMessage = async (connectionId, numbers, message, file) => {
+const sendBroadcastMessage = async (connectionId, numbers, message, file, delay) => {
     const connection = manager.getConnection(connectionId);
     if (connection) {
-        await connection.sendBroadcastMessage(numbers, message, file);
+        await connection.sendBroadcastMessage(numbers, message, file, delay);
     } else {
         throw new Error('Connection not found.');
     }

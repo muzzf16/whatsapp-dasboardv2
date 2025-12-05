@@ -124,7 +124,8 @@ const sendBroadcastMessageController = async (req, res) => {
 
     try {
         if (req.body.numbers && req.body.message) {
-            await whatsappService.sendBroadcastMessage(connectionId, req.body.numbers, req.body.message);
+            const delay = req.body.delay || 1000;
+            await whatsappService.sendBroadcastMessage(connectionId, req.body.numbers, req.body.message, null, delay);
             return res.status(200).json({ status: 'success', message: 'Broadcast started.' });
         }
 
