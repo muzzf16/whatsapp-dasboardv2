@@ -93,7 +93,7 @@ exports.login = async (req, res) => {
 
 exports.getProfile = async (req, res) => {
     try {
-        db.get('SELECT id, username, email, full_name, avatar_url, created_at FROM users WHERE id = ?', [req.user.id], (err, user) => {
+        db.get('SELECT id, username, email, full_name, avatar_url, role, created_at FROM users WHERE id = ?', [req.user.id], (err, user) => {
             if (err) {
                 console.error(err.message);
                 return res.status(500).send('Server Error');
@@ -117,6 +117,97 @@ exports.updateProfile = async (req, res) => {
             res.json({ msg: 'Profile updated' });
         });
 
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.getAllUsers = async (req, res) => {
+    try {
+        db.all('SELECT id, username, email, full_name, role, created_at FROM users', [], (err, rows) => {
+            if (err) {
+                console.error(err.message);
+                return res.status(500).send('Server Error');
+            }
+            res.json(rows);
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.createUser = async (req, res) => {
+    const { username, email, password, full_name, role } = req.body;
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        db.run('INSERT INTO users (username, email, password, full_name, role) VALUES (?, ?, ?, ?, ?)',
+            [username, email, hashedPassword, full_name, role || 'user'],
+            function (err) {
+                if (err) {
+                    console.error(err.message);
+                    return res.status(500).send('Server Error');
+                }
+                res.json({ msg: 'User created successfully', id: this.lastID });
+            }
+        );
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.updateUser = async (req, res) => {
+    const { id } = req.params;
+    const { username, email, full_name, role, password } = req.body;
+
+    // Build query dynamically based on provided fields
+    let query = "UPDATE users SET ";
+    let params = [];
+
+    if (username) { query += "username = ?, "; params.push(username); }
+    if (email) { query += "email = ?, "; params.push(email); }
+    if (full_name) { query += "full_name = ?, "; params.push(full_name); }
+    if (role) { query += "role = ?, "; params.push(role); }
+    if (password) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+        query += "password = ?, ";
+        params.push(hashedPassword);
+    }
+
+    // Remove trailing comma and space
+    query = query.slice(0, -2);
+    query += " WHERE id = ?";
+    params.push(id);
+
+    try {
+        db.run(query, params, function (err) {
+            if (err) {
+                console.error(err.message);
+                return res.status(500).send('Server Error');
+            }
+            res.json({ msg: 'User updated successfully' });
+        });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.deleteUser = async (req, res) => {
+    const { id } = req.params;
+    try {
+        db.run('DELETE FROM users WHERE id = ?', [id], function (err) {
+            if (err) {
+                console.error(err.message);
+                return res.status(500).send('Server Error');
+            }
+            res.json({ msg: 'User deleted' });
+        });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

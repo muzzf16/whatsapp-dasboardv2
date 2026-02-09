@@ -32,6 +32,7 @@ db.serialize(() => {
         password TEXT,
         full_name TEXT,
         avatar_url TEXT,
+        role TEXT DEFAULT 'user',
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 

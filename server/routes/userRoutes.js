@@ -23,4 +23,27 @@ router.get('/profile', auth, getProfile);
 // @access  Private
 router.put('/profile', auth, updateProfile);
 
+// @route   GET api/users
+// @desc    Get all users
+// @access  Admin
+const admin = require('../middleware/adminMiddleware');
+const { getAllUsers, createUser, updateUser, deleteUser } = require('../controllers/userController');
+
+router.get('/', [auth, admin], getAllUsers);
+
+// @route   POST api/users
+// @desc    Create a user (Admin)
+// @access  Admin
+router.post('/', [auth, admin], createUser);
+
+// @route   PUT api/users/:id
+// @desc    Update a user (Admin)
+// @access  Admin
+router.put('/:id', [auth, admin], updateUser);
+
+// @route   DELETE api/users/:id
+// @desc    Delete a user
+// @access  Admin
+router.delete('/:id', [auth, admin], deleteUser);
+
 module.exports = router;

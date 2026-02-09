@@ -1,7 +1,10 @@
-import React from 'react';
-import { LayoutDashboard, MessageCircle, Users, FolderOpen, Settings } from 'lucide-react';
+import React, { useContext } from 'react';
+import { LayoutDashboard, MessageCircle, Users, FolderOpen, Settings, UserCog } from 'lucide-react'; // Added UserCog for admin
+import { AuthContext } from '../context/AuthContext';
 
 const MainSidebar = ({ activeTab, setActiveTab }) => {
+    const { user } = useContext(AuthContext);
+
     const mainMenuItems = [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'whatsapp', label: 'Whatsapp', icon: MessageCircle },
@@ -10,6 +13,10 @@ const MainSidebar = ({ activeTab, setActiveTab }) => {
         { id: 'file_manager', label: 'File manager', icon: FolderOpen },
         { id: 'tools', label: 'Tools', icon: Settings },
     ];
+
+    if (user && user.role === 'admin') {
+        mainMenuItems.push({ id: 'users', label: 'User Management', icon: UserCog });
+    }
 
     return (
         <div className="w-64 bg-[#1a1c23] text-white flex flex-col h-full hidden lg:flex flex-shrink-0">

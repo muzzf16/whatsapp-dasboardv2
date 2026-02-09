@@ -14,6 +14,7 @@ import Layout from '../components/Layout';
 import AISettings from '../components/AISettings';
 import DashboardContent from '../components/DashboardContent';
 import ContactManager from './ContactManager';
+import UserManagement from './UserManagement';
 
 const socket = io(API_URL, {
     path: '/socket.io',
@@ -474,6 +475,8 @@ export default function Dashboard() {
                 return <div className="p-8 text-gray-500">File Manager (Coming Soon)</div>;
             case 'contacts':
                 return <div className="p-8 h-full overflow-y-auto"><ContactManager /></div>;
+            case 'users':
+                return <div className="p-8 h-full overflow-y-auto"><UserManagement /></div>;
             default:
                 return (
                     <div className="p-8">Select a menu item</div>
