@@ -5,8 +5,12 @@ const { Server } = require("socket.io");
 const cors = require('cors');
 const whatsappRoutes = require('./routes/whatsappRoutes');
 const schedulerRoutes = require('./routes/schedulerRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const userRoutes = require('./routes/userRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 const { initWhatsApp } = require('./services/whatsappService');
 const googleSheetsService = require('./services/googleSheetsService');
+const { initMCP } = require('./services/mcpService');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,16 +19,28 @@ const PORT = process.env.PORT || 4000;
 
 const io = new Server(server, {
     cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
+        origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3003", "http://localhost:5173", "http://127.0.0.1:3000", "https://wa.kenes.biz.id", "https://www.wa.kenes.biz.id"],
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        credentials: true
     }
 });
+
+
+// Initialize MCP Server (Must be before express.json parser for SSE transport)
+try {
+    initMCP(app);
+} catch (error) {
+    console.error('Failed to initialize MCP server:', error);
+}
 
 // Pasang middleware
 app.use(cors());
 app.use(express.json({ limit: '35mb' }));
 app.use('/api', whatsappRoutes);
 app.use('/api', schedulerRoutes);
+app.use('/api', aiRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/contacts', contactRoutes);
 
 app.get('/', (req, res) => {
     res.send('<h1>WhatsApp API Backend</h1>');
@@ -46,6 +62,7 @@ if (process.env.GOOGLE_SPREADSHEET_ID) {
         console.error('Google Sheets service initialization failed:', err?.message || err);
     });
 }
+
 
 server.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);

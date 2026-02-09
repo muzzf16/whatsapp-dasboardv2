@@ -14,6 +14,7 @@ const {
     getAllConnectionsController,
     getWebhookController,
     updateWebhookController,
+    getDashboardStatsController,
 } = require('../controllers/whatsappController');
 
 const router = express.Router();
@@ -30,6 +31,7 @@ router.post('/:connectionId/broadcast-message', sendBroadcastMessageController);
 router.get('/:connectionId/status', getStatusController);
 router.get('/:connectionId/messages', getMessagesController);
 router.get('/:connectionId/outgoing-messages', getOutgoingMessagesController);
+router.get('/:connectionId/dashboard-stats', getDashboardStatsController);
 router.get('/:connectionId/qrcode', getQRCodeController);
 router.post('/:connectionId/reinit', reinitConnectionController);
 router.get('/:connectionId/diagnostics', getDiagnosticsController);

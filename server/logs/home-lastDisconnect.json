@@ -1,25 +1,25 @@
 {
-  "timestamp": "2025-12-04T19:15:56.038Z",
+  "timestamp": "2025-12-07T02:00:06.110Z",
   "lastDisconnect": {
     "error": {
       "data": {
-        "tag": "stream:error",
+        "tag": "conflict",
         "attrs": {
-          "code": "515"
+          "type": "device_removed"
         }
       },
       "isBoom": true,
-      "isServer": true,
+      "isServer": false,
       "output": {
-        "statusCode": 515,
+        "statusCode": 401,
         "payload": {
-          "statusCode": 515,
-          "error": "Unknown",
-          "message": "Stream Errored (restart required)"
+          "statusCode": 401,
+          "error": "Unauthorized",
+          "message": "Stream Errored (conflict)"
         },
         "headers": {}
       }
     },
-    "date": "2025-12-04T19:15:56.038Z"
+    "date": "2025-12-07T02:00:06.110Z"
   }
 }

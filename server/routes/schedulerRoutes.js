@@ -4,6 +4,7 @@ const {
     addScheduledMessageController,
     getScheduledMessagesController,
     deleteScheduledMessageController,
+    deleteAllScheduledMessagesController,
     syncScheduledMessagesController,
     getGoogleSheetsDiagnosticsController,
     uploadExcelController
@@ -14,6 +15,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/schedule', addScheduledMessageController);
 router.get('/schedule', getScheduledMessagesController);
+router.delete('/schedule', deleteAllScheduledMessagesController);
 router.delete('/schedule/:id', deleteScheduledMessageController);
 router.post('/schedule/sync', syncScheduledMessagesController);
 router.get('/diagnostics/google-sheets', getGoogleSheetsDiagnosticsController);

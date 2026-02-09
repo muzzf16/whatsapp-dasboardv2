@@ -14,6 +14,8 @@ const configService = require('./configService');
 const fs = require('fs');
 const aiService = require('./aiService');
 const googleSheetsService = require('./googleSheetsService');
+const autoReplyService = require('./autoReplyService');
+const databaseService = require('./databaseService');
 
 class Connection {
     constructor(connectionId, io) {
@@ -128,6 +130,16 @@ class Connection {
                 if (!msg.key.fromMe && m.type === 'notify') {
                     const sender = msg.key.remoteJid;
 
+                    // Filter out status messages and group messages
+                    if (sender === 'status@broadcast' || sender.endsWith('@g.us')) {
+                        return;
+                    }
+
+                    // Fix for LID: Use remoteJidAlt if available and current sender is LID
+                    if (sender.includes('@lid') && msg.key.remoteJidAlt) {
+                        sender = msg.key.remoteJidAlt;
+                    }
+
                     const unwrapMessage = (m) => {
                         if (!m) return null;
                         return m.ephemeralMessage?.message || m.viewOnceMessage?.message || m.viewOnceMessageV2?.message || m.documentWithCaptionMessage?.message || m;
@@ -150,6 +162,7 @@ class Connection {
                             || (messageContent.documentMessage ? '[Document]' : null)
                             || (messageContent.contactMessage ? '[Contact]' : null)
                             || (messageContent.locationMessage ? '[Location]' : null)
+                            || (messageContent.protocolMessage && messageContent.protocolMessage.type === 'REVOKE' ? '[Message Revoked]' : null)
                             || 'No text content';
                     } else {
                         text = 'No text content';
@@ -172,8 +185,24 @@ class Connection {
                         groupName: groupName,
                         senderName: msg.pushName,
                     };
-                    this.messageLogs.unshift(log);
-                    if (this.messageLogs.length > 100) this.messageLogs.pop();
+                    // this.messageLogs.unshift(log); // Removed in-memory log
+                    // if (this.messageLogs.length > 100) this.messageLogs.pop();
+
+                    try {
+                        await databaseService.addMessage({
+                            connection_id: this.connectionId,
+                            type: 'incoming',
+                            sender: sender,
+                            recipient: null,
+                            push_name: msg.pushName,
+                            message: text,
+                            file_name: null, // Modify if we handle files
+                            timestamp: log.timestamp,
+                            group_name: groupName
+                        });
+                    } catch (err) {
+                        console.error('Failed to save incoming message to DB:', err);
+                    }
 
                     this.io.emit('new_message', { connectionId: this.connectionId, log });
 
@@ -205,12 +234,21 @@ class Connection {
                         // Only reply to direct messages or mentions (optional refinement, for now all text messages)
                         // Avoid replying to status updates or very short messages if needed
                         if (text && text.length > 1) {
-                            const aiResponse = await aiService.generateReply(text);
-                            if (aiResponse) {
-                                console.log(`[AI] Replying to ${sender}`);
-                                // Add a small delay to simulate typing
-                                await new Promise(resolve => setTimeout(resolve, 2000));
-                                await this.sendMessage(sender, aiResponse);
+                            // 1. Check Auto-Replies first
+                            const autoReply = autoReplyService.findReply(text);
+                            if (autoReply) {
+                                console.log(`[AutoReply] Matched keyword for ${sender}`);
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                await this.sendMessage(sender, autoReply);
+                            } else {
+                                // 2. Fallback to AI
+                                const aiResponse = await aiService.generateReply(text);
+                                if (aiResponse) {
+                                    console.log(`[AI] Replying to ${sender}`);
+                                    // Add a small delay to simulate typing
+                                    await new Promise(resolve => setTimeout(resolve, 2000));
+                                    await this.sendMessage(sender, aiResponse);
+                                }
                             }
                         }
                     } catch (error) {
@@ -271,8 +309,25 @@ class Connection {
             file: file ? file.name : null,
             status: sentMessage ? 'sent' : 'failed',
         };
-        this.outgoingMessageLogs.unshift(log);
-        if (this.outgoingMessageLogs.length > 100) this.outgoingMessageLogs.pop();
+        // this.outgoingMessageLogs.unshift(log);
+        // if (this.outgoingMessageLogs.length > 100) this.outgoingMessageLogs.pop();
+
+        try {
+            await databaseService.addMessage({
+                connection_id: this.connectionId,
+                type: 'outgoing',
+                sender: null,
+                recipient: jid,
+                push_name: null,
+                message: log.text,
+                file_name: log.file,
+                timestamp: log.timestamp,
+                group_name: null
+            });
+        } catch (err) {
+            console.error('Failed to save outgoing message to DB:', err);
+        }
+
         this.io.emit('new_outgoing_message', { connectionId: this.connectionId, log });
 
         // Log to Google Sheets
@@ -317,12 +372,40 @@ class Connection {
         return { qr: this.qrCodeData };
     }
 
-    getMessages() {
-        return { messages: this.messageLogs };
+    async getMessages() {
+        try {
+            const rows = await databaseService.getMessages(this.connectionId, 'incoming');
+            const messages = rows.map(row => ({
+                from: row.sender,
+                sender: row.sender,
+                pushName: row.push_name,
+                senderName: row.push_name,
+                text: row.message,
+                timestamp: row.timestamp,
+                groupName: row.group_name
+            }));
+            return { messages };
+        } catch (err) {
+            console.error('Error getting messages from DB:', err);
+            return { messages: [] };
+        }
     }
 
-    getOutgoingMessages() {
-        return { messages: this.outgoingMessageLogs };
+    async getOutgoingMessages() {
+        try {
+            const rows = await databaseService.getMessages(this.connectionId, 'outgoing');
+            const messages = rows.map(row => ({
+                to: row.recipient,
+                text: row.message,
+                timestamp: row.timestamp,
+                file: row.file_name,
+                status: 'sent'
+            }));
+            return { messages };
+        } catch (err) {
+            console.error('Error getting outgoing messages from DB:', err);
+            return { messages: [] };
+        }
     }
 
     async disconnect() {
@@ -459,20 +542,63 @@ const getQRCode = (connectionId) => {
     return { qr: null };
 };
 
-const getMessages = (connectionId) => {
+const getMessages = async (connectionId) => {
     const connection = manager.getConnection(connectionId);
     if (connection) {
-        return connection.getMessages();
+        return await connection.getMessages();
     }
-    return { messages: [] };
+    // Attempt to get from DB even if not connected? 
+    // For now, consistent with previous behavior only if connection exists
+    // But logically, we might want to view messages even if disconnected.
+    // However, existing code checks connection. Let's stick to manager for now or improve.
+    // If connection is not active, manager.getConnection returns undefined.
+    // We should probably allow fetching logs even if disconnected? 
+    // The previous implementation returned [] if not connected.
+    // Let's keep it checking manager for now to avoid breaking changes, but since we have DB, we COULD fetch.
+    // BUT the previous implementation relied on `connection` instance to hold the logs.
+    // Now logs are in DB. We can fetch using `databaseService` directly if connectionId is known.
+
+    // Let's improve it: Fetch from DB directly.
+    try {
+        const rows = await databaseService.getMessages(connectionId, 'incoming');
+        const messages = rows.map(row => ({
+            from: row.sender,
+            sender: row.sender,
+            pushName: row.push_name,
+            senderName: row.push_name,
+            text: row.message,
+            timestamp: row.timestamp,
+            groupName: row.group_name
+        }));
+        return { messages };
+    } catch (err) {
+        return { messages: [] };
+    }
 };
 
-const getOutgoingMessages = (connectionId) => {
-    const connection = manager.getConnection(connectionId);
-    if (connection) {
-        return connection.getOutgoingMessages();
+const getOutgoingMessages = async (connectionId) => {
+    try {
+        const rows = await databaseService.getMessages(connectionId, 'outgoing');
+        const messages = rows.map(row => ({
+            to: row.recipient,
+            text: row.message,
+            timestamp: row.timestamp,
+            file: row.file_name,
+            status: 'sent'
+        }));
+        return { messages };
+    } catch (err) {
+        return { messages: [] };
     }
-    return { messages: [] };
+};
+
+const getDashboardStats = async (connectionId) => {
+    try {
+        return await databaseService.getDashboardStats(connectionId);
+    } catch (err) {
+        console.error('Error getting dashboard stats from DB:', err);
+        return { totalSent: 0, totalSentMonth: 0 };
+    }
 };
 
 const getAllConnections = () => {
@@ -492,4 +618,5 @@ module.exports = {
     getOutgoingMessages,
     getAllConnections,
     getDiagnostics,
+    getDashboardStats,
 };

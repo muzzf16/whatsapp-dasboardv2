@@ -1,14 +1,14 @@
 const schedulerService = require('../services/schedulerService');
 
 const addScheduledMessageController = (req, res) => {
-    const { connectionId, number, message, scheduledTime } = req.body;
+    const { connectionId, number, message, scheduledTime, isRecurring } = req.body;
 
     if (!connectionId || !number || !message || !scheduledTime) {
         return res.status(400).json({ status: 'error', message: 'All fields are required: connectionId, number, message, scheduledTime' });
     }
 
     try {
-        const newMessage = schedulerService.addScheduledMessage(connectionId, number, message, scheduledTime);
+        const newMessage = schedulerService.addScheduledMessage(connectionId, number, message, scheduledTime, isRecurring);
         res.status(201).json({ status: 'success', message: 'Message scheduled successfully', data: newMessage });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to schedule message', details: error.message });
@@ -31,6 +31,15 @@ const deleteScheduledMessageController = (req, res) => {
         res.status(200).json({ status: 'success', message: 'Scheduled message deleted successfully' });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to delete scheduled message', details: error.message });
+    }
+};
+
+const deleteAllScheduledMessagesController = (req, res) => {
+    try {
+        schedulerService.deleteAllScheduledMessages();
+        res.status(200).json({ status: 'success', message: 'All scheduled messages deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: 'Failed to delete all scheduled messages', details: error.message });
     }
 };
 
@@ -69,10 +78,12 @@ const uploadExcelController = async (req, res) => {
         return res.status(400).json({ status: 'error', message: 'No file uploaded' });
     }
 
-    const { connectionId } = req.body;
+    const { connectionId, isRecurring } = req.body;
     if (!connectionId) {
         return res.status(400).json({ status: 'error', message: 'connectionId is required' });
     }
+
+    const isRecurringBool = isRecurring === 'true';
 
     try {
         const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
@@ -142,7 +153,7 @@ const uploadExcelController = async (req, res) => {
                     const message = `Halo ${name}, ini adalah pengingat tagihan kredit Anda sebesar ${amount} untuk rekening ${accountNumber}. Jatuh tempo pada ${dueDate.toISOString().split('T')[0]}. ${notes ? `Keterangan: ${notes}` : ''}`;
 
                     if (phoneNumber) {
-                        schedulerService.addScheduledMessage(connectionId, phoneNumber, message, scheduledTimeStr);
+                        schedulerService.addScheduledMessage(connectionId, phoneNumber, message, scheduledTimeStr, isRecurringBool);
                         scheduledCount++;
                     } else {
                         console.warn(`No phone number for ${name}`);
@@ -169,6 +180,7 @@ module.exports = {
     addScheduledMessageController,
     getScheduledMessagesController,
     deleteScheduledMessageController,
+    deleteAllScheduledMessagesController,
     syncScheduledMessagesController,
     getGoogleSheetsDiagnosticsController,
     uploadExcelController

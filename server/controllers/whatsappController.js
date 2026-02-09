@@ -81,14 +81,16 @@ const getStatusController = (req, res) => {
     res.status(200).json(whatsappService.getStatus(connectionId));
 };
 
-const getMessagesController = (req, res) => {
+const getMessagesController = async (req, res) => {
     const { connectionId } = req.params;
-    res.status(200).json(whatsappService.getMessages(connectionId));
+    const result = await whatsappService.getMessages(connectionId);
+    res.status(200).json(result);
 };
 
-const getOutgoingMessagesController = (req, res) => {
+const getOutgoingMessagesController = async (req, res) => {
     const { connectionId } = req.params;
-    res.status(200).json(whatsappService.getOutgoingMessages(connectionId));
+    const result = await whatsappService.getOutgoingMessages(connectionId);
+    res.status(200).json(result);
 };
 
 const getQRCodeController = async (req, res) => {
@@ -114,6 +116,16 @@ const getDiagnosticsController = (req, res) => {
         res.status(200).json({ status: 'success', data: diagnostics });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to get diagnostics.', details: error.message });
+    }
+};
+
+const getDashboardStatsController = async (req, res) => {
+    const { connectionId } = req.params;
+    try {
+        const stats = await whatsappService.getDashboardStats(connectionId);
+        res.status(200).json({ status: 'success', data: stats });
+    } catch (error) {
+        res.status(500).json({ status: 'error', message: 'Failed to get dashboard stats.', details: error.message });
     }
 };
 
@@ -152,9 +164,10 @@ const getAllBroadcastsController = (req, res) => {
 const getWebhookController = async (req, res) => {
     try {
         const url = await configService.getWebhookUrl();
-        res.status(200).json({ webhookUrl: url });
+        const secret = await configService.getWebhookSecret();
+        res.status(200).json({ webhookUrl: url, webhookSecret: secret });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Failed to get webhook URL.' });
+        res.status(500).json({ status: 'error', message: 'Failed to get webhook URL.', details: error.message });
     }
 };
 
@@ -190,4 +203,5 @@ module.exports = {
     getWebhookController,
     updateWebhookController,
     reinitConnectionController,
+    getDashboardStatsController,
 };

@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-01-28T01:32:57.684Z",
+  "lastDisconnect": {
+    "error": {
+      "data": {
+        "tag": "stream:error",
+        "attrs": {
+          "code": "503"
+        }
+      },
+      "isBoom": true,
+      "isServer": true,
+      "output": {
+        "statusCode": 503,
+        "payload": {
+          "statusCode": 503,
+          "error": "Service Unavailable",
+          "message": "Stream Errored (unknown)"
+        },
+        "headers": {}
+      }
+    },
+    "date": "2026-01-28T01:32:57.684Z"
+  }
+}

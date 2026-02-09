@@ -1,3 +1,4 @@
 {
-  "webhookUrl": ""
+  "webhookUrl": "https://n8n.kenes.biz.id/webhook/whatsapp-dashboard",
+  "webhookSecret": ""
 }

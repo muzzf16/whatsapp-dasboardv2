@@ -1,20 +1,20 @@
 {
-  "timestamp": "2025-12-05T03:35:44.686Z",
+  "timestamp": "2026-02-08T00:48:02.766Z",
   "lastDisconnect": {
     "error": {
       "data": null,
       "isBoom": true,
       "isServer": false,
       "output": {
-        "statusCode": 401,
+        "statusCode": 428,
         "payload": {
-          "statusCode": 401,
-          "error": "Unauthorized",
-          "message": "Intentional Logout"
+          "statusCode": 428,
+          "error": "Precondition Required",
+          "message": "Connection Terminated"
         },
         "headers": {}
       }
     },
-    "date": "2025-12-05T03:35:44.686Z"
+    "date": "2026-02-08T00:48:02.766Z"
   }
 }
