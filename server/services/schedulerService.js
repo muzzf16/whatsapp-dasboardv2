@@ -4,6 +4,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const whatsappService = require('./whatsappService');
 const googleSheetsService = require('./googleSheetsService');
+const collectionService = require('./collectionService');
 
 const SCHEDULE_FILE = path.join(__dirname, '../scheduledMessages.json');
 

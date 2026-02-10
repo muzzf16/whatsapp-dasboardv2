@@ -1,20 +1,25 @@
 {
-  "timestamp": "2026-02-08T00:48:02.766Z",
+  "timestamp": "2026-02-10T05:40:43.652Z",
   "lastDisconnect": {
     "error": {
-      "data": null,
+      "data": {
+        "tag": "stream:error",
+        "attrs": {
+          "code": "515"
+        }
+      },
       "isBoom": true,
-      "isServer": false,
+      "isServer": true,
       "output": {
-        "statusCode": 428,
+        "statusCode": 515,
         "payload": {
-          "statusCode": 428,
-          "error": "Precondition Required",
-          "message": "Connection Terminated"
+          "statusCode": 515,
+          "error": "Unknown",
+          "message": "Stream Errored (restart required)"
         },
         "headers": {}
       }
     },
-    "date": "2026-02-08T00:48:02.766Z"
+    "date": "2026-02-10T05:40:43.652Z"
   }
 }

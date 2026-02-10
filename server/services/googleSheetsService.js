@@ -100,6 +100,63 @@ class GoogleSheetsService {
         }
     }
 
+    async getCollectionData(spreadsheetId, range = 'DataNasabah!A2:H') {
+        if (!this.enabled) return [];
+        if (!this.sheets) {
+            await this.init();
+        }
+
+        try {
+            const response = await this.sheets.spreadsheets.values.get({
+                spreadsheetId,
+                range,
+            });
+
+            const rows = response.data.values;
+            if (!rows || rows.length === 0) {
+                return [];
+            }
+
+            // Map rows to objects with rowIndex for updating
+            // Expected columns: Name, NoHP, Amount, DueDate, Status, LastReminded, Notes, ...
+            return rows.map((row, index) => ({
+                rowIndex: index + 2, // 1-based index, +1 for header
+                name: row[0],
+                phone: row[1],
+                amount: row[2],
+                dueDate: row[3],
+                status: row[4],
+                lastReminded: row[5],
+                notes: row[6]
+            })).filter(row => row.name && row.phone); // Basic validation
+
+        } catch (error) {
+            console.error('Error fetching collection data:', error?.message || error);
+            return [];
+        }
+    }
+
+    async updateRow(spreadsheetId, range, values) {
+        if (!this.enabled) return;
+        if (!this.sheets) {
+            await this.init();
+        }
+
+        try {
+            await this.sheets.spreadsheets.values.update({
+                spreadsheetId,
+                range,
+                valueInputOption: 'USER_ENTERED',
+                resource: {
+                    values: [values]
+                }
+            });
+            console.log(`[GoogleSheets] Updated row at ${range}`);
+        } catch (error) {
+            console.error(`Error updating row at ${range}:`, error?.message || error);
+        }
+    }
+
     getDiagnostics() {
         return {
             enabled: this.enabled,

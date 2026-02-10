@@ -242,7 +242,8 @@ class Connection {
                                 await this.sendMessage(sender, autoReply);
                             } else {
                                 // 2. Fallback to AI
-                                const aiResponse = await aiService.generateReply(text);
+                                // Pass sender phone for context
+                                const aiResponse = await aiService.generateReply(text, sender);
                                 if (aiResponse) {
                                     console.log(`[AI] Replying to ${sender}`);
                                     // Add a small delay to simulate typing
@@ -258,7 +259,18 @@ class Connection {
             });
         } catch (error) {
             console.error(`[${this.connectionId}] Error connecting:`, error);
+            this.connectionStatus = 'disconnected';
             this.io.emit('status', { connectionId: this.connectionId, status: 'disconnected' });
+
+            // Retry logic for initialization errors
+            console.log(`[${this.connectionId}] Reconnecting (init error) in ${this.reconnectDelay}ms...`);
+            if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+            this.reconnectTimer = setTimeout(() => {
+                this.reconnectTimer = null;
+                this.connect();
+            }, this.reconnectDelay);
+            // Exponential backoff
+            this.reconnectDelay = Math.min(this.reconnectDelay * 2, this.reconnectMaxDelay);
         }
     }
 

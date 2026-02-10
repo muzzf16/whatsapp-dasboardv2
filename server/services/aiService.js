@@ -91,9 +91,76 @@ async function saveContact({ name, phone, notes }) {
     });
 }
 
+// --- NEW COLLECTION TOOLS ---
+const googleSheetsService = require('./googleSheetsService');
+
+async function getDebtInfo(phone) {
+    console.log(`[Tool] getDebtInfo called for ${phone}`);
+    try {
+        const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+        if (!spreadsheetId) return { error: "Spreadsheet ID not configured" };
+
+        const rows = await googleSheetsService.getCollectionData(spreadsheetId, 'DataNasabah!A2:H');
+        // Clean phone number (remove non-digits)
+        const cleanPhone = phone.replace(/\D/g, '');
+
+        // Find by phone (check both raw and 62 format)
+        const customer = rows.find(r => {
+            const rPhone = r.phone.replace(/\D/g, '');
+            return rPhone === cleanPhone || rPhone.endsWith(cleanPhone) || cleanPhone.endsWith(rPhone);
+        });
+
+        if (customer) {
+            return {
+                found: true,
+                name: customer.name,
+                amount: customer.amount,
+                dueDate: customer.dueDate,
+                status: customer.status,
+                lastReminded: customer.lastReminded,
+                notes: customer.notes
+            };
+        }
+        return { found: false, message: "No debt record found for this number." };
+    } catch (err) {
+        console.error("Error in getDebtInfo:", err);
+        return { error: "Failed to retrieve debt info" };
+    }
+}
+
+async function logPaymentPromise(phone, date, notes) {
+    console.log(`[Tool] logPaymentPromise called for ${phone}, date: ${date}`);
+    try {
+        const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+        if (!spreadsheetId) return { error: "Spreadsheet ID not configured" };
+
+        const rows = await googleSheetsService.getCollectionData(spreadsheetId, 'DataNasabah!A2:H');
+        // Clean phone number (remove non-digits)
+        const cleanPhone = phone.replace(/\D/g, '');
+
+        const customer = rows.find(r => {
+            const rPhone = r.phone.replace(/\D/g, '');
+            return rPhone === cleanPhone || rPhone.endsWith(cleanPhone) || cleanPhone.endsWith(rPhone);
+        });
+
+        if (customer) {
+            const range = `DataNasabah!G${customer.rowIndex}`; // Assuming Col G is Notes/Catatan
+            const newNotes = `${customer.notes ? customer.notes + '. ' : ''}Janji bayar: ${date}. ${notes || ''}`;
+            await googleSheetsService.updateRow(spreadsheetId, range, [newNotes]);
+            return { success: true, message: `Payment promise logged for ${customer.name}` };
+        }
+        return { success: false, message: "Customer not found" };
+
+    } catch (err) {
+        console.error("Error in logPaymentPromise:", err);
+        return { error: "Failed to log promise" };
+    }
+}
+
 const tools = [
     {
         functionDeclarations: [
+            // ... existing tools ...
             {
                 name: "get_contact_info",
                 description: "Get contact details (name, email, tags, notes) for a given phone number.",
@@ -107,7 +174,7 @@ const tools = [
             },
             {
                 name: "save_contact",
-                description: "Save or update a contact's information. Use this when the user introduces themselves or provides new information.",
+                description: "Save or update a contact's information.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
@@ -117,67 +184,61 @@ const tools = [
                     },
                     required: ["name", "phone"]
                 }
+            },
+            {
+                name: "get_debt_info",
+                description: "Retrieve debt information (amount, due date, status) for a specific phone number. Use this when the user asks about their bill or debt.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        phone: { type: "STRING", description: "The phone number of the customer" }
+                    },
+                    required: ["phone"]
+                }
+            },
+            {
+                name: "log_payment_promise",
+                description: "Log a customer's promise to pay on a specific date. Use this when a debtor commits to paying.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        phone: { type: "STRING", description: "The phone number of the customer" },
+                        date: { type: "STRING", description: "The promised payment date (e.g., 'Besok', '25 Des', or YYYY-MM-DD)" },
+                        notes: { type: "STRING", description: "Additional context or amount promised" }
+                    },
+                    required: ["phone", "date"]
+                }
             }
         ]
     }
 ];
 
-function getModel() {
-    const config = getAiConfig();
-    currentConfig = config;
+// ... getModel function ...
 
-    // Use API Key from config first, then env
-    const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
-
-    if (!apiKey) {
-        console.warn("GEMINI_API_KEY is not set (neither in config nor env).");
-        return null;
-    }
-
-    if (model) return model;
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    model = genAI.getGenerativeModel({
-        model: config.modelName || "gemini-2.0-flash",
-        systemInstruction: config.systemInstruction,
-        tools: tools,
-    });
-    return model;
-}
-
-async function generateReply(incomingMessage) {
+async function generateReply(incomingMessage, senderPhone) { // Updated signature to accept senderPhone
     const aiModel = getModel();
-    if (!aiModel) {
-        return null;
-    }
+    if (!aiModel) return null;
 
     try {
         const chat = aiModel.startChat({
-            history: [], // We might want to pass recent conversation history here in fetching from DB if needed
+            history: [
+                {
+                    role: "user",
+                    parts: [{ text: `System: You are also a Collection Assistant. The user's phone number is ${senderPhone || 'unknown'}. If they ask about debt, use get_debt_info('${senderPhone}'). If they promise to pay, use log_payment_promise. Be professional, firm but polite.` }]
+                }
+            ],
         });
-
-        // For function calling to work seamlessly in a single turn context (which generateContent essentially is if we don't maintain chat object across requests)
-        // We usually use generateContent or sendMessage. 
-        // Since we are not maintaining a persistent ChatSession object across multiple HTTP requests from WhatsApp to here, 
-        // we are effectively doing one-shot logic or need to rebuild history.
-        // For simplicity, let's treat it as a single turn message first, but `startChat` is better for function calling loops.
 
         let result = await chat.sendMessage(incomingMessage);
         let response = await result.response;
         let functionCalls = response.functionCalls();
-
-        // Handle function calls loop (Gemini can chain calls)
-        // Note: JS SDK logic for auto-function-calling might differ, here we handle manually or use `sendMessage` which returns functions to be called.
-
-        // NOTE: The simple `generateContent` or `sendMessage` might return a function call *request*.
-        // We need to execute it and send the result back to the model.
 
         const MAX_LOOPS = 5;
         let loopCount = 0;
 
         while (functionCalls && functionCalls.length > 0 && loopCount < MAX_LOOPS) {
             loopCount++;
-            const call = functionCalls[0]; // Handle first call (Gemini usually does one by one or parallel, let's assume specific structure)
+            const call = functionCalls[0];
             const { name, args } = call;
 
             let toolResult;
@@ -187,13 +248,17 @@ async function generateReply(incomingMessage) {
                 toolResult = await getContactInfo(args.phone);
             } else if (name === 'save_contact') {
                 toolResult = await saveContact(args);
+            } else if (name === 'get_debt_info') {
+                // Ensure phone is passed or use senderPhone if implied
+                toolResult = await getDebtInfo(args.phone || senderPhone);
+            } else if (name === 'log_payment_promise') {
+                toolResult = await logPaymentPromise(args.phone || senderPhone, args.date, args.notes);
             } else {
                 toolResult = { error: "Unknown tool" };
             }
 
             console.log(`[AI Agent] Tool result:`, toolResult);
 
-            // Send tool result back to model
             result = await chat.sendMessage([
                 {
                     functionResponse: {
