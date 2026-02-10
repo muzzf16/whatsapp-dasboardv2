@@ -176,34 +176,42 @@ class SchedulerService {
 
         let job;
 
-        if (isRecurring) {
-            // Recurring monthly on the same day/time
-            job = cron.schedule(
-                `${date.getSeconds()} ${date.getMinutes()} ${date.getHours()} ${date.getDate()} * *`,
-                async () => {
-                    try {
-                        await whatsappService.sendMessage(connectionId, recipient, message);
-                    } catch (error) {
-                        console.error(`Failed to send message to ${recipient}:`, error);
+        try {
+            if (isRecurring) {
+                // Recurring monthly on the same day/time
+                job = cron.schedule(
+                    `${date.getSeconds()} ${date.getMinutes()} ${date.getHours()} ${date.getDate()} * *`,
+                    async () => {
+                        try {
+                            await whatsappService.sendMessage(connectionId, recipient, message);
+                        } catch (error) {
+                            console.error(`Failed to send message to ${recipient}:`, error);
+                        }
                     }
-                }
-            );
-        } else {
-            // One-time schedule
-            job = cron.schedule(
-                date,
-                async () => {
-                    try {
-                        await whatsappService.sendMessage(connectionId, recipient, message);
-                        this.deleteScheduledMessage(id); // Remove after sending
-                    } catch (error) {
-                        console.error(`Failed to send message to ${recipient}:`, error);
+                );
+            } else {
+                // One-time schedule
+                job = cron.schedule(
+                    date,
+                    async () => {
+                        try {
+                            await whatsappService.sendMessage(connectionId, recipient, message);
+                            this.deleteScheduledMessage(id); // Remove after sending
+                        } catch (error) {
+                            console.error(`Failed to send message to ${recipient}:`, error);
+                        }
                     }
-                }
-            );
+                );
+            }
+            this.jobs.set(id, job);
+        } catch (scheduleError) {
+            console.error(`Failed to schedule cron job for ${id}:`, scheduleError);
+            if (save) {
+                // If we failed to schedule, maybe we should remove it from the list?
+                // Or keep it but marked as error?
+                // For now, let's just log it. The entry exists in JSON but no job is running.
+            }
         }
-
-        this.jobs.set(id, job);
     }
 
     cancelMessage(id) {

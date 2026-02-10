@@ -107,6 +107,8 @@ const uploadExcelController = async (req, res) => {
             return undefined;
         };
 
+        console.log(`[ExcelUpload] Total rows found: ${data.length}`);
+
         data.forEach((row, index) => {
             // Fuzzy match columns
             const name = findColumnValue(row, ['nama', 'name', 'customer']);
@@ -116,21 +118,28 @@ const uploadExcelController = async (req, res) => {
             const notes = findColumnValue(row, ['keterangan', 'notes', 'desc', 'deskripsi']);
             const phoneNumber = findColumnValue(row, ['nomor telepon', 'telepon', 'telp', 'no hp', 'nohp', 'phone', 'mobile', 'wa']);
 
+            console.log(`[ExcelUpload] Row ${index + 1}: Name=${name}, Acc=${accountNumber}, Amount=${amount}, Due=${dueDateStr}, Phone=${phoneNumber}`);
+
             if (name && accountNumber && amount && dueDateStr) {
                 // Parse due date. Assuming it's a valid date string or Excel serial date.
                 // If it's Excel serial date, xlsx handles it if cellDates: true is passed to read, but here we use default.
                 // Let's assume standard date string YYYY-MM-DD or similar for now, or handle JS Date if parsed.
 
                 let dueDate;
-                if (typeof dueDateStr === 'number') {
-                    // Excel serial date
-                    dueDate = new Date(Math.round((dueDateStr - 25569) * 86400 * 1000));
-                } else {
-                    dueDate = new Date(dueDateStr);
+                try {
+                    if (typeof dueDateStr === 'number') {
+                        // Excel serial date
+                        dueDate = new Date(Math.round((dueDateStr - 25569) * 86400 * 1000));
+                    } else {
+                        dueDate = new Date(dueDateStr);
+                    }
+                } catch (e) {
+                    console.warn(`[ExcelUpload] Date parse error for row ${index + 1}:`, e);
+                    return;
                 }
 
                 if (isNaN(dueDate.getTime())) {
-                    console.warn(`Invalid date for ${name}: ${dueDateStr}`);
+                    console.warn(`[ExcelUpload] Invalid date for ${name}: ${dueDateStr}`);
                     return;
                 }
 
@@ -153,14 +162,18 @@ const uploadExcelController = async (req, res) => {
                     const message = `Halo ${name}, ini adalah pengingat tagihan kredit Anda sebesar ${amount} untuk rekening ${accountNumber}. Jatuh tempo pada ${dueDate.toISOString().split('T')[0]}. ${notes ? `Keterangan: ${notes}` : ''}`;
 
                     if (phoneNumber) {
-                        schedulerService.addScheduledMessage(connectionId, phoneNumber, message, scheduledTimeStr, isRecurringBool);
-                        scheduledCount++;
+                        try {
+                            schedulerService.addScheduledMessage(connectionId, phoneNumber, message, scheduledTimeStr, isRecurringBool);
+                            scheduledCount++;
+                        } catch (schError) {
+                            console.error(`[ExcelUpload] Failed to schedule for row ${index + 1}:`, schError);
+                        }
                     } else {
-                        console.warn(`No phone number for ${name}`);
+                        console.warn(`[ExcelUpload] No phone number for ${name}`);
                     }
                 });
             } else {
-                // console.log(`Skipping row ${index + 1}: Missing required fields. Keys found: ${Object.keys(row).join(', ')}`);
+                console.warn(`[ExcelUpload] Skipping row ${index + 1}: Missing required fields. Name=${!!name}, Acc=${!!accountNumber}, Amount=${!!amount}, Due=${!!dueDateStr}`);
             }
         });
 
@@ -172,7 +185,8 @@ const uploadExcelController = async (req, res) => {
 
     } catch (error) {
         console.error("Error processing Excel upload:", error);
-        res.status(500).json({ status: 'error', message: 'Failed to process Excel file', details: error.message });
+        console.error(error.stack); // Log stack trace
+        res.status(500).json({ status: 'error', message: 'Failed to process Excel file', details: error.message, stack: error.stack });
     }
 };
 

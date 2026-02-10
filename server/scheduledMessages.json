@@ -1,26 +1,1370 @@
 [
   {
-    "id": "63d6cfcc-1b7a-46d1-b38e-05376d7b80d7",
+    "id": "0d0a8e7b-07d0-4922-956b-e094d33b040e",
     "connectionId": "ipad",
     "recipient": "6281542399636",
     "message": "Halo BAMBANG SETIYONO, ini adalah pengingat tagihan kredit Anda sebesar 1.791.700 untuk rekening 102-001-000011463. Jatuh tempo pada 2026-02-27. ",
     "scheduledTime": "2026-02-26T02:00:00.000Z",
-    "isRecurring": false
+    "isRecurring": true
   },
   {
-    "id": "210a6df1-b9c6-46ed-9abe-b528f9f5555c",
+    "id": "c4051bcf-6472-4803-b34d-d962b77d19b7",
     "connectionId": "ipad",
     "recipient": "6281542399636",
     "message": "Halo BAMBANG SETIYONO, ini adalah pengingat tagihan kredit Anda sebesar 1.791.700 untuk rekening 102-001-000011463. Jatuh tempo pada 2026-02-27. ",
-    "scheduledTime": "2026-02-26T02:00:00.000Z",
-    "isRecurring": false
+    "scheduledTime": "2026-02-27T02:00:00.000Z",
+    "isRecurring": true
   },
   {
-    "id": "65179eda-9c3f-4f35-a94a-324f7727f09e",
+    "id": "10a6f82a-691d-4629-a621-3001f239a71e",
     "connectionId": "ipad",
     "recipient": "6281542399636",
     "message": "Halo BAMBANG SETIYONO, ini adalah pengingat tagihan kredit Anda sebesar 1.791.700 untuk rekening 102-001-000011463. Jatuh tempo pada 2026-02-27. ",
-    "scheduledTime": "2026-02-26T02:00:00.000Z",
-    "isRecurring": false
+    "scheduledTime": "2026-03-03T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "bc055ba5-f5da-43ae-981d-c10981cf5b27",
+    "connectionId": "ipad",
+    "recipient": "6285229734183",
+    "message": "Halo AS AD SHOFIYUDDIN, ini adalah pengingat tagihan kredit Anda sebesar 2.702.800 untuk rekening 112-001-000015495. Jatuh tempo pada 2026-03-01. ",
+    "scheduledTime": "2026-02-28T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "f39084df-fbc1-4a24-a5d0-3196c371b788",
+    "connectionId": "ipad",
+    "recipient": "6285229734183",
+    "message": "Halo AS AD SHOFIYUDDIN, ini adalah pengingat tagihan kredit Anda sebesar 2.702.800 untuk rekening 112-001-000015495. Jatuh tempo pada 2026-03-01. ",
+    "scheduledTime": "2026-03-01T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "4342188f-3143-43a9-882a-9e14d6130735",
+    "connectionId": "ipad",
+    "recipient": "6285229734183",
+    "message": "Halo AS AD SHOFIYUDDIN, ini adalah pengingat tagihan kredit Anda sebesar 2.702.800 untuk rekening 112-001-000015495. Jatuh tempo pada 2026-03-01. ",
+    "scheduledTime": "2026-03-05T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "d79d11b9-ad99-41d6-8244-23df7b31e03b",
+    "connectionId": "ipad",
+    "recipient": "6282325767794",
+    "message": "Halo TARMUN, ini adalah pengingat tagihan kredit Anda sebesar 752.7 untuk rekening 107-001-000015678. Jatuh tempo pada 2026-09-22. ",
+    "scheduledTime": "2026-09-21T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "e5b8d5ac-eb91-4ea5-b631-fec613838346",
+    "connectionId": "ipad",
+    "recipient": "6282325767794",
+    "message": "Halo TARMUN, ini adalah pengingat tagihan kredit Anda sebesar 752.7 untuk rekening 107-001-000015678. Jatuh tempo pada 2026-09-22. ",
+    "scheduledTime": "2026-09-22T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "6f734cb0-8f60-49d9-96fc-2002ae3fa68b",
+    "connectionId": "ipad",
+    "recipient": "6282325767794",
+    "message": "Halo TARMUN, ini adalah pengingat tagihan kredit Anda sebesar 752.7 untuk rekening 107-001-000015678. Jatuh tempo pada 2026-09-22. ",
+    "scheduledTime": "2026-09-26T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "43a61593-86f7-41cd-8bff-994d4493a784",
+    "connectionId": "ipad",
+    "recipient": "6282138999494",
+    "message": "Halo MUNAWIR, ini adalah pengingat tagihan kredit Anda sebesar 2.440.500 untuk rekening 112-001-000016061. Jatuh tempo pada 2026-12-26. ",
+    "scheduledTime": "2026-12-25T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ece86603-0d78-46ab-97d7-cff8c56e996d",
+    "connectionId": "ipad",
+    "recipient": "6282138999494",
+    "message": "Halo MUNAWIR, ini adalah pengingat tagihan kredit Anda sebesar 2.440.500 untuk rekening 112-001-000016061. Jatuh tempo pada 2026-12-26. ",
+    "scheduledTime": "2026-12-26T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "87fa6b7a-0cdd-4a43-9673-136a99b60298",
+    "connectionId": "ipad",
+    "recipient": "6282138999494",
+    "message": "Halo MUNAWIR, ini adalah pengingat tagihan kredit Anda sebesar 2.440.500 untuk rekening 112-001-000016061. Jatuh tempo pada 2026-12-26. ",
+    "scheduledTime": "2026-12-30T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "317136b8-f607-49df-9aa2-95d5b9f279e3",
+    "connectionId": "ipad",
+    "recipient": "6285295391358",
+    "message": "Halo TARMIAN, ini adalah pengingat tagihan kredit Anda sebesar 1.055.250 untuk rekening 102-001-000016646. Jatuh tempo pada 2026-03-29. ",
+    "scheduledTime": "2026-03-28T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "64d61b54-b3ae-452e-aac1-23a8989822cf",
+    "connectionId": "ipad",
+    "recipient": "6285295391358",
+    "message": "Halo TARMIAN, ini adalah pengingat tagihan kredit Anda sebesar 1.055.250 untuk rekening 102-001-000016646. Jatuh tempo pada 2026-03-29. ",
+    "scheduledTime": "2026-03-29T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "31abcd72-52e8-4b67-8030-abd05b914a1a",
+    "connectionId": "ipad",
+    "recipient": "6285295391358",
+    "message": "Halo TARMIAN, ini adalah pengingat tagihan kredit Anda sebesar 1.055.250 untuk rekening 102-001-000016646. Jatuh tempo pada 2026-03-29. ",
+    "scheduledTime": "2026-04-02T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "704dea48-efef-440f-a730-54ba68f1b205",
+    "connectionId": "ipad",
+    "recipient": "6285700756709",
+    "message": "Halo EDY ZUBAIDI, ini adalah pengingat tagihan kredit Anda sebesar 900.95 untuk rekening 102-001-000017168. Jatuh tempo pada 2026-03-01. ",
+    "scheduledTime": "2026-02-28T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "8f4b7ed5-0875-40e6-babc-c358c647dbd7",
+    "connectionId": "ipad",
+    "recipient": "6285700756709",
+    "message": "Halo EDY ZUBAIDI, ini adalah pengingat tagihan kredit Anda sebesar 900.95 untuk rekening 102-001-000017168. Jatuh tempo pada 2026-03-01. ",
+    "scheduledTime": "2026-03-01T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "4147482f-3371-4779-9643-1f1076631acf",
+    "connectionId": "ipad",
+    "recipient": "6285700756709",
+    "message": "Halo EDY ZUBAIDI, ini adalah pengingat tagihan kredit Anda sebesar 900.95 untuk rekening 102-001-000017168. Jatuh tempo pada 2026-03-01. ",
+    "scheduledTime": "2026-03-05T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "afa570d9-c579-4537-b290-fa2913450ca2",
+    "connectionId": "ipad",
+    "recipient": "62786",
+    "message": "Halo KOWIYAH, ini adalah pengingat tagihan kredit Anda sebesar 707.05 untuk rekening 103-001-000017179. Jatuh tempo pada 2026-06-09. ",
+    "scheduledTime": "2026-06-08T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "68623266-653d-48b3-bb1b-c0b312d932ba",
+    "connectionId": "ipad",
+    "recipient": "62786",
+    "message": "Halo KOWIYAH, ini adalah pengingat tagihan kredit Anda sebesar 707.05 untuk rekening 103-001-000017179. Jatuh tempo pada 2026-06-09. ",
+    "scheduledTime": "2026-06-09T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "9ab91bc2-5da7-4746-ad3e-7129926e6cdd",
+    "connectionId": "ipad",
+    "recipient": "62786",
+    "message": "Halo KOWIYAH, ini adalah pengingat tagihan kredit Anda sebesar 707.05 untuk rekening 103-001-000017179. Jatuh tempo pada 2026-06-09. ",
+    "scheduledTime": "2026-06-13T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "71269823-e210-4f79-90f7-98626735f230",
+    "connectionId": "ipad",
+    "recipient": "6285229738264",
+    "message": "Halo ENY SULISTYORINI, ini adalah pengingat tagihan kredit Anda sebesar 1.196.400 untuk rekening 102-001-000017242. Jatuh tempo pada 2026-10-28. ",
+    "scheduledTime": "2026-10-27T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "c8ba247c-eaa4-4fb4-b345-d76961b69d63",
+    "connectionId": "ipad",
+    "recipient": "6285229738264",
+    "message": "Halo ENY SULISTYORINI, ini adalah pengingat tagihan kredit Anda sebesar 1.196.400 untuk rekening 102-001-000017242. Jatuh tempo pada 2026-10-28. ",
+    "scheduledTime": "2026-10-28T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "a67acb92-aa39-489e-94e0-cb3c3fa7ff0e",
+    "connectionId": "ipad",
+    "recipient": "6285229738264",
+    "message": "Halo ENY SULISTYORINI, ini adalah pengingat tagihan kredit Anda sebesar 1.196.400 untuk rekening 102-001-000017242. Jatuh tempo pada 2026-10-28. ",
+    "scheduledTime": "2026-11-01T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "dbd85c54-0ebe-4772-b23f-dac3e2739249",
+    "connectionId": "ipad",
+    "recipient": "6285868062152",
+    "message": "Halo CASHURI, ini adalah pengingat tagihan kredit Anda sebesar 1.015.750 untuk rekening 102-001-000017859. Jatuh tempo pada 2026-11-02. ",
+    "scheduledTime": "2026-11-01T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "11b7e94b-c7c7-4fde-b112-3e8f79bc776b",
+    "connectionId": "ipad",
+    "recipient": "6285868062152",
+    "message": "Halo CASHURI, ini adalah pengingat tagihan kredit Anda sebesar 1.015.750 untuk rekening 102-001-000017859. Jatuh tempo pada 2026-11-02. ",
+    "scheduledTime": "2026-11-02T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "530d51e6-5de5-415e-a2f1-bac8e73078f1",
+    "connectionId": "ipad",
+    "recipient": "6285868062152",
+    "message": "Halo CASHURI, ini adalah pengingat tagihan kredit Anda sebesar 1.015.750 untuk rekening 102-001-000017859. Jatuh tempo pada 2026-11-02. ",
+    "scheduledTime": "2026-11-06T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "1082fe8d-b85a-44b0-989e-6c58426bb55b",
+    "connectionId": "ipad",
+    "recipient": "6285786245617",
+    "message": "Halo ERLINAH INDRIYANI, ini adalah pengingat tagihan kredit Anda sebesar 1.468.750 untuk rekening 112-001-000018047. Jatuh tempo pada 2026-03-16. ",
+    "scheduledTime": "2026-03-15T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "e3fe5f10-9165-4fa6-bd35-252913845c3c",
+    "connectionId": "ipad",
+    "recipient": "6285786245617",
+    "message": "Halo ERLINAH INDRIYANI, ini adalah pengingat tagihan kredit Anda sebesar 1.468.750 untuk rekening 112-001-000018047. Jatuh tempo pada 2026-03-16. ",
+    "scheduledTime": "2026-03-16T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "548d2538-c5b8-4560-b844-21c439651cc8",
+    "connectionId": "ipad",
+    "recipient": "6285786245617",
+    "message": "Halo ERLINAH INDRIYANI, ini adalah pengingat tagihan kredit Anda sebesar 1.468.750 untuk rekening 112-001-000018047. Jatuh tempo pada 2026-03-16. ",
+    "scheduledTime": "2026-03-20T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "7e2c586d-0a63-4ddd-b8a0-c5bd3eaa227a",
+    "connectionId": "ipad",
+    "recipient": "6287708956651",
+    "message": "Halo AQIF HABIBI, ini adalah pengingat tagihan kredit Anda sebesar 2.052.750 untuk rekening 112-001-000018028. Jatuh tempo pada 2026-03-17. ",
+    "scheduledTime": "2026-03-16T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "027f0bf2-2518-422d-8185-c268b97de2aa",
+    "connectionId": "ipad",
+    "recipient": "6287708956651",
+    "message": "Halo AQIF HABIBI, ini adalah pengingat tagihan kredit Anda sebesar 2.052.750 untuk rekening 112-001-000018028. Jatuh tempo pada 2026-03-17. ",
+    "scheduledTime": "2026-03-17T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "5cda4168-a8bd-4258-9ab7-fcf7c27a6103",
+    "connectionId": "ipad",
+    "recipient": "6287708956651",
+    "message": "Halo AQIF HABIBI, ini adalah pengingat tagihan kredit Anda sebesar 2.052.750 untuk rekening 112-001-000018028. Jatuh tempo pada 2026-03-17. ",
+    "scheduledTime": "2026-03-21T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "73d839a0-2067-4ccf-94b5-676695eaa1d4",
+    "connectionId": "ipad",
+    "recipient": "6285290053703",
+    "message": "Halo CHOIRIYAH, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000019066. Jatuh tempo pada 2026-05-23. ",
+    "scheduledTime": "2026-05-22T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ac773e86-8baf-415f-b3d1-4a1f2edf01db",
+    "connectionId": "ipad",
+    "recipient": "6285290053703",
+    "message": "Halo CHOIRIYAH, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000019066. Jatuh tempo pada 2026-05-23. ",
+    "scheduledTime": "2026-05-23T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "9b198d4c-e530-45eb-af99-f9c0710701e3",
+    "connectionId": "ipad",
+    "recipient": "6285290053703",
+    "message": "Halo CHOIRIYAH, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000019066. Jatuh tempo pada 2026-05-23. ",
+    "scheduledTime": "2026-05-27T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "8c7e3e34-0869-46ca-877c-478386f532a6",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo MUFRODAH, ini adalah pengingat tagihan kredit Anda sebesar 734.4 untuk rekening 102-001-000019169. Jatuh tempo pada 2026-02-06. ",
+    "scheduledTime": "2026-02-05T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "00bde9c7-8271-4446-b608-5c52334cd101",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo MUFRODAH, ini adalah pengingat tagihan kredit Anda sebesar 734.4 untuk rekening 102-001-000019169. Jatuh tempo pada 2026-02-06. ",
+    "scheduledTime": "2026-02-06T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "27d9d32f-e7ed-4f61-9d20-2e9c2983be83",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo MUFRODAH, ini adalah pengingat tagihan kredit Anda sebesar 734.4 untuk rekening 102-001-000019169. Jatuh tempo pada 2026-02-06. ",
+    "scheduledTime": "2026-02-10T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "6792680d-1fd3-49df-8823-62c27b4e343f",
+    "connectionId": "ipad",
+    "recipient": "6285201126760",
+    "message": "Halo UMI NUR FITRI YULIANTI, ini adalah pengingat tagihan kredit Anda sebesar 289.25 untuk rekening 102-001-000020212. Jatuh tempo pada 2026-10-17. ",
+    "scheduledTime": "2026-10-16T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "c8dbcde0-d060-446e-87f1-c47a04004ba6",
+    "connectionId": "ipad",
+    "recipient": "6285201126760",
+    "message": "Halo UMI NUR FITRI YULIANTI, ini adalah pengingat tagihan kredit Anda sebesar 289.25 untuk rekening 102-001-000020212. Jatuh tempo pada 2026-10-17. ",
+    "scheduledTime": "2026-10-17T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "302d63fd-52f6-4983-baed-2ed58a514562",
+    "connectionId": "ipad",
+    "recipient": "6285201126760",
+    "message": "Halo UMI NUR FITRI YULIANTI, ini adalah pengingat tagihan kredit Anda sebesar 289.25 untuk rekening 102-001-000020212. Jatuh tempo pada 2026-10-17. ",
+    "scheduledTime": "2026-10-21T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ce24c6e8-6dee-437e-b0e4-bcc82bd08bfd",
+    "connectionId": "ipad",
+    "recipient": "6281390115409",
+    "message": "Halo RUMIYATI, ini adalah pengingat tagihan kredit Anda sebesar 2.702.800 untuk rekening 102-001-000020253. Jatuh tempo pada 2026-10-26. ",
+    "scheduledTime": "2026-10-25T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "73174a9d-baee-4735-8048-c749829632bc",
+    "connectionId": "ipad",
+    "recipient": "6281390115409",
+    "message": "Halo RUMIYATI, ini adalah pengingat tagihan kredit Anda sebesar 2.702.800 untuk rekening 102-001-000020253. Jatuh tempo pada 2026-10-26. ",
+    "scheduledTime": "2026-10-26T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "6a71377f-9c8f-41b9-b16d-2d08f5f232df",
+    "connectionId": "ipad",
+    "recipient": "6281390115409",
+    "message": "Halo RUMIYATI, ini adalah pengingat tagihan kredit Anda sebesar 2.702.800 untuk rekening 102-001-000020253. Jatuh tempo pada 2026-10-26. ",
+    "scheduledTime": "2026-10-30T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "3e28e265-a0b3-4787-a44c-1cd948a6f868",
+    "connectionId": "ipad",
+    "recipient": "628562624474",
+    "message": "Halo MUHAMAD DAKIR, ini adalah pengingat tagihan kredit Anda sebesar 475.8 untuk rekening 102-001-000020359. Jatuh tempo pada 2026-11-26. ",
+    "scheduledTime": "2026-11-25T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "7a4be0cc-52b8-4616-8cce-ffccd4d7899a",
+    "connectionId": "ipad",
+    "recipient": "628562624474",
+    "message": "Halo MUHAMAD DAKIR, ini adalah pengingat tagihan kredit Anda sebesar 475.8 untuk rekening 102-001-000020359. Jatuh tempo pada 2026-11-26. ",
+    "scheduledTime": "2026-11-26T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "52151bd1-0053-4cb7-828e-dc2aa81d0f26",
+    "connectionId": "ipad",
+    "recipient": "628562624474",
+    "message": "Halo MUHAMAD DAKIR, ini adalah pengingat tagihan kredit Anda sebesar 475.8 untuk rekening 102-001-000020359. Jatuh tempo pada 2026-11-26. ",
+    "scheduledTime": "2026-11-30T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ef9b7a31-78e2-4b05-b991-ab2748854233",
+    "connectionId": "ipad",
+    "recipient": "6281227449481",
+    "message": "Halo NASIB MUSTAKIM, ini adalah pengingat tagihan kredit Anda sebesar 237.9 untuk rekening 102-001-000020533. Jatuh tempo pada 2026-11-23. ",
+    "scheduledTime": "2026-11-22T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ed5792bc-209e-416d-99fe-7b48f9d20777",
+    "connectionId": "ipad",
+    "recipient": "6281227449481",
+    "message": "Halo NASIB MUSTAKIM, ini adalah pengingat tagihan kredit Anda sebesar 237.9 untuk rekening 102-001-000020533. Jatuh tempo pada 2026-11-23. ",
+    "scheduledTime": "2026-11-23T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "e2883101-c362-424d-aa53-f0aa184ec242",
+    "connectionId": "ipad",
+    "recipient": "6281227449481",
+    "message": "Halo NASIB MUSTAKIM, ini adalah pengingat tagihan kredit Anda sebesar 237.9 untuk rekening 102-001-000020533. Jatuh tempo pada 2026-11-23. ",
+    "scheduledTime": "2026-11-27T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "29d323e6-c6f2-4790-8d02-457b1aae769b",
+    "connectionId": "ipad",
+    "recipient": "6281100002327",
+    "message": "Halo SLAMET, ini adalah pengingat tagihan kredit Anda sebesar 237.9 untuk rekening 102-001-000020602. Jatuh tempo pada 2026-11-24. ",
+    "scheduledTime": "2026-11-23T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "74e91cd5-b752-44bd-adaa-cffb75d583ae",
+    "connectionId": "ipad",
+    "recipient": "6281100002327",
+    "message": "Halo SLAMET, ini adalah pengingat tagihan kredit Anda sebesar 237.9 untuk rekening 102-001-000020602. Jatuh tempo pada 2026-11-24. ",
+    "scheduledTime": "2026-11-24T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "bdb9c3dc-2ea1-4dd3-872a-ec182610a810",
+    "connectionId": "ipad",
+    "recipient": "6281100002327",
+    "message": "Halo SLAMET, ini adalah pengingat tagihan kredit Anda sebesar 237.9 untuk rekening 102-001-000020602. Jatuh tempo pada 2026-11-24. ",
+    "scheduledTime": "2026-11-28T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ee69fabc-62e7-47db-9872-983e23b13f31",
+    "connectionId": "ipad",
+    "recipient": "6285702300780",
+    "message": "Halo RAHAYU, ini adalah pengingat tagihan kredit Anda sebesar 356.85 untuk rekening 102-001-000020725. Jatuh tempo pada 2026-05-12. ",
+    "scheduledTime": "2026-05-11T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "232d64cf-4ac6-4e56-90a7-b459632cb956",
+    "connectionId": "ipad",
+    "recipient": "6285702300780",
+    "message": "Halo RAHAYU, ini adalah pengingat tagihan kredit Anda sebesar 356.85 untuk rekening 102-001-000020725. Jatuh tempo pada 2026-05-12. ",
+    "scheduledTime": "2026-05-12T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "3661955f-d1b7-494a-86f5-482c6cb667bf",
+    "connectionId": "ipad",
+    "recipient": "6285702300780",
+    "message": "Halo RAHAYU, ini adalah pengingat tagihan kredit Anda sebesar 356.85 untuk rekening 102-001-000020725. Jatuh tempo pada 2026-05-12. ",
+    "scheduledTime": "2026-05-16T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "f2caf9fa-979a-4f5e-afdc-bf89e8ac6ae8",
+    "connectionId": "ipad",
+    "recipient": "6285624545646",
+    "message": "Halo AGUS KHOLIL, ini adalah pengingat tagihan kredit Anda sebesar 2.894.550 untuk rekening 103-001-000020841. Jatuh tempo pada 2026-12-19. ",
+    "scheduledTime": "2026-12-18T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "83108e12-42e9-4621-9275-818b2b9e2e9b",
+    "connectionId": "ipad",
+    "recipient": "6285624545646",
+    "message": "Halo AGUS KHOLIL, ini adalah pengingat tagihan kredit Anda sebesar 2.894.550 untuk rekening 103-001-000020841. Jatuh tempo pada 2026-12-19. ",
+    "scheduledTime": "2026-12-19T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "048180d0-cd7a-41f7-96f5-f423e1e29e6a",
+    "connectionId": "ipad",
+    "recipient": "6285624545646",
+    "message": "Halo AGUS KHOLIL, ini adalah pengingat tagihan kredit Anda sebesar 2.894.550 untuk rekening 103-001-000020841. Jatuh tempo pada 2026-12-19. ",
+    "scheduledTime": "2026-12-23T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "29148320-caba-461c-ac38-ccbbb1c56939",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo KASTOLANI SLAMET, ini adalah pengingat tagihan kredit Anda sebesar 309.3 untuk rekening 102-001-000021001. Jatuh tempo pada 2026-04-01. ",
+    "scheduledTime": "2026-03-31T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "d388abcc-746e-480b-9ae9-5ab29c4ae87e",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo KASTOLANI SLAMET, ini adalah pengingat tagihan kredit Anda sebesar 309.3 untuk rekening 102-001-000021001. Jatuh tempo pada 2026-04-01. ",
+    "scheduledTime": "2026-04-01T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "a0b9ee9e-1d88-4c9c-9417-95afa384e36a",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo KASTOLANI SLAMET, ini adalah pengingat tagihan kredit Anda sebesar 309.3 untuk rekening 102-001-000021001. Jatuh tempo pada 2026-04-01. ",
+    "scheduledTime": "2026-04-05T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "46da0fce-d7cf-4507-8f3c-8f6029e92074",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo WAHYUKI ANIN, ini adalah pengingat tagihan kredit Anda sebesar 475.8 untuk rekening 102-001-000021077. Jatuh tempo pada 2026-05-01. ",
+    "scheduledTime": "2026-04-30T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "7abdbc00-d901-4b0e-9197-872f8c947808",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo WAHYUKI ANIN, ini adalah pengingat tagihan kredit Anda sebesar 475.8 untuk rekening 102-001-000021077. Jatuh tempo pada 2026-05-01. ",
+    "scheduledTime": "2026-05-01T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "9b359dc4-e19a-441b-b825-6fd349aa1771",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo WAHYUKI ANIN, ini adalah pengingat tagihan kredit Anda sebesar 475.8 untuk rekening 102-001-000021077. Jatuh tempo pada 2026-05-01. ",
+    "scheduledTime": "2026-05-05T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "cff8012a-8cf2-432a-a787-a831e6b341aa",
+    "connectionId": "ipad",
+    "recipient": "6285869114652",
+    "message": "Halo SITI AISAH, ini adalah pengingat tagihan kredit Anda sebesar 2.539.350 untuk rekening 112-001-000021048. Jatuh tempo pada 2026-09-01. ",
+    "scheduledTime": "2026-08-31T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "46b1d780-06ef-46f5-b73b-311cbfa486fd",
+    "connectionId": "ipad",
+    "recipient": "6285869114652",
+    "message": "Halo SITI AISAH, ini adalah pengingat tagihan kredit Anda sebesar 2.539.350 untuk rekening 112-001-000021048. Jatuh tempo pada 2026-09-01. ",
+    "scheduledTime": "2026-09-01T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ef803628-9e5f-46a7-b04c-24d3335a1f95",
+    "connectionId": "ipad",
+    "recipient": "6285869114652",
+    "message": "Halo SITI AISAH, ini adalah pengingat tagihan kredit Anda sebesar 2.539.350 untuk rekening 112-001-000021048. Jatuh tempo pada 2026-09-01. ",
+    "scheduledTime": "2026-09-05T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "13f296b9-d65b-4a80-8dc8-4ae285322c60",
+    "connectionId": "ipad",
+    "recipient": "6282313348307",
+    "message": "Halo SITI KORIAH, ini adalah pengingat tagihan kredit Anda sebesar 1.468.750 untuk rekening 102-001-000021333. Jatuh tempo pada 2026-01-13. ",
+    "scheduledTime": "2026-01-12T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "48ab013f-f636-4ecf-9b79-340ddc9f047f",
+    "connectionId": "ipad",
+    "recipient": "6282313348307",
+    "message": "Halo SITI KORIAH, ini adalah pengingat tagihan kredit Anda sebesar 1.468.750 untuk rekening 102-001-000021333. Jatuh tempo pada 2026-01-13. ",
+    "scheduledTime": "2026-01-13T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "36b03a43-9811-4d5e-834f-82489c35823b",
+    "connectionId": "ipad",
+    "recipient": "6282313348307",
+    "message": "Halo SITI KORIAH, ini adalah pengingat tagihan kredit Anda sebesar 1.468.750 untuk rekening 102-001-000021333. Jatuh tempo pada 2026-01-13. ",
+    "scheduledTime": "2026-01-17T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "2dfc999b-f351-45cf-898c-75e8771a75a2",
+    "connectionId": "ipad",
+    "recipient": "6285936604076",
+    "message": "Halo MOH SYAKUR, ini adalah pengingat tagihan kredit Anda sebesar 356.85 untuk rekening 102-001-000021445. Jatuh tempo pada 2026-01-20. ",
+    "scheduledTime": "2026-01-19T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "016306fa-e653-45e8-93f2-1ad9b2aaa036",
+    "connectionId": "ipad",
+    "recipient": "6285936604076",
+    "message": "Halo MOH SYAKUR, ini adalah pengingat tagihan kredit Anda sebesar 356.85 untuk rekening 102-001-000021445. Jatuh tempo pada 2026-01-20. ",
+    "scheduledTime": "2026-01-20T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "17152b5b-9cf0-4973-b9ec-b09c779c5f78",
+    "connectionId": "ipad",
+    "recipient": "6285936604076",
+    "message": "Halo MOH SYAKUR, ini adalah pengingat tagihan kredit Anda sebesar 356.85 untuk rekening 102-001-000021445. Jatuh tempo pada 2026-01-20. ",
+    "scheduledTime": "2026-01-24T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "3b1bc7f2-6c83-4b0e-9b50-28fbec2738a6",
+    "connectionId": "ipad",
+    "recipient": "6285728105586",
+    "message": "Halo MUTAKIN, ini adalah pengingat tagihan kredit Anda sebesar 475.8 untuk rekening 102-001-000021446. Jatuh tempo pada 2026-01-20. ",
+    "scheduledTime": "2026-01-19T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "4ce8453a-bc76-4980-a3b7-f294209d2b64",
+    "connectionId": "ipad",
+    "recipient": "6285728105586",
+    "message": "Halo MUTAKIN, ini adalah pengingat tagihan kredit Anda sebesar 475.8 untuk rekening 102-001-000021446. Jatuh tempo pada 2026-01-20. ",
+    "scheduledTime": "2026-01-20T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "4911969b-32fd-4275-a8ca-f7322cdcdf56",
+    "connectionId": "ipad",
+    "recipient": "6285728105586",
+    "message": "Halo MUTAKIN, ini adalah pengingat tagihan kredit Anda sebesar 475.8 untuk rekening 102-001-000021446. Jatuh tempo pada 2026-01-20. ",
+    "scheduledTime": "2026-01-24T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "e10459dd-8261-4923-8f82-02220ebab6df",
+    "connectionId": "ipad",
+    "recipient": "6285718043514",
+    "message": "Halo NASAATUL HANISAH, ini adalah pengingat tagihan kredit Anda sebesar 237.9 untuk rekening 102-001-000021608. Jatuh tempo pada 2026-06-02. ",
+    "scheduledTime": "2026-06-01T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "903eb36a-02bb-48f4-b009-e0d837c6f5fd",
+    "connectionId": "ipad",
+    "recipient": "6285718043514",
+    "message": "Halo NASAATUL HANISAH, ini adalah pengingat tagihan kredit Anda sebesar 237.9 untuk rekening 102-001-000021608. Jatuh tempo pada 2026-06-02. ",
+    "scheduledTime": "2026-06-02T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "64aca39c-5daf-4c97-a0ef-b82d3f7c44fa",
+    "connectionId": "ipad",
+    "recipient": "6285718043514",
+    "message": "Halo NASAATUL HANISAH, ini adalah pengingat tagihan kredit Anda sebesar 237.9 untuk rekening 102-001-000021608. Jatuh tempo pada 2026-06-02. ",
+    "scheduledTime": "2026-06-06T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "96cceeb6-e701-40bf-ad77-5b6a6b4d6006",
+    "connectionId": "ipad",
+    "recipient": "6285865441621",
+    "message": "Halo BUSAERI UNTUNG, ini adalah pengingat tagihan kredit Anda sebesar 312 untuk rekening 102-001-000022015. Jatuh tempo pada 2026-09-03. ",
+    "scheduledTime": "2026-09-02T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "9755c6b6-a483-4a9d-9ffc-b5ea90f7e35c",
+    "connectionId": "ipad",
+    "recipient": "6285865441621",
+    "message": "Halo BUSAERI UNTUNG, ini adalah pengingat tagihan kredit Anda sebesar 312 untuk rekening 102-001-000022015. Jatuh tempo pada 2026-09-03. ",
+    "scheduledTime": "2026-09-03T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "b7c26c20-a899-4a23-8cfa-7b70489eb5e4",
+    "connectionId": "ipad",
+    "recipient": "6285865441621",
+    "message": "Halo BUSAERI UNTUNG, ini adalah pengingat tagihan kredit Anda sebesar 312 untuk rekening 102-001-000022015. Jatuh tempo pada 2026-09-03. ",
+    "scheduledTime": "2026-09-07T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "304d885d-44c6-470f-b712-4e07864d58be",
+    "connectionId": "ipad",
+    "recipient": "6282325163971",
+    "message": "Halo TRUBUS RIYANTO, ini adalah pengingat tagihan kredit Anda sebesar 457.1 untuk rekening 102-001-000022019. Jatuh tempo pada 2026-09-03. ",
+    "scheduledTime": "2026-09-02T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "3f738712-a91d-4b31-876a-06256c66e92c",
+    "connectionId": "ipad",
+    "recipient": "6282325163971",
+    "message": "Halo TRUBUS RIYANTO, ini adalah pengingat tagihan kredit Anda sebesar 457.1 untuk rekening 102-001-000022019. Jatuh tempo pada 2026-09-03. ",
+    "scheduledTime": "2026-09-03T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "5958a719-a389-4b8b-8a98-0c74ce654ffa",
+    "connectionId": "ipad",
+    "recipient": "6282325163971",
+    "message": "Halo TRUBUS RIYANTO, ini adalah pengingat tagihan kredit Anda sebesar 457.1 untuk rekening 102-001-000022019. Jatuh tempo pada 2026-09-03. ",
+    "scheduledTime": "2026-09-07T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "58b90eae-741a-4044-944c-9600cf3f945d",
+    "connectionId": "ipad",
+    "recipient": "6285801240625",
+    "message": "Halo ROZIKIN, ini adalah pengingat tagihan kredit Anda sebesar 440.65 untuk rekening 102-001-000021997. Jatuh tempo pada 2026-10-03. ",
+    "scheduledTime": "2026-10-02T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "314200bf-e591-4690-96cf-b5bc8c53c6f2",
+    "connectionId": "ipad",
+    "recipient": "6285801240625",
+    "message": "Halo ROZIKIN, ini adalah pengingat tagihan kredit Anda sebesar 440.65 untuk rekening 102-001-000021997. Jatuh tempo pada 2026-10-03. ",
+    "scheduledTime": "2026-10-03T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "4a11c8ef-389d-45fe-b5c9-13f87098b0c4",
+    "connectionId": "ipad",
+    "recipient": "6285801240625",
+    "message": "Halo ROZIKIN, ini adalah pengingat tagihan kredit Anda sebesar 440.65 untuk rekening 102-001-000021997. Jatuh tempo pada 2026-10-03. ",
+    "scheduledTime": "2026-10-07T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "29c418da-2408-4fae-a8d1-9a2228779f70",
+    "connectionId": "ipad",
+    "recipient": "6285228002493",
+    "message": "Halo WAHYU SATRIA, ini adalah pengingat tagihan kredit Anda sebesar 903.85 untuk rekening 102-001-000022251. Jatuh tempo pada 2026-05-04. ",
+    "scheduledTime": "2026-05-03T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "b88229c5-398a-4236-86b6-56d2247e3ee3",
+    "connectionId": "ipad",
+    "recipient": "6285228002493",
+    "message": "Halo WAHYU SATRIA, ini adalah pengingat tagihan kredit Anda sebesar 903.85 untuk rekening 102-001-000022251. Jatuh tempo pada 2026-05-04. ",
+    "scheduledTime": "2026-05-04T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ee7ff502-f172-44bd-aac8-7fcbf696cfcc",
+    "connectionId": "ipad",
+    "recipient": "6285228002493",
+    "message": "Halo WAHYU SATRIA, ini adalah pengingat tagihan kredit Anda sebesar 903.85 untuk rekening 102-001-000022251. Jatuh tempo pada 2026-05-04. ",
+    "scheduledTime": "2026-05-08T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "e0cd850a-0ca9-4860-ad4a-d5fcf9471f72",
+    "connectionId": "ipad",
+    "recipient": "6282328913188",
+    "message": "Halo ANITA WAHYU TRISNO WATI, ini adalah pengingat tagihan kredit Anda sebesar 1.261.100 untuk rekening 102-001-000022265. Jatuh tempo pada 2026-06-04. ",
+    "scheduledTime": "2026-06-03T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "b2e118c5-ad02-4c53-88d8-716ee01aa1db",
+    "connectionId": "ipad",
+    "recipient": "6282328913188",
+    "message": "Halo ANITA WAHYU TRISNO WATI, ini adalah pengingat tagihan kredit Anda sebesar 1.261.100 untuk rekening 102-001-000022265. Jatuh tempo pada 2026-06-04. ",
+    "scheduledTime": "2026-06-04T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "688728dc-34e2-4ae9-9604-c80eb2dc1154",
+    "connectionId": "ipad",
+    "recipient": "6282328913188",
+    "message": "Halo ANITA WAHYU TRISNO WATI, ini adalah pengingat tagihan kredit Anda sebesar 1.261.100 untuk rekening 102-001-000022265. Jatuh tempo pada 2026-06-04. ",
+    "scheduledTime": "2026-06-08T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "2d8d9b2a-7232-43f9-93a6-68dfce23ea9a",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo SUTRISNO, ini adalah pengingat tagihan kredit Anda sebesar 1.015.750 untuk rekening 102-001-000022268. Jatuh tempo pada 2026-10-04. ",
+    "scheduledTime": "2026-10-03T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "105cb7ff-ab74-4b24-89bd-f5ccd754f528",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo SUTRISNO, ini adalah pengingat tagihan kredit Anda sebesar 1.015.750 untuk rekening 102-001-000022268. Jatuh tempo pada 2026-10-04. ",
+    "scheduledTime": "2026-10-04T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "1b4b4337-efd4-46af-b301-f4db0153b253",
+    "connectionId": "ipad",
+    "recipient": "62",
+    "message": "Halo SUTRISNO, ini adalah pengingat tagihan kredit Anda sebesar 1.015.750 untuk rekening 102-001-000022268. Jatuh tempo pada 2026-10-04. ",
+    "scheduledTime": "2026-10-08T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "8d9153a4-c38d-4b5f-9264-4116f9bf49bc",
+    "connectionId": "ipad",
+    "recipient": "6282329190510",
+    "message": "Halo ALIMIN, ini adalah pengingat tagihan kredit Anda sebesar 1.140.400 untuk rekening 102-001-000022351. Jatuh tempo pada 2026-04-17. ",
+    "scheduledTime": "2026-04-16T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "feda9489-75bb-4447-9e13-a8e6e374e97f",
+    "connectionId": "ipad",
+    "recipient": "6282329190510",
+    "message": "Halo ALIMIN, ini adalah pengingat tagihan kredit Anda sebesar 1.140.400 untuk rekening 102-001-000022351. Jatuh tempo pada 2026-04-17. ",
+    "scheduledTime": "2026-04-17T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "fea79e0e-b73b-419f-8e24-58d5b61caaca",
+    "connectionId": "ipad",
+    "recipient": "6282329190510",
+    "message": "Halo ALIMIN, ini adalah pengingat tagihan kredit Anda sebesar 1.140.400 untuk rekening 102-001-000022351. Jatuh tempo pada 2026-04-17. ",
+    "scheduledTime": "2026-04-21T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "f2d1c971-c75b-4c9f-8b3d-e4cb10eeeb4a",
+    "connectionId": "ipad",
+    "recipient": "6285326909113",
+    "message": "Halo IKA KUSMAWATI, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000022454. Jatuh tempo pada 2026-11-05. ",
+    "scheduledTime": "2026-11-04T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "1f843f71-2f5d-4bb6-95f5-638e6ea145ab",
+    "connectionId": "ipad",
+    "recipient": "6285326909113",
+    "message": "Halo IKA KUSMAWATI, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000022454. Jatuh tempo pada 2026-11-05. ",
+    "scheduledTime": "2026-11-05T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "156e4758-8af8-4710-a9df-e53909376136",
+    "connectionId": "ipad",
+    "recipient": "6285326909113",
+    "message": "Halo IKA KUSMAWATI, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000022454. Jatuh tempo pada 2026-11-05. ",
+    "scheduledTime": "2026-11-09T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "c3284e8b-83df-448f-9da8-d6d2fa26c9ac",
+    "connectionId": "ipad",
+    "recipient": "6285769937563",
+    "message": "Halo SUSMIATI, ini adalah pengingat tagihan kredit Anda sebesar 1.269.700 untuk rekening 112-001-000022533. Jatuh tempo pada 2026-05-23. ",
+    "scheduledTime": "2026-05-22T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "1f3c8c22-477b-4ac9-89ab-ec07102e9534",
+    "connectionId": "ipad",
+    "recipient": "6285769937563",
+    "message": "Halo SUSMIATI, ini adalah pengingat tagihan kredit Anda sebesar 1.269.700 untuk rekening 112-001-000022533. Jatuh tempo pada 2026-05-23. ",
+    "scheduledTime": "2026-05-23T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "85273d15-ab21-4a6c-b6cf-4b8007d7c5da",
+    "connectionId": "ipad",
+    "recipient": "6285769937563",
+    "message": "Halo SUSMIATI, ini adalah pengingat tagihan kredit Anda sebesar 1.269.700 untuk rekening 112-001-000022533. Jatuh tempo pada 2026-05-23. ",
+    "scheduledTime": "2026-05-27T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ed61d4b9-aeec-45f3-ac0a-1abcc5a1850e",
+    "connectionId": "ipad",
+    "recipient": "6285216572109",
+    "message": "Halo MUSYAFAK, ini adalah pengingat tagihan kredit Anda sebesar 1.351.400 untuk rekening 102-001-000022579. Jatuh tempo pada 2026-05-25. ",
+    "scheduledTime": "2026-05-24T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "41be5b17-640b-41f0-84bb-88ada69b7496",
+    "connectionId": "ipad",
+    "recipient": "6285216572109",
+    "message": "Halo MUSYAFAK, ini adalah pengingat tagihan kredit Anda sebesar 1.351.400 untuk rekening 102-001-000022579. Jatuh tempo pada 2026-05-25. ",
+    "scheduledTime": "2026-05-25T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "aaf05de7-87d7-472e-8592-437c5e5e4056",
+    "connectionId": "ipad",
+    "recipient": "6285216572109",
+    "message": "Halo MUSYAFAK, ini adalah pengingat tagihan kredit Anda sebesar 1.351.400 untuk rekening 102-001-000022579. Jatuh tempo pada 2026-05-25. ",
+    "scheduledTime": "2026-05-29T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "cf64127d-505d-4e57-9f54-e5f95554316c",
+    "connectionId": "ipad",
+    "recipient": "6281902886138",
+    "message": "Halo ARIF UNTUNG, ini adalah pengingat tagihan kredit Anda sebesar 1.269.700 untuk rekening 102-001-000022597. Jatuh tempo pada 2026-05-26. ",
+    "scheduledTime": "2026-05-25T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "b84c5f72-3c9d-47e6-9029-b49e6a11106a",
+    "connectionId": "ipad",
+    "recipient": "6281902886138",
+    "message": "Halo ARIF UNTUNG, ini adalah pengingat tagihan kredit Anda sebesar 1.269.700 untuk rekening 102-001-000022597. Jatuh tempo pada 2026-05-26. ",
+    "scheduledTime": "2026-05-26T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "eaad9418-2f39-4cfa-9cf3-8a11972dd4dd",
+    "connectionId": "ipad",
+    "recipient": "6281902886138",
+    "message": "Halo ARIF UNTUNG, ini adalah pengingat tagihan kredit Anda sebesar 1.269.700 untuk rekening 102-001-000022597. Jatuh tempo pada 2026-05-26. ",
+    "scheduledTime": "2026-05-30T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ab8b6491-b82c-43cf-ae7b-aea646522139",
+    "connectionId": "ipad",
+    "recipient": "6285642944058",
+    "message": "Halo R PONCO HARJONO, ini adalah pengingat tagihan kredit Anda sebesar 1.269.700 untuk rekening 102-001-000022598. Jatuh tempo pada 2026-05-26. ",
+    "scheduledTime": "2026-05-25T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "e85e1a56-29b9-4c04-9792-e752e3c0e314",
+    "connectionId": "ipad",
+    "recipient": "6285642944058",
+    "message": "Halo R PONCO HARJONO, ini adalah pengingat tagihan kredit Anda sebesar 1.269.700 untuk rekening 102-001-000022598. Jatuh tempo pada 2026-05-26. ",
+    "scheduledTime": "2026-05-26T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "f7e34dbb-11ca-47e4-be95-b91500ba1863",
+    "connectionId": "ipad",
+    "recipient": "6285642944058",
+    "message": "Halo R PONCO HARJONO, ini adalah pengingat tagihan kredit Anda sebesar 1.269.700 untuk rekening 102-001-000022598. Jatuh tempo pada 2026-05-26. ",
+    "scheduledTime": "2026-05-30T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "0c682475-a1ad-4b6d-908f-72a04343b7b4",
+    "connectionId": "ipad",
+    "recipient": "6285740624378",
+    "message": "Halo MUAMAROH, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000022638. Jatuh tempo pada 2026-06-06. ",
+    "scheduledTime": "2026-06-05T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "39ce62dc-0071-46f5-a0df-4347915754e0",
+    "connectionId": "ipad",
+    "recipient": "6285740624378",
+    "message": "Halo MUAMAROH, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000022638. Jatuh tempo pada 2026-06-06. ",
+    "scheduledTime": "2026-06-06T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "0fd20340-54f9-4ebc-af26-16e2c7a70818",
+    "connectionId": "ipad",
+    "recipient": "6285740624378",
+    "message": "Halo MUAMAROH, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000022638. Jatuh tempo pada 2026-06-06. ",
+    "scheduledTime": "2026-06-10T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "f5f05f03-6914-468b-9042-d3f9293c5797",
+    "connectionId": "ipad",
+    "recipient": "6285602525569",
+    "message": "Halo TEGUH KUSNANI, ini adalah pengingat tagihan kredit Anda sebesar 380.95 untuk rekening 102-001-000022744. Jatuh tempo pada 2026-06-20. ",
+    "scheduledTime": "2026-06-19T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "f84cc61c-94a8-48f3-ba87-b846b9689a78",
+    "connectionId": "ipad",
+    "recipient": "6285602525569",
+    "message": "Halo TEGUH KUSNANI, ini adalah pengingat tagihan kredit Anda sebesar 380.95 untuk rekening 102-001-000022744. Jatuh tempo pada 2026-06-20. ",
+    "scheduledTime": "2026-06-20T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "49e3e59e-7576-48db-b99c-d4287384d4c4",
+    "connectionId": "ipad",
+    "recipient": "6285602525569",
+    "message": "Halo TEGUH KUSNANI, ini adalah pengingat tagihan kredit Anda sebesar 380.95 untuk rekening 102-001-000022744. Jatuh tempo pada 2026-06-20. ",
+    "scheduledTime": "2026-06-24T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "d9e808f3-6104-4700-9e74-ed82d84f7714",
+    "connectionId": "ipad",
+    "recipient": "6285722154485",
+    "message": "Halo KHOIRUL MUANAM, ini adalah pengingat tagihan kredit Anda sebesar 761.85 untuk rekening 102-001-000022806. Jatuh tempo pada 2026-06-23. ",
+    "scheduledTime": "2026-06-22T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "0ef8774e-7567-4388-97dd-29fb5b5fffb8",
+    "connectionId": "ipad",
+    "recipient": "6285722154485",
+    "message": "Halo KHOIRUL MUANAM, ini adalah pengingat tagihan kredit Anda sebesar 761.85 untuk rekening 102-001-000022806. Jatuh tempo pada 2026-06-23. ",
+    "scheduledTime": "2026-06-23T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "3c86e54d-19c4-49a5-aeef-9fe2a42decbd",
+    "connectionId": "ipad",
+    "recipient": "6285722154485",
+    "message": "Halo KHOIRUL MUANAM, ini adalah pengingat tagihan kredit Anda sebesar 761.85 untuk rekening 102-001-000022806. Jatuh tempo pada 2026-06-23. ",
+    "scheduledTime": "2026-06-27T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "2bbbeeac-2989-4f6a-b30b-a0e9096eaa6b",
+    "connectionId": "ipad",
+    "recipient": "6282329316989",
+    "message": "Halo PUJIYANAH, ini adalah pengingat tagihan kredit Anda sebesar 433.85 untuk rekening 103-001-000022835. Jatuh tempo pada 2026-07-28. ",
+    "scheduledTime": "2026-07-27T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "789572ad-1d6a-46b6-afd4-0ba7d6b34bf0",
+    "connectionId": "ipad",
+    "recipient": "6282329316989",
+    "message": "Halo PUJIYANAH, ini adalah pengingat tagihan kredit Anda sebesar 433.85 untuk rekening 103-001-000022835. Jatuh tempo pada 2026-07-28. ",
+    "scheduledTime": "2026-07-28T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "3b955822-66a4-4eae-9da8-b28c5392358a",
+    "connectionId": "ipad",
+    "recipient": "6282329316989",
+    "message": "Halo PUJIYANAH, ini adalah pengingat tagihan kredit Anda sebesar 433.85 untuk rekening 103-001-000022835. Jatuh tempo pada 2026-07-28. ",
+    "scheduledTime": "2026-08-01T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "afb23f25-a005-4613-9ec0-5caa311a0f9a",
+    "connectionId": "ipad",
+    "recipient": "6281575428807",
+    "message": "Halo RINI IDAYANTI, ini adalah pengingat tagihan kredit Anda sebesar 2.958.500 untuk rekening 112-001-000023243. Jatuh tempo pada 2026-04-08. ",
+    "scheduledTime": "2026-04-07T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "b0a444df-6de1-4da2-931a-ea2bcda6c37f",
+    "connectionId": "ipad",
+    "recipient": "6281575428807",
+    "message": "Halo RINI IDAYANTI, ini adalah pengingat tagihan kredit Anda sebesar 2.958.500 untuk rekening 112-001-000023243. Jatuh tempo pada 2026-04-08. ",
+    "scheduledTime": "2026-04-08T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "174411d5-73f0-4d18-9860-1a1834ede24d",
+    "connectionId": "ipad",
+    "recipient": "6281575428807",
+    "message": "Halo RINI IDAYANTI, ini adalah pengingat tagihan kredit Anda sebesar 2.958.500 untuk rekening 112-001-000023243. Jatuh tempo pada 2026-04-08. ",
+    "scheduledTime": "2026-04-12T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ae97e508-b423-48c1-a666-10f8b4f0ac65",
+    "connectionId": "ipad",
+    "recipient": "6285878372724",
+    "message": "Halo SLAMET BUDIANTO, ini adalah pengingat tagihan kredit Anda sebesar 1.929.700 untuk rekening 102-001-000023400. Jatuh tempo pada 2026-11-08. ",
+    "scheduledTime": "2026-11-07T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ab4c79db-9a59-49f3-954c-b6de51216c0d",
+    "connectionId": "ipad",
+    "recipient": "6285878372724",
+    "message": "Halo SLAMET BUDIANTO, ini adalah pengingat tagihan kredit Anda sebesar 1.929.700 untuk rekening 102-001-000023400. Jatuh tempo pada 2026-11-08. ",
+    "scheduledTime": "2026-11-08T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "a4e49de0-9f33-4e73-8081-0720fd47bc2d",
+    "connectionId": "ipad",
+    "recipient": "6285878372724",
+    "message": "Halo SLAMET BUDIANTO, ini adalah pengingat tagihan kredit Anda sebesar 1.929.700 untuk rekening 102-001-000023400. Jatuh tempo pada 2026-11-08. ",
+    "scheduledTime": "2026-11-12T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "0c9efa98-da09-454f-a2ee-1800ac8a2009",
+    "connectionId": "ipad",
+    "recipient": "6285930370037",
+    "message": "Halo M TEGUH RIYADI, ini adalah pengingat tagihan kredit Anda sebesar 475 untuk rekening 102-001-000023682. Jatuh tempo pada 2026-08-09. ",
+    "scheduledTime": "2026-08-08T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "9f3ffd9b-fa7e-4783-bec1-3f6f9ba71cb6",
+    "connectionId": "ipad",
+    "recipient": "6285930370037",
+    "message": "Halo M TEGUH RIYADI, ini adalah pengingat tagihan kredit Anda sebesar 475 untuk rekening 102-001-000023682. Jatuh tempo pada 2026-08-09. ",
+    "scheduledTime": "2026-08-09T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "0a4fb7e0-1734-489a-8a2d-b83039c04dd7",
+    "connectionId": "ipad",
+    "recipient": "6285930370037",
+    "message": "Halo M TEGUH RIYADI, ini adalah pengingat tagihan kredit Anda sebesar 475 untuk rekening 102-001-000023682. Jatuh tempo pada 2026-08-09. ",
+    "scheduledTime": "2026-08-13T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "d8493b35-4a7c-4a0d-979b-4eb2afe34be6",
+    "connectionId": "ipad",
+    "recipient": "6285640899997",
+    "message": "Halo MOH FARID SHOFIULLAH, ini adalah pengingat tagihan kredit Anda sebesar 1.050.900 untuk rekening 102-001-000023803. Jatuh tempo pada 2026-04-10. ",
+    "scheduledTime": "2026-04-09T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "e9bcc86c-59f7-44e6-8833-3e887d3ca197",
+    "connectionId": "ipad",
+    "recipient": "6285640899997",
+    "message": "Halo MOH FARID SHOFIULLAH, ini adalah pengingat tagihan kredit Anda sebesar 1.050.900 untuk rekening 102-001-000023803. Jatuh tempo pada 2026-04-10. ",
+    "scheduledTime": "2026-04-10T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "1925c87d-1866-47a0-8deb-baac530b9857",
+    "connectionId": "ipad",
+    "recipient": "6285640899997",
+    "message": "Halo MOH FARID SHOFIULLAH, ini adalah pengingat tagihan kredit Anda sebesar 1.050.900 untuk rekening 102-001-000023803. Jatuh tempo pada 2026-04-10. ",
+    "scheduledTime": "2026-04-14T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ae28ca31-41e1-41b3-abfd-a6b1503aa595",
+    "connectionId": "ipad",
+    "recipient": "6288239647119",
+    "message": "Halo SLAMET MUGI, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000023812. Jatuh tempo pada 2026-05-10. ",
+    "scheduledTime": "2026-05-09T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "48b5f55f-d0ac-4399-89a6-fd515fafccdb",
+    "connectionId": "ipad",
+    "recipient": "6288239647119",
+    "message": "Halo SLAMET MUGI, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000023812. Jatuh tempo pada 2026-05-10. ",
+    "scheduledTime": "2026-05-10T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "b76cad9f-a38a-4480-ad8c-4caa7afefbba",
+    "connectionId": "ipad",
+    "recipient": "6288239647119",
+    "message": "Halo SLAMET MUGI, ini adalah pengingat tagihan kredit Anda sebesar 361.55 untuk rekening 102-001-000023812. Jatuh tempo pada 2026-05-10. ",
+    "scheduledTime": "2026-05-14T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "902963f3-729f-4400-b2f2-5897015f3a0e",
+    "connectionId": "ipad",
+    "recipient": "6281298429366",
+    "message": "Halo ASTUTI NINGSIH, ini adalah pengingat tagihan kredit Anda sebesar 1.084.600 untuk rekening 102-001-000023970. Jatuh tempo pada 2026-02-11. ",
+    "scheduledTime": "2026-02-10T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "bbd947d8-d9aa-4245-bb1e-3f0135627500",
+    "connectionId": "ipad",
+    "recipient": "6281298429366",
+    "message": "Halo ASTUTI NINGSIH, ini adalah pengingat tagihan kredit Anda sebesar 1.084.600 untuk rekening 102-001-000023970. Jatuh tempo pada 2026-02-11. ",
+    "scheduledTime": "2026-02-11T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "664376f7-a0a8-4410-bbde-6209e6ebe13a",
+    "connectionId": "ipad",
+    "recipient": "6281298429366",
+    "message": "Halo ASTUTI NINGSIH, ini adalah pengingat tagihan kredit Anda sebesar 1.084.600 untuk rekening 102-001-000023970. Jatuh tempo pada 2026-02-11. ",
+    "scheduledTime": "2026-02-15T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "a3d54ff1-1248-4a51-8135-84b3650d179b",
+    "connectionId": "ipad",
+    "recipient": "6285329251025",
+    "message": "Halo RAUDI, ini adalah pengingat tagihan kredit Anda sebesar 671.85 untuk rekening 102-001-000024065. Jatuh tempo pada 2026-11-14. ",
+    "scheduledTime": "2026-11-13T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "d0120540-08e0-4cd0-9582-9c6e2ece6a3c",
+    "connectionId": "ipad",
+    "recipient": "6285329251025",
+    "message": "Halo RAUDI, ini adalah pengingat tagihan kredit Anda sebesar 671.85 untuk rekening 102-001-000024065. Jatuh tempo pada 2026-11-14. ",
+    "scheduledTime": "2026-11-14T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "ba442e0a-2130-4641-afc8-8db27c9fe83c",
+    "connectionId": "ipad",
+    "recipient": "6285329251025",
+    "message": "Halo RAUDI, ini adalah pengingat tagihan kredit Anda sebesar 671.85 untuk rekening 102-001-000024065. Jatuh tempo pada 2026-11-14. ",
+    "scheduledTime": "2026-11-18T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "0ea6a858-7c50-400b-b563-211b3e60875e",
+    "connectionId": "ipad",
+    "recipient": "6282136004639",
+    "message": "Halo ZAENAROH, ini adalah pengingat tagihan kredit Anda sebesar 450.5 untuk rekening 102-001-000024129. Jatuh tempo pada 2026-11-20. ",
+    "scheduledTime": "2026-11-19T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "0ff8c467-69c5-467b-96b0-e6f0df8335f6",
+    "connectionId": "ipad",
+    "recipient": "6282136004639",
+    "message": "Halo ZAENAROH, ini adalah pengingat tagihan kredit Anda sebesar 450.5 untuk rekening 102-001-000024129. Jatuh tempo pada 2026-11-20. ",
+    "scheduledTime": "2026-11-20T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "de9d4ad7-efac-423b-a621-fe6ae8a6d64c",
+    "connectionId": "ipad",
+    "recipient": "6282136004639",
+    "message": "Halo ZAENAROH, ini adalah pengingat tagihan kredit Anda sebesar 450.5 untuk rekening 102-001-000024129. Jatuh tempo pada 2026-11-20. ",
+    "scheduledTime": "2026-11-24T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "bb2a6219-0429-4c64-9af0-bda6396d0767",
+    "connectionId": "ipad",
+    "recipient": "6285878880669",
+    "message": "Halo ANUNG JINAWI, ini adalah pengingat tagihan kredit Anda sebesar 450.5 untuk rekening 102-001-000024130. Jatuh tempo pada 2026-11-20. ",
+    "scheduledTime": "2026-11-19T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "97face57-fcc2-45c1-8362-51163987b2e3",
+    "connectionId": "ipad",
+    "recipient": "6285878880669",
+    "message": "Halo ANUNG JINAWI, ini adalah pengingat tagihan kredit Anda sebesar 450.5 untuk rekening 102-001-000024130. Jatuh tempo pada 2026-11-20. ",
+    "scheduledTime": "2026-11-20T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "f8e28bcf-a95a-456b-975b-f40b60eb5b09",
+    "connectionId": "ipad",
+    "recipient": "6285878880669",
+    "message": "Halo ANUNG JINAWI, ini adalah pengingat tagihan kredit Anda sebesar 450.5 untuk rekening 102-001-000024130. Jatuh tempo pada 2026-11-20. ",
+    "scheduledTime": "2026-11-24T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "60b8b7fb-1494-4350-a684-618cf0867e46",
+    "connectionId": "ipad",
+    "recipient": "62852292257",
+    "message": "Halo SITI AISAH, ini adalah pengingat tagihan kredit Anda sebesar 253.1 untuk rekening 102-001-000024069. Jatuh tempo pada 2026-11-21. ",
+    "scheduledTime": "2026-11-20T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "cc5b1230-c7dc-4658-a547-30c730d9f0d3",
+    "connectionId": "ipad",
+    "recipient": "62852292257",
+    "message": "Halo SITI AISAH, ini adalah pengingat tagihan kredit Anda sebesar 253.1 untuk rekening 102-001-000024069. Jatuh tempo pada 2026-11-21. ",
+    "scheduledTime": "2026-11-21T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "2f8cfab5-345c-41f3-864f-41c931dc89b9",
+    "connectionId": "ipad",
+    "recipient": "62852292257",
+    "message": "Halo SITI AISAH, ini adalah pengingat tagihan kredit Anda sebesar 253.1 untuk rekening 102-001-000024069. Jatuh tempo pada 2026-11-21. ",
+    "scheduledTime": "2026-11-25T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "2bbc8d22-fb2d-4ac1-beda-5a5da2ad6fc2",
+    "connectionId": "ipad",
+    "recipient": "6281100002325",
+    "message": "Halo RAHONO, ini adalah pengingat tagihan kredit Anda sebesar 546.5 untuk rekening 102-001-000024156. Jatuh tempo pada 2026-11-22. ",
+    "scheduledTime": "2026-11-21T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "82222a98-e1be-4595-9687-d5bccd9b24ab",
+    "connectionId": "ipad",
+    "recipient": "6281100002325",
+    "message": "Halo RAHONO, ini adalah pengingat tagihan kredit Anda sebesar 546.5 untuk rekening 102-001-000024156. Jatuh tempo pada 2026-11-22. ",
+    "scheduledTime": "2026-11-22T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "2f428b7a-bea2-42bd-bcb1-430edc408404",
+    "connectionId": "ipad",
+    "recipient": "6281100002325",
+    "message": "Halo RAHONO, ini adalah pengingat tagihan kredit Anda sebesar 546.5 untuk rekening 102-001-000024156. Jatuh tempo pada 2026-11-22. ",
+    "scheduledTime": "2026-11-26T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "9d74aeae-8752-44d0-b7b2-5e59ae9b411b",
+    "connectionId": "ipad",
+    "recipient": "6281100002314",
+    "message": "Halo TARONI, ini adalah pengingat tagihan kredit Anda sebesar 543.95 untuk rekening 102-001-000024271. Jatuh tempo pada 2026-11-30. ",
+    "scheduledTime": "2026-11-29T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "032b4475-ad3b-4c8e-a77e-8aee84f6343c",
+    "connectionId": "ipad",
+    "recipient": "6281100002314",
+    "message": "Halo TARONI, ini adalah pengingat tagihan kredit Anda sebesar 543.95 untuk rekening 102-001-000024271. Jatuh tempo pada 2026-11-30. ",
+    "scheduledTime": "2026-11-30T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "5928d952-e829-4e2b-8123-b6f5e6011536",
+    "connectionId": "ipad",
+    "recipient": "6281100002314",
+    "message": "Halo TARONI, ini adalah pengingat tagihan kredit Anda sebesar 543.95 untuk rekening 102-001-000024271. Jatuh tempo pada 2026-11-30. ",
+    "scheduledTime": "2026-12-04T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "1945015b-3bb0-4207-9083-caa3d48fa731",
+    "connectionId": "ipad",
+    "recipient": "6285713694448",
+    "message": "Halo NUR FARIDAH, ini adalah pengingat tagihan kredit Anda sebesar 540.6 untuk rekening 102-001-000024344. Jatuh tempo pada 2026-07-12. ",
+    "scheduledTime": "2026-07-11T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "fc40c6d8-a360-456d-81e5-3a66bfd77102",
+    "connectionId": "ipad",
+    "recipient": "6285713694448",
+    "message": "Halo NUR FARIDAH, ini adalah pengingat tagihan kredit Anda sebesar 540.6 untuk rekening 102-001-000024344. Jatuh tempo pada 2026-07-12. ",
+    "scheduledTime": "2026-07-12T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "2d60f6d9-1b7d-4316-8330-2f4afa053f4b",
+    "connectionId": "ipad",
+    "recipient": "6285713694448",
+    "message": "Halo NUR FARIDAH, ini adalah pengingat tagihan kredit Anda sebesar 540.6 untuk rekening 102-001-000024344. Jatuh tempo pada 2026-07-12. ",
+    "scheduledTime": "2026-07-16T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "fba26c81-96e1-4785-a820-ba9c78efde94",
+    "connectionId": "ipad",
+    "recipient": "6282329264710",
+    "message": "Halo SUBARIYAH, ini adalah pengingat tagihan kredit Anda sebesar 504.55 untuk rekening 102-001-000024347. Jatuh tempo pada 2026-07-12. ",
+    "scheduledTime": "2026-07-11T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "a8fe8b2d-cb76-450e-8c88-f022a60eeeec",
+    "connectionId": "ipad",
+    "recipient": "6282329264710",
+    "message": "Halo SUBARIYAH, ini adalah pengingat tagihan kredit Anda sebesar 504.55 untuk rekening 102-001-000024347. Jatuh tempo pada 2026-07-12. ",
+    "scheduledTime": "2026-07-12T02:00:00.000Z",
+    "isRecurring": true
+  },
+  {
+    "id": "e59e6e01-02a5-40fe-9bf7-abe015015e64",
+    "connectionId": "ipad",
+    "recipient": "6282329264710",
+    "message": "Halo SUBARIYAH, ini adalah pengingat tagihan kredit Anda sebesar 504.55 untuk rekening 102-001-000024347. Jatuh tempo pada 2026-07-12. ",
+    "scheduledTime": "2026-07-16T02:00:00.000Z",
+    "isRecurring": true
   }
 ]
