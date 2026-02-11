@@ -1,4 +1,4 @@
-const whatsappService = require('./whatsappService');
+const whatsappService = require('./whatsapp');
 const googleSheetsService = require('./googleSheetsService');
 const configService = require('./configService'); // Assuming we might needconfig, or just env
 

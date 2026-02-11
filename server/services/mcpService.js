@@ -6,7 +6,7 @@ const {
     ListResourcesRequestSchema,
     ReadResourceRequestSchema,
 } = require("@modelcontextprotocol/sdk/types.js");
-const whatsappService = require('./whatsappService');
+const whatsappService = require('./whatsapp');
 const express = require('express');
 
 let mcpServer;

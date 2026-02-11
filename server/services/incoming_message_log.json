@@ -1,0 +1,26 @@
+{
+  "key": {
+    "remoteJid": "171889020383485@lid",
+    "remoteJidAlt": "6282328352054@s.whatsapp.net",
+    "fromMe": false,
+    "id": "ACEBB15E08B34E1BFA9CED30C31ED26B",
+    "participant": "",
+    "addressingMode": "lid"
+  },
+  "messageTimestamp": 1770782359,
+  "pushName": "💤",
+  "broadcast": false,
+  "message": {
+    "conversation": "Tes",
+    "messageContextInfo": {
+      "deviceListMetadata": {
+        "senderKeyHash": "YG89SHWIKfIHwQ==",
+        "senderTimestamp": "1770686605",
+        "recipientKeyHash": "INCTpdGcsEftXA==",
+        "recipientTimestamp": "1770781537"
+      },
+      "deviceListMetadataVersion": 2,
+      "messageSecret": "UB64kwkIKJERj+Md0x1jnq8G/amby2YSBOGrtSEA2dE="
+    }
+  }
+}

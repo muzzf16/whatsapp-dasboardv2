@@ -8,7 +8,7 @@ const schedulerRoutes = require('./routes/schedulerRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require('./routes/userRoutes');
 const contactRoutes = require('./routes/contactRoutes');
-const { initWhatsApp } = require('./services/whatsappService');
+const { initWhatsApp } = require('./services/whatsapp');
 const googleSheetsService = require('./services/googleSheetsService');
 const { initMCP } = require('./services/mcpService');
 

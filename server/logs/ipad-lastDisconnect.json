@@ -1,25 +1,20 @@
 {
-  "timestamp": "2026-02-10T05:40:43.652Z",
+  "timestamp": "2026-02-10T11:01:34.708Z",
   "lastDisconnect": {
     "error": {
-      "data": {
-        "tag": "stream:error",
-        "attrs": {
-          "code": "515"
-        }
-      },
+      "data": null,
       "isBoom": true,
-      "isServer": true,
+      "isServer": false,
       "output": {
-        "statusCode": 515,
+        "statusCode": 401,
         "payload": {
-          "statusCode": 515,
-          "error": "Unknown",
-          "message": "Stream Errored (restart required)"
+          "statusCode": 401,
+          "error": "Unauthorized",
+          "message": "Intentional Logout"
         },
         "headers": {}
       }
     },
-    "date": "2026-02-10T05:40:43.652Z"
+    "date": "2026-02-10T11:01:34.708Z"
   }
 }

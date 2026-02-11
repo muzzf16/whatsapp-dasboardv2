@@ -1,0 +1,44 @@
+{
+  "key": {
+    "remoteJid": "120363305948537005@g.us",
+    "fromMe": false,
+    "id": "3EB0B10770A72AF27E6149",
+    "participant": "21315939504261@lid",
+    "participantAlt": "6281314000184@s.whatsapp.net",
+    "addressingMode": "lid"
+  },
+  "messageTimestamp": 1770799730,
+  "pushName": "mama Zada",
+  "broadcast": false,
+  "message": {
+    "senderKeyDistributionMessage": {
+      "groupId": "120363305948537005@g.us",
+      "axolotlSenderKeyDistributionMessage": "Mwj03pNREAYaII4+x8MbSfurQzi7qkWC3Vl3KzleHy5PJhcX2J5QYYHeIiEFHWhNpPm6QTuzD88y4nO6xm5Nb/q3o4apYonhrpdlBn0="
+    },
+    "extendedTextMessage": {
+      "text": "pening ya kak jadinya, mau kerja satset gak bisa. berat dikepala hahaha",
+      "contextInfo": {
+        "stanzaId": "3EB05D3639412951B05571",
+        "participant": "67847682302117@lid",
+        "quotedMessage": {
+          "conversation": "sebenarnya ada masalah apa ya, setahun lebih coretax masih ada saja masalahnya. Apakah kalau dari petugas penyuluh membuat laporan ke kantor pusat itu justru mereka mendapat teguran ? Masak atasi masalah gitu saja kok sampai kepusat. Padahal yang membuat masalah ya kantor pusat. Kalau benar kejadiannya begitu maka  yang sampai ke Pak Purbaya ya BAIK PAK, SEMUA BAIK",
+          "messageContextInfo": {
+            "messageSecret": "igo7JzwwIrSpcpxNN9A2iOjjem8xRZHVmm5K7CcjOd0="
+          }
+        },
+        "disappearingMode": {
+          "initiator": "CHANGED_IN_CHAT",
+          "trigger": "CHAT_SETTING"
+        }
+      },
+      "inviteLinkGroupTypeV2": "DEFAULT"
+    },
+    "messageContextInfo": {
+      "messageSecret": "84o33ur0nFdEAUm+p07z2UhfEJsKj5luU7R4DuRJ19s=",
+      "limitSharingV2": {
+        "trigger": "UNKNOWN",
+        "initiatedByMe": false
+      }
+    }
+  }
+}

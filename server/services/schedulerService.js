@@ -2,7 +2,7 @@ const cron = require('node-cron');
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
-const whatsappService = require('./whatsappService');
+const whatsappService = require('./whatsapp');
 const googleSheetsService = require('./googleSheetsService');
 const collectionService = require('./collectionService');
 

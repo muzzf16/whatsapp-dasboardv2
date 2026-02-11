@@ -1,4 +1,4 @@
-const whatsappService = require('../services/whatsappService');
+const whatsappService = require('../services/whatsapp');
 const configService = require('../services/configService');
 const qrcode = require('qrcode');
 
