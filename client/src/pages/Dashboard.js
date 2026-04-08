@@ -386,8 +386,8 @@ export default function Dashboard() {
 
         if (activeTab === 'tools') {
             return (
-                <div className="flex flex-col h-full bg-gray-50/50">
-                    <div className="bg-white border-b border-gray-200 px-8 py-4">
+                <div className="flex flex-col h-full bg-transparent">
+                    <div className="bg-white/80 backdrop-blur border-b border-slate-200 px-4 md:px-6 py-3 md:py-4">
                         <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
                             {['broadcast', 'schedule', 'webhook', 'ai-config'].map(tool => (
                                 <button
@@ -404,7 +404,7 @@ export default function Dashboard() {
                             ))}
                         </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-8">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6">
                         {renderToolContent()}
                     </div>
                 </div>
@@ -422,7 +422,7 @@ export default function Dashboard() {
                 );
             case 'account_manager':
                 return (
-                    <div className="h-full overflow-y-auto p-8 bg-gray-50/50">
+                    <div className="h-full overflow-y-auto p-4 md:p-6">
                         <ConnectionManager
                             newConnectionId={newConnectionId}
                             setNewConnectionId={setNewConnectionId}
@@ -441,8 +441,8 @@ export default function Dashboard() {
                 );
             case 'whatsapp':
                 return (
-                    <div className="h-full flex gap-6 p-6 bg-gray-50/50 overflow-hidden">
-                        <div className="w-1/3 flex flex-col gap-6 overflow-y-auto">
+                    <div className="h-full flex flex-col xl:flex-row gap-4 xl:gap-6 p-4 md:p-6 overflow-hidden">
+                        <div className="w-full xl:w-1/3 flex flex-col gap-4 md:gap-6 overflow-y-auto">
                             <MessageSender
                                 sendTo={sendTo}
                                 setSendTo={setSendTo}
@@ -454,7 +454,7 @@ export default function Dashboard() {
                                 onFileChange={handleFileChange}
                             />
                         </div>
-                        <div className="w-2/3 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="w-full xl:w-2/3 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[320px]">
                             <MessageLog
                                 activeTab={logTab}
                                 setActiveTab={setLogTab}
@@ -472,14 +472,14 @@ export default function Dashboard() {
                     </div>
                 )
             case 'file_manager':
-                return <div className="p-8 text-gray-500">File Manager (Coming Soon)</div>;
+                return <div className="p-4 md:p-6 text-slate-500">File Manager (Coming Soon)</div>;
             case 'contacts':
-                return <div className="p-8 h-full overflow-y-auto"><ContactManager /></div>;
+                return <div className="p-4 md:p-6 h-full overflow-y-auto"><ContactManager /></div>;
             case 'users':
-                return <div className="p-8 h-full overflow-y-auto"><UserManagement /></div>;
+                return <div className="p-4 md:p-6 h-full overflow-y-auto"><UserManagement /></div>;
             default:
                 return (
-                    <div className="p-8">Select a menu item</div>
+                    <div className="p-4 md:p-6">Select a menu item</div>
                 );
         }
     };
