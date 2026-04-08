@@ -14,6 +14,11 @@ class MessageProcessor {
         this.connectionId = connectionId;
         this.io = io;
         this.sendMessageCallback = sendMessageCallback;
+        this.userId = null;
+    }
+
+    setUserId(userId) {
+        this.userId = userId;
     }
 
     async processMessage(m) {
@@ -30,6 +35,15 @@ class MessageProcessor {
             // Filter out status messages and group messages
             if (sender === 'status@broadcast' || sender.endsWith('@g.us')) {
                 return;
+            }
+
+            // Filter out self-messages (sent from other linked devices)
+            if (this.userId) {
+                const senderNumber = sender.split('@')[0].split(':')[0];
+                const myNumber = this.userId.split('@')[0].split(':')[0];
+                if (senderNumber === myNumber) {
+                    return;
+                }
             }
 
             // Fix for LID: Use remoteJidAlt if available and current sender is LID
