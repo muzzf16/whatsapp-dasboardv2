@@ -24,6 +24,8 @@ const socket = io(API_URL, {
     withCredentials: true,
 });
 
+// Konfigurasi sub-menu untuk halaman "Tools".
+// Dengan pendekatan metadata seperti ini, penambahan tab baru cukup tambah 1 objek di array ini.
 const TOOL_TABS = [
     { id: 'broadcast', label: 'Broadcast', icon: Radio, description: 'Kirim pesan massal ke banyak nomor.' },
     { id: 'schedule', label: 'Schedule', icon: CalendarClock, description: 'Jadwalkan pesan manual atau via Excel.' },
@@ -346,6 +348,8 @@ export default function Dashboard() {
     const activeConnection = connections.find(c => c.connectionId === activeConnectionId);
 
     const renderContent = () => {
+        // Renderer konten berdasarkan sub-tab tools yang aktif.
+        // Dipisah agar blok return utama lebih mudah dibaca junior developer.
         const renderToolContent = () => {
             switch (activeToolTab) {
                 case 'broadcast':
@@ -394,11 +398,11 @@ export default function Dashboard() {
         };
 
         if (activeTab === 'tools') {
+            // Ambil metadata tab aktif (icon/label/description) untuk ditampilkan di header workspace.
             const activeTool = TOOL_TABS.find((tab) => tab.id === activeToolTab) || TOOL_TABS[0];
 
             return (
                 <div className="flex flex-col h-full bg-transparent">
-
                     <div className="bg-white/85 backdrop-blur border-b border-slate-200 px-4 md:px-6 py-3 md:py-4">
                         <div className="flex flex-col gap-3 max-w-5xl mx-auto w-full">
                             <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
@@ -406,6 +410,7 @@ export default function Dashboard() {
                                 Tools Workspace
                             </div>
 
+                            {/* Wrapper horizontal-scroll untuk layar kecil agar tab tidak terpotong. */}
                             <div className="overflow-x-auto">
                                 <div className="inline-flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl min-w-max">
                                     {TOOL_TABS.map((tool) => {
@@ -413,6 +418,7 @@ export default function Dashboard() {
                                         const isActive = activeToolTab === tool.id;
 
                                         return (
+                                            // Tombol tab generik: style aktif/inaktif dipisah via conditional class.
                                             <button
                                                 key={tool.id}
                                                 onClick={() => setActiveToolTab(tool.id)}

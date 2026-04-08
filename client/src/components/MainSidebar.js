@@ -15,6 +15,8 @@ import { AuthContext } from '../context/AuthContext';
 const MainSidebar = ({ activeTab, setActiveTab, isMobileMenuOpen = false, onCloseMobileMenu = () => { } }) => {
     const { user } = useContext(AuthContext);
 
+    // Daftar menu utama.
+    // Catatan: setiap item punya id (untuk routing internal tab), label, dan icon komponen.
     const mainMenuItems = [
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
@@ -24,20 +26,24 @@ const MainSidebar = ({ activeTab, setActiveTab, isMobileMenuOpen = false, onClos
         { id: 'tools', label: 'Automation Tools', icon: Settings },
     ];
 
+    // Menu admin hanya muncul jika role user = admin.
     if (user && user.role === 'admin') {
         mainMenuItems.push({ id: 'users', label: 'User Management', icon: UserCog });
     }
 
+    // Logout sederhana: hapus token lalu redirect ke halaman login.
     const handleLogout = () => {
         localStorage.removeItem('token');
         window.location.href = '/login';
     };
 
+    // Saat user klik menu di mobile, kita langsung tutup drawer agar UX lebih nyaman.
     const handleMenuClick = (menuId) => {
         setActiveTab(menuId);
         onCloseMobileMenu();
     };
 
+    // Dipisah ke variabel supaya markup sidebar desktop dan mobile bisa reuse 1 sumber.
     const sidebarBody = (
         <>
             <div className="h-16 flex items-center justify-between px-5 border-b border-white/10">
@@ -56,6 +62,7 @@ const MainSidebar = ({ activeTab, setActiveTab, isMobileMenuOpen = false, onClos
                 </button>
             </div>
 
+            {/* Nav utama. overflow-y-auto menjaga menu tetap bisa discroll saat item bertambah. */}
             <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
                 {mainMenuItems.map((item) => {
                     const Icon = item.icon;
@@ -77,6 +84,7 @@ const MainSidebar = ({ activeTab, setActiveTab, isMobileMenuOpen = false, onClos
                 })}
             </nav>
 
+            {/* Zona aksi bawah: sekarang khusus untuk logout */}
             <div className="p-3 border-t border-white/10">
                 <button
                     onClick={handleLogout}
@@ -91,10 +99,12 @@ const MainSidebar = ({ activeTab, setActiveTab, isMobileMenuOpen = false, onClos
 
     return (
         <>
+            {/* Desktop sidebar (hidden di mobile, muncul mulai breakpoint lg) */}
             <aside className="w-72 bg-slate-950/95 text-white backdrop-blur-xl border-r border-white/10 hidden lg:flex lg:flex-col flex-shrink-0">
                 {sidebarBody}
             </aside>
 
+            {/* Mobile drawer + overlay */}
             <div className={`fixed inset-0 z-40 lg:hidden transition ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                 <button
                     className={`absolute inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
