@@ -62,7 +62,7 @@ export default function ExcelUpload({ activeConnectionId, status }) {
     };
 
     return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-emerald-50/30">
                 <div className="flex items-center">
                     <div className="p-2 bg-emerald-100 text-emerald-600 rounded-lg mr-3">
@@ -75,7 +75,7 @@ export default function ExcelUpload({ activeConnectionId, status }) {
                 </div>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-8 space-y-6">
                 {/* Instructions Box */}
                 <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
                     <h3 className="text-sm font-semibold text-blue-900 mb-2 flex items-center">

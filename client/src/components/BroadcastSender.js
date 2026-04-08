@@ -4,7 +4,7 @@ import { Radio, Send, Clock, AlertCircle } from 'lucide-react';
 const BroadcastSender = ({ broadcastNumbers, setBroadcastNumbers, broadcastMessage, setBroadcastMessage, activeConnection, isBroadcasting, onBroadcastMessage, broadcastDelay, setBroadcastDelay }) => {
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden font-sans max-w-4xl mx-auto">
-            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/30">
+            <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-purple-50/30">
                 <div className="flex items-center">
                     <div className="p-2 bg-purple-100 text-purple-600 rounded-lg mr-3">
                         <Radio className="w-5 h-5" />

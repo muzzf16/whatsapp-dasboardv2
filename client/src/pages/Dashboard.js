@@ -15,12 +15,20 @@ import AISettings from '../components/AISettings';
 import DashboardContent from '../components/DashboardContent';
 import ContactManager from './ContactManager';
 import UserManagement from './UserManagement';
+import { Radio, CalendarClock, Webhook, Bot, PlugZap } from 'lucide-react';
 
 const socket = io(API_URL, {
     path: '/socket.io',
     transports: ['websocket', 'polling'],
     withCredentials: true,
 });
+
+const TOOL_TABS = [
+    { id: 'broadcast', label: 'Broadcast', icon: Radio, description: 'Kirim pesan massal ke banyak nomor.' },
+    { id: 'schedule', label: 'Schedule', icon: CalendarClock, description: 'Jadwalkan pesan manual atau via Excel.' },
+    { id: 'webhook', label: 'Webhook', icon: Webhook, description: 'Integrasi notifikasi realtime ke endpoint Anda.' },
+    { id: 'ai-config', label: 'AI Config', icon: Bot, description: 'Kelola konfigurasi AI dan auto-reply.' },
+];
 
 export default function Dashboard() {
     const [connections, setConnections] = useState([]);
@@ -355,7 +363,7 @@ export default function Dashboard() {
                     );
                 case 'schedule':
                     return (
-                        <div className="space-y-6">
+                        <div className="space-y-6 max-w-5xl mx-auto w-full">
                             <ExcelUpload
                                 activeConnectionId={activeConnectionId}
                                 status={activeConnection?.status}
@@ -385,23 +393,44 @@ export default function Dashboard() {
         };
 
         if (activeTab === 'tools') {
+            const activeTool = TOOL_TABS.find((tab) => tab.id === activeToolTab) || TOOL_TABS[0];
+
             return (
                 <div className="flex flex-col h-full bg-transparent">
-                    <div className="bg-white/80 backdrop-blur border-b border-slate-200 px-4 md:px-6 py-3 md:py-4">
-                        <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-                            {['broadcast', 'schedule', 'webhook', 'ai-config'].map(tool => (
-                                <button
-                                    key={tool}
-                                    onClick={() => setActiveToolTab(tool)}
-                                    className={`px-4 py-2 rounded-md font-medium text-sm transition-all capitalize
-                                        ${activeToolTab === tool
-                                            ? 'bg-white text-green-600 shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                                        }`}
-                                >
-                                    {tool.replace('-', ' ')}
-                                </button>
-                            ))}
+
+                    <div className="bg-white/85 backdrop-blur border-b border-slate-200 px-4 md:px-6 py-3 md:py-4">
+                        <div className="flex flex-col gap-3 max-w-5xl mx-auto w-full">
+                            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <PlugZap className="w-4 h-4 text-emerald-600" />
+                                Tools Workspace
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <div className="inline-flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl min-w-max">
+                                    {TOOL_TABS.map((tool) => {
+                                        const Icon = tool.icon;
+                                        const isActive = activeToolTab === tool.id;
+
+                                        return (
+                                            <button
+                                                key={tool.id}
+                                                onClick={() => setActiveToolTab(tool.id)}
+                                                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap border ${
+                                                    isActive
+                                                        ? 'bg-white text-emerald-700 border-emerald-100 shadow-sm'
+                                                        : 'text-slate-600 border-transparent hover:text-slate-800 hover:bg-white/70'
+                                                }`}
+                                            >
+                                                <Icon className="w-4 h-4" />
+                                                {tool.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="text-xs text-slate-500">{activeTool.description}</div>
+
                         </div>
                     </div>
                     <div className="flex-1 overflow-y-auto p-4 md:p-6">
