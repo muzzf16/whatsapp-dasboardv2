@@ -1,4 +1,9 @@
 require('dotenv').config();
+
+if (!process.env.JWT_SECRET) {
+    console.error("FATAL ERROR: JWT_SECRET is not defined in environment variables. Set a strong secret to secure the application.");
+    process.exit(1);
+}
 const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
@@ -35,7 +40,11 @@ try {
 }
 
 // Pasang middleware
-app.use(cors());
+app.use(cors({
+    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3003", "http://localhost:5173", "http://127.0.0.1:3000", "https://wa.kenes.biz.id", "https://www.wa.kenes.biz.id"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true
+}));
 app.use(express.json({ limit: '35mb' }));
 app.use('/api', whatsappRoutes);
 app.use('/api', schedulerRoutes);
@@ -83,11 +92,3 @@ process.on('uncaughtException', (err) => {
     // process.exit(1);
 });
 
-// Global error handlers - log and avoid crashing the process from unhandled rejections
-process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception thrown:', err);
-});
