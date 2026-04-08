@@ -143,7 +143,7 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
                         </h2>
                     </div>
 
-                    <div className="p-6">
+                    <div className="p-8">
                         <form onSubmit={handleScheduleMessage} className="space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
@@ -221,7 +221,7 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
                             Sync Sheet
                         </h3>
                     </div>
-                    <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div className="p-8 flex-1 flex flex-col justify-between">
                         <div>
                             <p className="text-sm text-gray-500 mb-4">Sync messages directly from a Google Sheet. Ensure the service account has "Viewer" access.</p>
                             <div className="space-y-3">

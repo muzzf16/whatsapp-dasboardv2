@@ -193,7 +193,7 @@ const AISettings = () => {
                     </div>
                 </div>
 
-                <div className="p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+                <div className="p-8 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
                     <div className="flex-1 space-y-2">
                         <div className="text-sm text-gray-600 leading-relaxed">
                             <p>Upload an Excel file containing keywords and their corresponding auto-replies.</p>

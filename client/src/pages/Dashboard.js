@@ -15,12 +15,20 @@ import AISettings from '../components/AISettings';
 import DashboardContent from '../components/DashboardContent';
 import ContactManager from './ContactManager';
 import UserManagement from './UserManagement';
+import { Radio, CalendarClock, Webhook, Bot, PlugZap } from 'lucide-react';
 
 const socket = io(API_URL, {
     path: '/socket.io',
     transports: ['websocket', 'polling'],
     withCredentials: true,
 });
+
+const TOOL_TABS = [
+    { id: 'broadcast', label: 'Broadcast', icon: Radio, description: 'Kirim pesan massal ke banyak nomor.' },
+    { id: 'schedule', label: 'Schedule', icon: CalendarClock, description: 'Jadwalkan pesan manual atau via Excel.' },
+    { id: 'webhook', label: 'Webhook', icon: Webhook, description: 'Integrasi notifikasi realtime ke endpoint Anda.' },
+    { id: 'ai-config', label: 'AI Config', icon: Bot, description: 'Kelola konfigurasi AI dan auto-reply.' },
+];
 
 export default function Dashboard() {
     const [connections, setConnections] = useState([]);
@@ -355,7 +363,7 @@ export default function Dashboard() {
                     );
                 case 'schedule':
                     return (
-                        <div className="space-y-6">
+                        <div className="space-y-6 max-w-5xl mx-auto w-full">
                             <ExcelUpload
                                 activeConnectionId={activeConnectionId}
                                 status={activeConnection?.status}
@@ -385,26 +393,47 @@ export default function Dashboard() {
         };
 
         if (activeTab === 'tools') {
+            const activeTool = TOOL_TABS.find((tab) => tab.id === activeToolTab) || TOOL_TABS[0];
+
             return (
-                <div className="flex flex-col h-full bg-gray-50/50">
-                    <div className="bg-white border-b border-gray-200 px-8 py-4">
-                        <div className="flex items-center space-x-1 bg-gray-100 p-1 rounded-lg w-fit">
-                            {['broadcast', 'schedule', 'webhook', 'ai-config'].map(tool => (
-                                <button
-                                    key={tool}
-                                    onClick={() => setActiveToolTab(tool)}
-                                    className={`px-4 py-2 rounded-md font-medium text-sm transition-all capitalize
-                                        ${activeToolTab === tool
-                                            ? 'bg-white text-green-600 shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
-                                        }`}
-                                >
-                                    {tool.replace('-', ' ')}
-                                </button>
-                            ))}
+                <div className="flex flex-col h-full bg-transparent">
+
+                    <div className="bg-white/85 backdrop-blur border-b border-slate-200 px-4 md:px-6 py-3 md:py-4">
+                        <div className="flex flex-col gap-3 max-w-5xl mx-auto w-full">
+                            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                                <PlugZap className="w-4 h-4 text-emerald-600" />
+                                Tools Workspace
+                            </div>
+
+                            <div className="overflow-x-auto">
+                                <div className="inline-flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl min-w-max">
+                                    {TOOL_TABS.map((tool) => {
+                                        const Icon = tool.icon;
+                                        const isActive = activeToolTab === tool.id;
+
+                                        return (
+                                            <button
+                                                key={tool.id}
+                                                onClick={() => setActiveToolTab(tool.id)}
+                                                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg font-medium text-sm transition-all whitespace-nowrap border ${
+                                                    isActive
+                                                        ? 'bg-white text-emerald-700 border-emerald-100 shadow-sm'
+                                                        : 'text-slate-600 border-transparent hover:text-slate-800 hover:bg-white/70'
+                                                }`}
+                                            >
+                                                <Icon className="w-4 h-4" />
+                                                {tool.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="text-xs text-slate-500">{activeTool.description}</div>
+
                         </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-8">
+                    <div className="flex-1 overflow-y-auto p-4 md:p-6">
                         {renderToolContent()}
                     </div>
                 </div>
@@ -422,7 +451,7 @@ export default function Dashboard() {
                 );
             case 'account_manager':
                 return (
-                    <div className="h-full overflow-y-auto p-8 bg-gray-50/50">
+                    <div className="h-full overflow-y-auto p-4 md:p-6">
                         <ConnectionManager
                             newConnectionId={newConnectionId}
                             setNewConnectionId={setNewConnectionId}
@@ -441,8 +470,8 @@ export default function Dashboard() {
                 );
             case 'whatsapp':
                 return (
-                    <div className="h-full flex gap-6 p-6 bg-gray-50/50 overflow-hidden">
-                        <div className="w-1/3 flex flex-col gap-6 overflow-y-auto">
+                    <div className="h-full flex flex-col xl:flex-row gap-4 xl:gap-6 p-4 md:p-6 overflow-hidden">
+                        <div className="w-full xl:w-1/3 flex flex-col gap-4 md:gap-6 overflow-y-auto">
                             <MessageSender
                                 sendTo={sendTo}
                                 setSendTo={setSendTo}
@@ -454,7 +483,7 @@ export default function Dashboard() {
                                 onFileChange={handleFileChange}
                             />
                         </div>
-                        <div className="w-2/3 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="w-full xl:w-2/3 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[320px]">
                             <MessageLog
                                 activeTab={logTab}
                                 setActiveTab={setLogTab}
@@ -472,14 +501,14 @@ export default function Dashboard() {
                     </div>
                 )
             case 'file_manager':
-                return <div className="p-8 text-gray-500">File Manager (Coming Soon)</div>;
+                return <div className="p-4 md:p-6 text-slate-500">File Manager (Coming Soon)</div>;
             case 'contacts':
-                return <div className="p-8 h-full overflow-y-auto"><ContactManager /></div>;
+                return <div className="p-4 md:p-6 h-full overflow-y-auto"><ContactManager /></div>;
             case 'users':
-                return <div className="p-8 h-full overflow-y-auto"><UserManagement /></div>;
+                return <div className="p-4 md:p-6 h-full overflow-y-auto"><UserManagement /></div>;
             default:
                 return (
-                    <div className="p-8">Select a menu item</div>
+                    <div className="p-4 md:p-6">Select a menu item</div>
                 );
         }
     };
