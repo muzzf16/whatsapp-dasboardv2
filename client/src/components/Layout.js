@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { Menu, Wifi, WifiOff } from 'lucide-react';
 import MainSidebar from './MainSidebar';
 
+// Peta nama tab -> judul header.
+// Tujuannya agar judul di topbar selalu konsisten walaupun ID tab berbentuk snake_case.
 const TAB_TITLES = {
     dashboard: 'Dashboard Overview',
     whatsapp: 'WhatsApp Messaging',
@@ -13,13 +15,18 @@ const TAB_TITLES = {
 };
 
 const Layout = ({ children, activeTab: propActiveTab, setActiveTab: propSetActiveTab, activeConnection }) => {
+    // Fallback state: dipakai kalau parent tidak mengontrol activeTab.
     const [localActiveTab, setLocalActiveTab] = useState('dashboard');
+    // State untuk membuka/menutup sidebar mobile (drawer).
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    // Prioritas pakai prop dari parent; kalau tidak ada baru pakai state lokal.
     const activeTab = propActiveTab || localActiveTab;
     const setActiveTab = propSetActiveTab || setLocalActiveTab;
 
+    // Memoized agar tidak menghitung ulang title di setiap render tanpa perubahan tab.
     const headerTitle = useMemo(() => TAB_TITLES[activeTab] || 'Dashboard', [activeTab]);
+    // Digunakan untuk status pill (Connected vs status lain).
     const isConnected = activeConnection?.status === 'connected';
 
     return (
