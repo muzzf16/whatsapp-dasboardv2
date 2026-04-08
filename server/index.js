@@ -8,6 +8,7 @@ const schedulerRoutes = require('./routes/schedulerRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require('./routes/userRoutes');
 const contactRoutes = require('./routes/contactRoutes');
+const fileRoutes = require('./routes/fileRoutes');
 const { initWhatsApp } = require('./services/whatsapp');
 const googleSheetsService = require('./services/googleSheetsService');
 const { initMCP } = require('./services/mcpService');
@@ -41,6 +42,9 @@ app.use('/api', schedulerRoutes);
 app.use('/api', aiRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/contacts', contactRoutes);
+app.use('/api/files', fileRoutes);
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
     res.send('<h1>WhatsApp API Backend</h1>');

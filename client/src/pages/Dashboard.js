@@ -15,6 +15,7 @@ import AISettings from '../components/AISettings';
 import DashboardContent from '../components/DashboardContent';
 import ContactManager from './ContactManager';
 import UserManagement from './UserManagement';
+import FileManager from '../components/FileManager';
 import { Radio, CalendarClock, Webhook, Bot, PlugZap } from 'lucide-react';
 
 const socket = io(API_URL, {
@@ -501,7 +502,7 @@ export default function Dashboard() {
                     </div>
                 )
             case 'file_manager':
-                return <div className="p-4 md:p-6 text-slate-500">File Manager (Coming Soon)</div>;
+                return <div className="h-full overflow-y-auto p-4 md:p-6"><FileManager /></div>;
             case 'contacts':
                 return <div className="p-4 md:p-6 h-full overflow-y-auto"><ContactManager /></div>;
             case 'users':
