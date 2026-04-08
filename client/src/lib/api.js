@@ -29,8 +29,10 @@ const getApiUrl = () => {
 const API_URL = getApiUrl();
 const API_BASE = `${API_URL}/api`;
 
-console.log('Access hostname:', window.location.hostname);
-console.log('Access port:', window.location.port);
-console.log('Configured API_URL:', API_URL);
+if (process.env.NODE_ENV !== 'production') {
+    console.log('Access hostname:', window.location.hostname);
+    console.log('Access port:', window.location.port);
+    console.log('Configured API_URL:', API_URL);
+}
 
 export { API_URL, API_BASE };
