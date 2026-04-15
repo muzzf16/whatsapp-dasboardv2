@@ -45,6 +45,23 @@ db.serialize(() => {
         notes TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    db.run(`CREATE TABLE IF NOT EXISTS audit_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        action TEXT NOT NULL,
+        entity_type TEXT,
+        entity_id TEXT,
+        metadata TEXT,
+        ip_address TEXT,
+        user_agent TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    db.run('CREATE INDEX IF NOT EXISTS idx_messages_connection_type_timestamp ON messages (connection_id, type, timestamp)');
+    db.run('CREATE INDEX IF NOT EXISTS idx_contacts_phone ON contacts (phone)');
+    db.run('CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs (created_at)');
+    db.run('CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs (user_id)');
 });
 
 module.exports = db;

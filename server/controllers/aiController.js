@@ -2,10 +2,17 @@ const { getAiConfig, updateAiConfig } = require('../services/aiService');
 const autoReplyService = require('../services/autoReplyService');
 const xlsx = require('xlsx');
 
+function maskConfig(config) {
+    return {
+        ...config,
+        apiKey: config.apiKey ? '********' : ''
+    };
+}
+
 const getAiConfigController = (req, res) => {
     try {
         const config = getAiConfig();
-        res.json({ success: true, config });
+        res.json({ success: true, config: maskConfig(config) });
     } catch (error) {
         console.error("Error getting AI config:", error);
         res.status(500).json({ success: false, error: 'Failed to get AI config' });
@@ -14,9 +21,15 @@ const getAiConfigController = (req, res) => {
 
 const updateAiConfigController = (req, res) => {
     try {
-        const newConfig = req.body;
+        const newConfig = { ...req.body };
+        if (newConfig.apiKey === '********') {
+            delete newConfig.apiKey;
+        }
+        if (newConfig.systemInstruction && typeof newConfig.systemInstruction === 'string' && newConfig.systemInstruction.length > 4000) {
+            return res.status(400).json({ success: false, error: 'System instruction is too long' });
+        }
         const updated = updateAiConfig(newConfig);
-        res.json({ success: true, config: updated });
+        res.json({ success: true, config: maskConfig(updated) });
     } catch (error) {
         console.error("Error updating AI config:", error);
         res.status(500).json({ success: false, error: 'Failed to update AI config' });

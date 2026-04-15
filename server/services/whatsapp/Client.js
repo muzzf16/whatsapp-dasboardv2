@@ -11,21 +11,24 @@ const fs = require('fs');
 const MessageProcessor = require('./MessageProcessor');
 const databaseService = require('../databaseService');
 const googleSheetsService = require('../googleSheetsService');
+const { normalizeConnectionId, isSafePath } = require('../../utils/security');
 
 class Client {
     constructor(connectionId, io) {
-        if (!connectionId || typeof connectionId !== 'string' || connectionId.trim() === '') {
+        const safeConnectionId = normalizeConnectionId(connectionId);
+        if (!safeConnectionId) {
             console.error('FATAL: Invalid connectionId provided to Connection constructor', connectionId);
             throw new Error('Invalid connectionId');
         }
-        this.connectionId = connectionId;
+        this.connectionId = safeConnectionId;
         this.io = io;
         this.sock = null;
         this.qrCodeData = null;
         this.connectionStatus = 'disconnected';
         this.messageLogs = []; // Deprecated, but keeping structure if needed
         this.outgoingMessageLogs = []; // Deprecated
-        this.authDir = path.join('auth_info_multi_device', this.connectionId);
+        this.authDirBase = path.join(__dirname, '..', '..', '..', 'auth_info_multi_device');
+        this.authDir = path.join(this.authDirBase, this.connectionId);
         this.lastDisconnectInfo = null;
         this.reconnectDelay = 1000; // ms
         this.reconnectMaxDelay = 30000; // ms
@@ -284,6 +287,9 @@ class Client {
             // ignore
         }
         if (fs.existsSync(this.authDir)) {
+            if (!isSafePath(this.authDirBase, this.authDir)) {
+                throw new Error('Refusing to remove unsafe auth path');
+            }
             fs.rmSync(this.authDir, { recursive: true, force: true });
         }
     }

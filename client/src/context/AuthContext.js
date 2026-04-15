@@ -41,6 +41,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const res = await axios.post(`${API_URL}/register`, formData);
             localStorage.setItem('token', res.data.token);
+            axios.defaults.headers.common['x-auth-token'] = res.data.token;
             setToken(res.data.token);
             return { success: true };
         } catch (err) {
@@ -52,6 +53,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const res = await axios.post(`${API_URL}/login`, formData);
             localStorage.setItem('token', res.data.token);
+            axios.defaults.headers.common['x-auth-token'] = res.data.token;
             setToken(res.data.token);
             return { success: true };
         } catch (err) {

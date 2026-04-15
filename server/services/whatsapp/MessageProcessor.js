@@ -9,6 +9,39 @@ const googleSheetsService = require('../googleSheetsService');
 const autoReplyService = require('../autoReplyService');
 const databaseService = require('../databaseService');
 
+function unwrapMessage(message) {
+    if (!message) return null;
+    return message.ephemeralMessage?.message
+        || message.viewOnceMessage?.message
+        || message.viewOnceMessageV2?.message
+        || message.documentWithCaptionMessage?.message
+        || message;
+}
+
+function extractMessageText(messageContent) {
+    if (!messageContent) return 'No text content';
+
+    return messageContent.conversation
+        || messageContent.extendedTextMessage?.text
+        || messageContent.imageMessage?.caption
+        || messageContent.videoMessage?.caption
+        || messageContent.documentMessage?.caption
+        || messageContent.documentMessage?.fileName
+        || (messageContent.stickerMessage ? '[Sticker]' : null)
+        || (messageContent.audioMessage ? '[Audio]' : null)
+        || (messageContent.imageMessage ? '[Image]' : null)
+        || (messageContent.videoMessage ? '[Video]' : null)
+        || (messageContent.documentMessage ? '[Document]' : null)
+        || (messageContent.contactMessage ? '[Contact]' : null)
+        || (messageContent.locationMessage ? '[Location]' : null)
+        || (messageContent.protocolMessage && messageContent.protocolMessage.type === 'REVOKE' ? '[Message Revoked]' : null)
+        || 'No text content';
+}
+
+function isRestrictedCredentialText(text) {
+    return /\b(pin|otp|one time password|password|kata sandi|cvv|kode akses)\b/i.test(text || '');
+}
+
 class MessageProcessor {
     constructor(connectionId, io, sendMessageCallback) {
         this.connectionId = connectionId;
@@ -20,10 +53,7 @@ class MessageProcessor {
         console.log(`[WA-DEBUG][${this.connectionId}] messages.upsert type: ${m.type}, messages: ${m.messages.length}`);
         const msg = m.messages[0];
         if (!msg.key.fromMe && (m.type === 'notify' || m.type === 'append')) {
-            // Log to file for debugging
-            const logPath = path.join(__dirname, '..', '..', 'incoming_message_log.json');
-            console.log(`[WA-DEBUG] Writing log to: ${logPath}`);
-            fs.writeFileSync(logPath, JSON.stringify(msg, null, 2));
+            this.writeIncomingMessageDebugLog(msg);
 
             let sender = msg.key.remoteJid;
 
@@ -37,33 +67,8 @@ class MessageProcessor {
                 sender = msg.key.remoteJidAlt;
             }
 
-            const unwrapMessage = (m) => {
-                if (!m) return null;
-                return m.ephemeralMessage?.message || m.viewOnceMessage?.message || m.viewOnceMessageV2?.message || m.documentWithCaptionMessage?.message || m;
-            };
-
             const messageContent = unwrapMessage(msg.message);
-            let text = '';
-
-            if (messageContent) {
-                text = messageContent.conversation
-                    || messageContent.extendedTextMessage?.text
-                    || messageContent.imageMessage?.caption
-                    || messageContent.videoMessage?.caption
-                    || messageContent.documentMessage?.caption
-                    || messageContent.documentMessage?.fileName
-                    || (messageContent.stickerMessage ? '[Sticker]' : null)
-                    || (messageContent.audioMessage ? '[Audio]' : null)
-                    || (messageContent.imageMessage ? '[Image]' : null)
-                    || (messageContent.videoMessage ? '[Video]' : null)
-                    || (messageContent.documentMessage ? '[Document]' : null)
-                    || (messageContent.contactMessage ? '[Contact]' : null)
-                    || (messageContent.locationMessage ? '[Location]' : null)
-                    || (messageContent.protocolMessage && messageContent.protocolMessage.type === 'REVOKE' ? '[Message Revoked]' : null)
-                    || 'No text content';
-            } else {
-                text = 'No text content';
-            }
+            let text = extractMessageText(messageContent);
 
             // We are filtering out group messages above so groupName will always be null for now
             // But keeping logic in case we enable groups later
@@ -117,9 +122,11 @@ class MessageProcessor {
                 message: text,
                 timestamp: log.timestamp,
                 groupName: groupName,
-                senderName: msg.pushName,
-                originalMessage: msg
+                senderName: msg.pushName
             };
+            if (process.env.WEBHOOK_INCLUDE_ORIGINAL_MESSAGE === 'true') {
+                webhookPayload.originalMessage = msg;
+            }
             this.callWebhook(webhookPayload);
 
             // Log to Google Sheets
@@ -138,8 +145,34 @@ class MessageProcessor {
         }
     }
 
+    writeIncomingMessageDebugLog(msg) {
+        if (process.env.DEBUG_INCOMING_MESSAGES !== 'true') {
+            return;
+        }
+
+        try {
+            const logPath = path.join(__dirname, '..', '..', 'incoming_message_log.json');
+            const debugPayload = {
+                timestamp: new Date().toISOString(),
+                id: msg.key?.id,
+                remoteJid: msg.key?.remoteJid,
+                fromMe: msg.key?.fromMe,
+                pushName: msg.pushName,
+                messageTypes: msg.message ? Object.keys(unwrapMessage(msg.message) || {}) : []
+            };
+            fs.writeFileSync(logPath, JSON.stringify(debugPayload, null, 2));
+        } catch (error) {
+            console.warn(`[WA-DEBUG][${this.connectionId}] Failed to write incoming debug log:`, error?.message || error);
+        }
+    }
+
     async handleAutoReply(text, sender) {
         try {
+            if (isRestrictedCredentialText(text)) {
+                await this.sendMessageCallback(sender, 'Demi keamanan, mohon jangan mengirim PIN, OTP, password, CVV, atau kode akses melalui chat ini. Hubungi kanal resmi bank jika Anda membutuhkan bantuan verifikasi.');
+                return;
+            }
+
             // Only reply to direct messages or mentions (optional refinement, for now all text messages)
             // Avoid replying to status updates or very short messages if needed
             if (text && text.length > 1) {
@@ -179,7 +212,7 @@ class MessageProcessor {
                 const signature = crypto.createHmac('sha256', webhookSecret).update(JSON.stringify(payload)).digest('hex');
                 headers['X-Webhook-Signature'] = signature;
             }
-            await axios.post(webhookUrl, payload, { headers });
+            await axios.post(webhookUrl, payload, { headers, timeout: 10000 });
             console.log(`[WEBHOOK][${this.connectionId}] Successfully sent payload.`);
         } catch (error) {
             console.error(`[WEBHOOK][${this.connectionId}] Error sending payload:`, error.message);

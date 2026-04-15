@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 import { API_URL } from '../lib/api';
+import { AuthContext } from '../context/AuthContext';
 import Notification from '../components/Notification';
 import ConnectionManager from '../components/ConnectionManager';
 import MessageSender from '../components/MessageSender';
@@ -18,12 +19,6 @@ import UserManagement from './UserManagement';
 import FileManager from '../components/FileManager';
 import { Radio, CalendarClock, Webhook, Bot, PlugZap } from 'lucide-react';
 
-const socket = io(API_URL, {
-    path: '/socket.io',
-    transports: ['websocket', 'polling'],
-    withCredentials: true,
-});
-
 // Konfigurasi sub-menu untuk halaman "Tools".
 // Dengan pendekatan metadata seperti ini, penambahan tab baru cukup tambah 1 objek di array ini.
 const TOOL_TABS = [
@@ -34,6 +29,7 @@ const TOOL_TABS = [
 ];
 
 export default function Dashboard() {
+    const { token } = useContext(AuthContext);
     const [connections, setConnections] = useState([]);
     const [activeConnectionId, setActiveConnectionId] = useState('');
     const [newConnectionId, setNewConnectionId] = useState('');
@@ -67,6 +63,8 @@ export default function Dashboard() {
     const [notification, setNotification] = useState({ message: '', type: '' });
 
     const messagesEndRef = useRef(null);
+    const activeConnectionRef = useRef('');
+    const socketRef = useRef(null);
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
@@ -74,11 +72,15 @@ export default function Dashboard() {
     };
 
     useEffect(() => {
+        activeConnectionRef.current = activeConnectionId;
+    }, [activeConnectionId]);
+
+    useEffect(() => {
         const fetchConnections = async () => {
             try {
                 const res = await axios.get(`${API_URL}/api/connections`);
                 setConnections(res.data);
-                if (res.data.length > 0 && !activeConnectionId) {
+                if (res.data.length > 0 && !activeConnectionRef.current) {
                     setActiveConnectionId(res.data[0].connectionId);
                 }
             } catch (error) {
@@ -99,12 +101,26 @@ export default function Dashboard() {
         };
 
         fetchInitialData();
+    }, []);
+
+    useEffect(() => {
+        if (!token) {
+            return undefined;
+        }
+
+        const socket = io(API_URL, {
+            path: '/socket.io',
+            transports: ['websocket', 'polling'],
+            withCredentials: true,
+            auth: { token },
+        });
+        socketRef.current = socket;
 
         socket.on('status', async ({ connectionId, status, reason }) => {
             setConnections(prev => prev.map(c => c.connectionId === connectionId ? { ...c, status } : c));
             if (status === 'logged out') {
                 showNotification(`Koneksi ${connectionId} telah logout. ${reason ? `(${reason})` : ''}`, 'error');
-                if (connectionId === activeConnectionId) {
+                if (connectionId === activeConnectionRef.current) {
                     try {
                         const diagRes = await axios.get(`${API_URL}/api/${connectionId}/diagnostics`);
                         setDiagnostics(diagRes.data.data);
@@ -130,14 +146,14 @@ export default function Dashboard() {
         });
 
         socket.on('new_message', ({ connectionId, log }) => {
-            if (connectionId === activeConnectionId) {
+            if (connectionId === activeConnectionRef.current) {
                 setMessages(prevMessages => [log, ...prevMessages]);
                 showNotification(`Pesan baru dari ${log.senderName || log.from?.split('@')[0] || 'Seseorang'}`, 'info');
             }
         });
 
         socket.on('new_outgoing_message', ({ connectionId, log }) => {
-            if (connectionId === activeConnectionId) {
+            if (connectionId === activeConnectionRef.current) {
                 setOutgoingMessages(prevOutgoingMessages => [log, ...prevOutgoingMessages]);
             }
         });
@@ -147,8 +163,10 @@ export default function Dashboard() {
             socket.off('qr_code');
             socket.off('new_message');
             socket.off('new_outgoing_message');
+            socket.disconnect();
+            socketRef.current = null;
         };
-    }, [activeConnectionId]);
+    }, [token]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

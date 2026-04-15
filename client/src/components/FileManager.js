@@ -80,10 +80,22 @@ const FileManager = () => {
         }
     };
 
+    const previewFile = async (file) => {
+        try {
+            const response = await axios.get(`${API_URL}${file.url}`, { responseType: 'blob' });
+            const blobUrl = URL.createObjectURL(response.data);
+            window.open(blobUrl, '_blank', 'noopener,noreferrer');
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60 * 1000);
+        } catch (error) {
+            console.error("Error previewing file:", error);
+            showNotification("Failed to preview file.", "error");
+        }
+    };
+
     const copyToClipboard = (url) => {
         const fullUrl = `${API_URL}${url}`;
         navigator.clipboard.writeText(fullUrl);
-        showNotification("URL copied to clipboard!", "success");
+        showNotification("Protected file URL copied. Login is required to access it.", "success");
     };
 
     const formatBytes = (bytes, decimals = 2) => {
@@ -175,15 +187,14 @@ const FileManager = () => {
                                 
                                 {/* Overlay Actions */}
                                 <div className="absolute inset-0 bg-white/90 backdrop-blur-sm flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a
-                                        href={`${API_URL}${file.url}`}
-                                        target="_blank"
-                                        rel="noreferrer"
+                                    <button
+                                        type="button"
+                                        onClick={() => previewFile(file)}
                                         className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors"
                                         title="Preview"
                                     >
                                         <File className="w-4 h-4" />
-                                    </a>
+                                    </button>
                                     <button
                                         onClick={() => copyToClipboard(file.url)}
                                         className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors"

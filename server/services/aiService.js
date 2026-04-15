@@ -2,12 +2,22 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require('fs');
 const path = require('path');
 const db = require('../db');
+const { normalizePhoneNumber } = require('../utils/security');
 require('dotenv').config();
 
 const CONFIG_PATH = path.join(__dirname, '../ai_config.json');
 
 let model = null;
 let currentConfig = null;
+
+const DEFAULT_BANKING_INSTRUCTION = [
+    'Anda adalah asisten pesan nasabah untuk operasional perbankan atau penagihan.',
+    'Gunakan bahasa Indonesia yang profesional, singkat, sopan, dan tidak mengancam.',
+    'Jangan meminta atau memproses PIN, OTP, CVV, password, kode akses, atau kredensial lain.',
+    'Jangan mengirim data sensitif penuh seperti nomor rekening lengkap; arahkan nasabah ke kanal resmi untuk verifikasi.',
+    'Jika nasabah meminta informasi yang membutuhkan verifikasi identitas, minta mereka menghubungi kanal resmi bank.',
+    'Untuk komitmen pembayaran, catat tanggal dan ringkasan tanpa menjanjikan penghapusan denda atau keputusan kredit.'
+].join(' ');
 
 function getAiConfig() {
     try {
@@ -30,6 +40,9 @@ function updateAiConfig(newConfig) {
     try {
         const current = getAiConfig();
         const updated = { ...current, ...newConfig };
+        if (updated.apiKey === '********') {
+            updated.apiKey = current.apiKey || '';
+        }
         fs.writeFileSync(CONFIG_PATH, JSON.stringify(updated, null, 2), 'utf8');
 
         // Force model re-initialization on next call
@@ -46,11 +59,14 @@ function updateAiConfig(newConfig) {
 // --- TOOLS IMPLEMENTATION ---
 
 async function getContactInfo(phone) {
-    console.log(`[Tool] getContactInfo called for ${phone}`);
+    const normalizedPhone = normalizePhoneNumber(phone);
+    if (!normalizedPhone) return { error: "Valid phone number is required" };
+
+    console.log('[Tool] getContactInfo called');
     return new Promise((resolve, reject) => {
         // Strip non-numeric chars for better matching, though DB likely has them clean or not.
         // Let's try exact match first.
-        db.get('SELECT name, phone, email, tags, notes FROM contacts WHERE phone = ?', [phone], (err, row) => {
+        db.get('SELECT name, phone, email, tags, notes FROM contacts WHERE phone = ?', [normalizedPhone], (err, row) => {
             if (err) {
                 console.error("Error in getContactInfo:", err);
                 resolve({ error: "Database error" });
@@ -64,12 +80,13 @@ async function getContactInfo(phone) {
 }
 
 async function saveContact({ name, phone, notes }) {
-    console.log(`[Tool] saveContact called for ${name}, ${phone}`);
+    const normalizedPhone = normalizePhoneNumber(phone);
+    console.log('[Tool] saveContact called');
     return new Promise((resolve, reject) => {
-        if (!phone) return resolve({ error: "Phone number is required" });
+        if (!normalizedPhone) return resolve({ error: "Valid phone number is required" });
 
         // Check if exists
-        db.get('SELECT id FROM contacts WHERE phone = ?', [phone], (err, row) => {
+        db.get('SELECT id FROM contacts WHERE phone = ?', [normalizedPhone], (err, row) => {
             if (err) {
                 resolve({ error: "Database error checking contact" });
                 return;
@@ -82,7 +99,7 @@ async function saveContact({ name, phone, notes }) {
                 });
             } else {
                 // Insert
-                db.run('INSERT INTO contacts (name, phone, notes) VALUES (?, ?, ?)', [name, phone, notes || ''], function (err) {
+                db.run('INSERT INTO contacts (name, phone, notes) VALUES (?, ?, ?)', [name, normalizedPhone, notes || ''], function (err) {
                     if (err) resolve({ error: "Failed to create contact" });
                     else resolve({ success: true, message: "Contact created", id: this.lastID });
                 });
@@ -95,14 +112,17 @@ async function saveContact({ name, phone, notes }) {
 const googleSheetsService = require('./googleSheetsService');
 
 async function getDebtInfo(phone) {
-    console.log(`[Tool] getDebtInfo called for ${phone}`);
+    const normalizedPhone = normalizePhoneNumber(phone);
+    if (!normalizedPhone) return { error: "Valid phone number is required" };
+
+    console.log('[Tool] getDebtInfo called');
     try {
         const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
         if (!spreadsheetId) return { error: "Spreadsheet ID not configured" };
 
         const rows = await googleSheetsService.getCollectionData(spreadsheetId, 'DataNasabah!A2:H');
         // Clean phone number (remove non-digits)
-        const cleanPhone = phone.replace(/\D/g, '');
+        const cleanPhone = normalizedPhone;
 
         // Find by phone (check both raw and 62 format)
         const customer = rows.find(r => {
@@ -129,14 +149,17 @@ async function getDebtInfo(phone) {
 }
 
 async function logPaymentPromise(phone, date, notes) {
-    console.log(`[Tool] logPaymentPromise called for ${phone}, date: ${date}`);
+    const normalizedPhone = normalizePhoneNumber(phone);
+    if (!normalizedPhone) return { error: "Valid phone number is required" };
+
+    console.log('[Tool] logPaymentPromise called');
     try {
         const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
         if (!spreadsheetId) return { error: "Spreadsheet ID not configured" };
 
         const rows = await googleSheetsService.getCollectionData(spreadsheetId, 'DataNasabah!A2:H');
         // Clean phone number (remove non-digits)
-        const cleanPhone = phone.replace(/\D/g, '');
+        const cleanPhone = normalizedPhone;
 
         const customer = rows.find(r => {
             const rPhone = r.phone.replace(/\D/g, '');
@@ -213,18 +236,44 @@ const tools = [
     }
 ];
 
-// ... getModel function ...
+function getModel() {
+    const config = getAiConfig();
+    const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+        return null;
+    }
+
+    const comparableConfig = JSON.stringify({
+        modelName: config.modelName || 'gemini-2.0-flash',
+        systemInstruction: config.systemInstruction || ''
+    });
+
+    if (model && currentConfig === comparableConfig) {
+        return model;
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    model = genAI.getGenerativeModel({
+        model: config.modelName || 'gemini-2.0-flash',
+        systemInstruction: [DEFAULT_BANKING_INSTRUCTION, config.systemInstruction || ''].filter(Boolean).join('\n\n'),
+        tools
+    });
+    currentConfig = comparableConfig;
+    return model;
+}
 
 async function generateReply(incomingMessage, senderPhone) { // Updated signature to accept senderPhone
     const aiModel = getModel();
     if (!aiModel) return null;
+    const normalizedSenderPhone = normalizePhoneNumber(senderPhone);
 
     try {
         const chat = aiModel.startChat({
             history: [
                 {
                     role: "user",
-                    parts: [{ text: `System: You are also a Collection Assistant. The user's phone number is ${senderPhone || 'unknown'}. If they ask about debt, use get_debt_info('${senderPhone}'). If they promise to pay, use log_payment_promise. Be professional, firm but polite.` }]
+                    parts: [{ text: `System: Nomor pengirim adalah ${normalizedSenderPhone || 'unknown'}. Gunakan tool hanya bila pertanyaan membutuhkan data nasabah atau pencatatan janji bayar. Jangan ungkap rahasia, PIN, OTP, password, atau nomor rekening penuh.` }]
                 }
             ],
         });
@@ -242,7 +291,7 @@ async function generateReply(incomingMessage, senderPhone) { // Updated signatur
             const { name, args } = call;
 
             let toolResult;
-            console.log(`[AI Agent] Calling tool: ${name}`, args);
+            console.log(`[AI Agent] Calling tool: ${name}`);
 
             if (name === 'get_contact_info') {
                 toolResult = await getContactInfo(args.phone);
@@ -250,14 +299,14 @@ async function generateReply(incomingMessage, senderPhone) { // Updated signatur
                 toolResult = await saveContact(args);
             } else if (name === 'get_debt_info') {
                 // Ensure phone is passed or use senderPhone if implied
-                toolResult = await getDebtInfo(args.phone || senderPhone);
+                toolResult = await getDebtInfo(args.phone || normalizedSenderPhone);
             } else if (name === 'log_payment_promise') {
-                toolResult = await logPaymentPromise(args.phone || senderPhone, args.date, args.notes);
+                toolResult = await logPaymentPromise(args.phone || normalizedSenderPhone, args.date, args.notes);
             } else {
                 toolResult = { error: "Unknown tool" };
             }
 
-            console.log(`[AI Agent] Tool result:`, toolResult);
+            console.log(`[AI Agent] Tool completed: ${name}`);
 
             result = await chat.sendMessage([
                 {

@@ -2,91 +2,130 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
 
+const ALLOWED_ROLES = new Set(['admin', 'user']);
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
+
+function dbGet(sql, params = []) {
+    return new Promise((resolve, reject) => {
+        db.get(sql, params, (err, row) => (err ? reject(err) : resolve(row)));
+    });
+}
+
+function dbAll(sql, params = []) {
+    return new Promise((resolve, reject) => {
+        db.all(sql, params, (err, rows) => (err ? reject(err) : resolve(rows)));
+    });
+}
+
+function dbRun(sql, params = []) {
+    return new Promise((resolve, reject) => {
+        db.run(sql, params, function onRun(err) {
+            if (err) {
+                reject(err);
+                return;
+            }
+            resolve({ lastID: this.lastID, changes: this.changes });
+        });
+    });
+}
+
+function normalizeUserInput(body) {
+    return {
+        username: typeof body.username === 'string' ? body.username.trim() : '',
+        email: typeof body.email === 'string' ? body.email.trim().toLowerCase() : '',
+        password: typeof body.password === 'string' ? body.password : '',
+        full_name: typeof body.full_name === 'string' ? body.full_name.trim() : '',
+        role: typeof body.role === 'string' ? body.role.trim().toLowerCase() : 'user',
+        avatar_url: typeof body.avatar_url === 'string' ? body.avatar_url.trim() : ''
+    };
+}
+
+function validateEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function validatePassword(password) {
+    return typeof password === 'string'
+        && password.length >= 12
+        && /[a-z]/.test(password)
+        && /[A-Z]/.test(password)
+        && /\d/.test(password);
+}
+
+function signToken(user) {
+    const payload = {
+        user: {
+            id: user.id,
+            role: user.role
+        }
+    };
+
+    return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+
+async function hashPassword(password) {
+    const salt = await bcrypt.genSalt(12);
+    return bcrypt.hash(password, salt);
+}
+
+function isDuplicateError(err) {
+    return err?.message?.includes('UNIQUE constraint failed');
+}
+
 exports.register = async (req, res) => {
-    const { username, email, password, full_name } = req.body;
+    const { username, email, password, full_name } = normalizeUserInput(req.body);
+
+    if (!username || !validateEmail(email) || !validatePassword(password)) {
+        return res.status(400).json({
+            msg: 'Username, valid email, and a strong password are required. Password must be at least 12 characters and include uppercase, lowercase, and a number.'
+        });
+    }
 
     try {
-        // Check if user exists
-        db.get('SELECT * FROM users WHERE email = ? OR username = ?', [email, username], async (err, user) => {
-            if (err) {
-                console.error(err.message);
-                return res.status(500).send('Server Error');
-            }
-            if (user) {
-                return res.status(400).json({ msg: 'User already exists' });
-            }
+        const userCount = await dbGet('SELECT COUNT(*) AS count FROM users');
+        const allowPublicRegistration = process.env.ALLOW_PUBLIC_REGISTRATION === 'true';
 
-            // Encrypt password
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
+        if (userCount.count > 0 && !allowPublicRegistration) {
+            return res.status(403).json({ msg: 'Public registration is disabled. Ask an administrator to create your account.' });
+        }
 
-            // Create user
-            db.run('INSERT INTO users (username, email, password, full_name) VALUES (?, ?, ?, ?)', [username, email, hashedPassword, full_name], function (err) {
-                if (err) {
-                    console.error(err.message);
-                    return res.status(500).send('Server Error');
-                }
+        const hashedPassword = await hashPassword(password);
+        const role = userCount.count === 0 ? 'admin' : 'user';
+        const result = await dbRun(
+            'INSERT INTO users (username, email, password, full_name, role) VALUES (?, ?, ?, ?, ?)',
+            [username, email, hashedPassword, full_name, role]
+        );
 
-                const payload = {
-                    user: {
-                        id: this.lastID,
-                        role: 'user'
-                    }
-                };
-
-                jwt.sign(
-                    payload,
-                    process.env.JWT_SECRET,
-                    { expiresIn: 360000 },
-                    (err, token) => {
-                        if (err) throw err;
-                        res.json({ token });
-                    }
-                );
-            });
-        });
+        const token = signToken({ id: result.lastID, role });
+        res.status(201).json({ token });
     } catch (err) {
         console.error(err.message);
+        if (isDuplicateError(err)) {
+            return res.status(400).json({ msg: 'User already exists' });
+        }
         res.status(500).send('Server Error');
     }
 };
 
 exports.login = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password } = normalizeUserInput(req.body);
+
+    if (!validateEmail(email) || !password) {
+        return res.status(400).json({ msg: 'Invalid Credentials' });
+    }
 
     try {
-        db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-            if (err) {
-                console.error(err.message);
-                return res.status(500).send('Server Error');
-            }
-            if (!user) {
-                return res.status(400).json({ msg: 'Invalid Credentials' });
-            }
+        const user = await dbGet('SELECT * FROM users WHERE email = ?', [email]);
+        if (!user) {
+            return res.status(400).json({ msg: 'Invalid Credentials' });
+        }
 
-            const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ msg: 'Invalid Credentials' });
+        }
 
-            if (!isMatch) {
-                return res.status(400).json({ msg: 'Invalid Credentials' });
-            }
-
-            const payload = {
-                user: {
-                    id: user.id,
-                    role: user.role
-                }
-            };
-
-            jwt.sign(
-                payload,
-                process.env.JWT_SECRET,
-                { expiresIn: 360000 },
-                (err, token) => {
-                    if (err) throw err;
-                    res.json({ token });
-                }
-            );
-        });
+        res.json({ token: signToken(user) });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -95,13 +134,16 @@ exports.login = async (req, res) => {
 
 exports.getProfile = async (req, res) => {
     try {
-        db.get('SELECT id, username, email, full_name, avatar_url, role, created_at FROM users WHERE id = ?', [req.user.id], (err, user) => {
-            if (err) {
-                console.error(err.message);
-                return res.status(500).send('Server Error');
-            }
-            res.json(user);
-        });
+        const user = await dbGet(
+            'SELECT id, username, email, full_name, avatar_url, role, created_at FROM users WHERE id = ?',
+            [req.user.id]
+        );
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        res.json(user);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -109,16 +151,11 @@ exports.getProfile = async (req, res) => {
 };
 
 exports.updateProfile = async (req, res) => {
-    const { full_name, avatar_url } = req.body;
-    try {
-        db.run('UPDATE users SET full_name = ?, avatar_url = ? WHERE id = ?', [full_name, avatar_url, req.user.id], function (err) {
-            if (err) {
-                console.error(err.message);
-                return res.status(500).send('Server Error');
-            }
-            res.json({ msg: 'Profile updated' });
-        });
+    const { full_name, avatar_url } = normalizeUserInput(req.body);
 
+    try {
+        await dbRun('UPDATE users SET full_name = ?, avatar_url = ? WHERE id = ?', [full_name, avatar_url, req.user.id]);
+        res.json({ msg: 'Profile updated' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -127,13 +164,8 @@ exports.updateProfile = async (req, res) => {
 
 exports.getAllUsers = async (req, res) => {
     try {
-        db.all('SELECT id, username, email, full_name, role, created_at FROM users', [], (err, rows) => {
-            if (err) {
-                console.error(err.message);
-                return res.status(500).send('Server Error');
-            }
-            res.json(rows);
-        });
+        const rows = await dbAll('SELECT id, username, email, full_name, role, created_at FROM users ORDER BY created_at DESC');
+        res.json(rows);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -141,75 +173,103 @@ exports.getAllUsers = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
-    const { username, email, password, full_name, role } = req.body;
-    try {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+    const { username, email, password, full_name, role } = normalizeUserInput(req.body);
 
-        db.run('INSERT INTO users (username, email, password, full_name, role) VALUES (?, ?, ?, ?, ?)',
-            [username, email, hashedPassword, full_name, role || 'user'],
-            function (err) {
-                if (err) {
-                    console.error(err.message);
-                    return res.status(500).send('Server Error');
-                }
-                res.json({ msg: 'User created successfully', id: this.lastID });
-            }
+    if (!username || !validateEmail(email) || !validatePassword(password)) {
+        return res.status(400).json({
+            msg: 'Username, valid email, and a strong password are required. Password must be at least 12 characters and include uppercase, lowercase, and a number.'
+        });
+    }
+
+    if (!ALLOWED_ROLES.has(role)) {
+        return res.status(400).json({ msg: 'Role is invalid' });
+    }
+
+    try {
+        const hashedPassword = await hashPassword(password);
+        const result = await dbRun(
+            'INSERT INTO users (username, email, password, full_name, role) VALUES (?, ?, ?, ?, ?)',
+            [username, email, hashedPassword, full_name, role]
         );
+        res.status(201).json({ msg: 'User created successfully', id: result.lastID });
     } catch (err) {
         console.error(err.message);
+        if (isDuplicateError(err)) {
+            return res.status(400).json({ msg: 'User already exists' });
+        }
         res.status(500).send('Server Error');
     }
 };
 
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
-    const { username, email, full_name, role, password } = req.body;
+    const { username, email, full_name, role, password } = normalizeUserInput(req.body);
+    const fields = [];
+    const params = [];
 
-    // Build query dynamically based on provided fields
-    let query = "UPDATE users SET ";
-    let params = [];
-
-    if (username) { query += "username = ?, "; params.push(username); }
-    if (email) { query += "email = ?, "; params.push(email); }
-    if (full_name) { query += "full_name = ?, "; params.push(full_name); }
-    if (role) { query += "role = ?, "; params.push(role); }
+    if (username) {
+        fields.push('username = ?');
+        params.push(username);
+    }
+    if (email) {
+        if (!validateEmail(email)) {
+            return res.status(400).json({ msg: 'Email is invalid' });
+        }
+        fields.push('email = ?');
+        params.push(email);
+    }
+    if (full_name) {
+        fields.push('full_name = ?');
+        params.push(full_name);
+    }
+    if (role) {
+        if (!ALLOWED_ROLES.has(role)) {
+            return res.status(400).json({ msg: 'Role is invalid' });
+        }
+        fields.push('role = ?');
+        params.push(role);
+    }
     if (password) {
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        query += "password = ?, ";
-        params.push(hashedPassword);
+        if (!validatePassword(password)) {
+            return res.status(400).json({ msg: 'Password does not meet strength requirements' });
+        }
+        fields.push('password = ?');
+        params.push(await hashPassword(password));
     }
 
-    // Remove trailing comma and space
-    query = query.slice(0, -2);
-    query += " WHERE id = ?";
-    params.push(id);
+    if (fields.length === 0) {
+        return res.status(400).json({ msg: 'No valid fields to update' });
+    }
 
     try {
-        db.run(query, params, function (err) {
-            if (err) {
-                console.error(err.message);
-                return res.status(500).send('Server Error');
-            }
-            res.json({ msg: 'User updated successfully' });
-        });
+        params.push(id);
+        const result = await dbRun(`UPDATE users SET ${fields.join(', ')} WHERE id = ?`, params);
+        if (result.changes === 0) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+        res.json({ msg: 'User updated successfully' });
     } catch (err) {
         console.error(err.message);
+        if (isDuplicateError(err)) {
+            return res.status(400).json({ msg: 'Username or email already exists' });
+        }
         res.status(500).send('Server Error');
     }
 };
 
 exports.deleteUser = async (req, res) => {
     const { id } = req.params;
+
+    if (String(req.user.id) === String(id)) {
+        return res.status(400).json({ msg: 'You cannot delete your own account' });
+    }
+
     try {
-        db.run('DELETE FROM users WHERE id = ?', [id], function (err) {
-            if (err) {
-                console.error(err.message);
-                return res.status(500).send('Server Error');
-            }
-            res.json({ msg: 'User deleted' });
-        });
+        const result = await dbRun('DELETE FROM users WHERE id = ?', [id]);
+        if (result.changes === 0) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+        res.json({ msg: 'User deleted' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');

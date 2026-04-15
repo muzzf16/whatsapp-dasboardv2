@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const whatsappService = require('./whatsapp');
 const googleSheetsService = require('./googleSheetsService');
 const collectionService = require('./collectionService');
+const { normalizeConnectionId, normalizePhoneNumber, normalizeMessageText } = require('../utils/security');
 
 const SCHEDULE_FILE = path.join(__dirname, '../scheduledMessages.json');
 
@@ -79,9 +80,18 @@ class SchedulerService {
     }
 
     addScheduledMessage(connectionId, recipient, message, scheduledTime, isRecurring = false) {
+        const safeConnectionId = normalizeConnectionId(connectionId);
+        const safeRecipient = normalizePhoneNumber(recipient);
+        const safeMessage = normalizeMessageText(message);
+        const date = new Date(scheduledTime);
+
+        if (!safeConnectionId || !safeRecipient || !safeMessage || Number.isNaN(date.getTime())) {
+            throw new Error('Invalid scheduled message input');
+        }
+
         const id = uuidv4();
-        this.scheduleMessage(id, connectionId, recipient, message, scheduledTime, isRecurring);
-        return { id, connectionId, recipient, message, scheduledTime, isRecurring };
+        this.scheduleMessage(id, safeConnectionId, safeRecipient, safeMessage, date.toISOString(), isRecurring);
+        return { id, connectionId: safeConnectionId, recipient: safeRecipient, message: safeMessage, scheduledTime: date.toISOString(), isRecurring };
     }
 
     deleteScheduledMessage(id) {
@@ -115,7 +125,13 @@ class SchedulerService {
                 const scheduledTime = dateObj.toISOString();
                 const message = `Halo ${name}, ini adalah pengingat tagihan kredit Anda sebesar ${amount} untuk rekening ${account}. Jatuh tempo pada ${dueDate}.`;
 
-                this.addScheduledMessage(connectionId, phoneNumber, message, scheduledTime, false);
+                const normalizedPhone = normalizePhoneNumber(phoneNumber);
+                if (!normalizedPhone) {
+                    console.warn(`Skipping row for ${name}: invalid phone number`);
+                    continue;
+                }
+
+                this.addScheduledMessage(connectionId, normalizedPhone, message, scheduledTime, false);
                 count++;
             } catch (err) {
                 console.error(`Error processing row for ${name}:`, err.message);
@@ -169,6 +185,14 @@ class SchedulerService {
                 // optionally remove it or just don't schedule it?
                 // If we're loading, 'save' is false. If we're adding, 'save' is true.
                 // If it's invalid input, we probably shouldn't crash.
+            }
+            return;
+        }
+        if (!isRecurring && date.getTime() <= Date.now()) {
+            console.warn(`Skipping past scheduled time for message ${id}`);
+            if (save) {
+                this.scheduledMessages = this.scheduledMessages.filter(msg => msg.id !== id);
+                this.saveScheduledMessages();
             }
             return;
         }

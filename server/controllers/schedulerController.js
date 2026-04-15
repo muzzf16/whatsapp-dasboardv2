@@ -1,17 +1,31 @@
 const schedulerService = require('../services/schedulerService');
+const {
+    normalizeConnectionId,
+    normalizePhoneNumber,
+    normalizeMessageText
+} = require('../utils/security');
 
 const addScheduledMessageController = (req, res) => {
-    const { connectionId, number, message, scheduledTime, isRecurring } = req.body;
+    const connectionId = normalizeConnectionId(req.body.connectionId);
+    const number = normalizePhoneNumber(req.body.number);
+    const message = normalizeMessageText(req.body.message);
+    const { scheduledTime, isRecurring } = req.body;
+    const scheduleDate = new Date(scheduledTime);
 
-    if (!connectionId || !number || !message || !scheduledTime) {
-        return res.status(400).json({ status: 'error', message: 'All fields are required: connectionId, number, message, scheduledTime' });
+    if (!connectionId || !number || !message || !scheduledTime || Number.isNaN(scheduleDate.getTime())) {
+        return res.status(400).json({ status: 'error', message: 'Valid connectionId, number, message, and scheduledTime are required' });
+    }
+
+    if (scheduleDate.getTime() <= Date.now()) {
+        return res.status(400).json({ status: 'error', message: 'scheduledTime must be in the future' });
     }
 
     try {
         const newMessage = schedulerService.addScheduledMessage(connectionId, number, message, scheduledTime, isRecurring);
         res.status(201).json({ status: 'success', message: 'Message scheduled successfully', data: newMessage });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Failed to schedule message', details: error.message });
+        console.error('Failed to schedule message:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to schedule message' });
     }
 };
 
@@ -20,7 +34,8 @@ const getScheduledMessagesController = (req, res) => {
         const messages = schedulerService.getScheduledMessages();
         res.status(200).json({ status: 'success', data: messages });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Failed to fetch scheduled messages', details: error.message });
+        console.error('Failed to fetch scheduled messages:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to fetch scheduled messages' });
     }
 };
 
@@ -30,7 +45,8 @@ const deleteScheduledMessageController = (req, res) => {
         schedulerService.deleteScheduledMessage(id);
         res.status(200).json({ status: 'success', message: 'Scheduled message deleted successfully' });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Failed to delete scheduled message', details: error.message });
+        console.error('Failed to delete scheduled message:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to delete scheduled message' });
     }
 };
 
@@ -39,12 +55,14 @@ const deleteAllScheduledMessagesController = (req, res) => {
         schedulerService.deleteAllScheduledMessages();
         res.status(200).json({ status: 'success', message: 'All scheduled messages deleted successfully' });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Failed to delete all scheduled messages', details: error.message });
+        console.error('Failed to delete all scheduled messages:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to delete all scheduled messages' });
     }
 };
 
 const syncScheduledMessagesController = async (req, res) => {
-    let { connectionId, spreadsheetId } = req.body;
+    let { spreadsheetId } = req.body;
+    const connectionId = normalizeConnectionId(req.body.connectionId);
 
     if (!spreadsheetId) {
         spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
@@ -58,7 +76,8 @@ const syncScheduledMessagesController = async (req, res) => {
         const count = await schedulerService.syncWithGoogleSheets(spreadsheetId, connectionId);
         res.status(200).json({ status: 'success', message: `Successfully synced ${count} messages from Google Sheets.` });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Failed to sync with Google Sheets', details: error.message });
+        console.error('Failed to sync with Google Sheets:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to sync with Google Sheets' });
     }
 };
 
@@ -67,7 +86,8 @@ const getGoogleSheetsDiagnosticsController = async (req, res) => {
         const diag = await (require('../services/googleSheetsService')).getDiagnostics();
         res.status(200).json({ status: 'success', data: diag });
     } catch (error) {
-        res.status(500).json({ status: 'error', message: 'Failed to get Google Sheets diagnostics', details: error.message });
+        console.error('Failed to get Google Sheets diagnostics:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to get Google Sheets diagnostics' });
     }
 };
 
@@ -78,9 +98,10 @@ const uploadExcelController = async (req, res) => {
         return res.status(400).json({ status: 'error', message: 'No file uploaded' });
     }
 
-    const { connectionId, isRecurring } = req.body;
+    const { isRecurring } = req.body;
+    const connectionId = normalizeConnectionId(req.body.connectionId);
     if (!connectionId) {
-        return res.status(400).json({ status: 'error', message: 'connectionId is required' });
+        return res.status(400).json({ status: 'error', message: 'Valid connectionId is required' });
     }
 
     const isRecurringBool = isRecurring === 'true';
@@ -161,9 +182,10 @@ const uploadExcelController = async (req, res) => {
 
                     const message = `Halo ${name}, ini adalah pengingat tagihan kredit Anda sebesar ${amount} untuk rekening ${accountNumber}. Jatuh tempo pada ${dueDate.toISOString().split('T')[0]}. ${notes ? `Keterangan: ${notes}` : ''}`;
 
-                    if (phoneNumber) {
+                    const normalizedPhone = normalizePhoneNumber(phoneNumber);
+                    if (normalizedPhone) {
                         try {
-                            schedulerService.addScheduledMessage(connectionId, phoneNumber, message, scheduledTimeStr, isRecurringBool);
+                            schedulerService.addScheduledMessage(connectionId, normalizedPhone, message, scheduledTimeStr, isRecurringBool);
                             scheduledCount++;
                         } catch (schError) {
                             console.error(`[ExcelUpload] Failed to schedule for row ${index + 1}:`, schError);
@@ -185,8 +207,7 @@ const uploadExcelController = async (req, res) => {
 
     } catch (error) {
         console.error("Error processing Excel upload:", error);
-        console.error(error.stack); // Log stack trace
-        res.status(500).json({ status: 'error', message: 'Failed to process Excel file', details: error.message, stack: error.stack });
+        res.status(500).json({ status: 'error', message: 'Failed to process Excel file' });
     }
 };
 

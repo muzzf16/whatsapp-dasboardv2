@@ -17,20 +17,29 @@ const fileRoutes = require('./routes/fileRoutes');
 const { initWhatsApp } = require('./services/whatsapp');
 const googleSheetsService = require('./services/googleSheetsService');
 const { initMCP } = require('./services/mcpService');
+const authMiddleware = require('./middleware/authMiddleware');
+const { authenticateSocket, securityHeaders } = require('./middleware/securityMiddleware');
 
 const app = express();
 const server = http.createServer(app);
 
 const PORT = process.env.PORT || 4000;
+const allowedOrigins = (process.env.CORS_ORIGINS || "http://localhost:3000,http://localhost:3001,http://localhost:3003,http://localhost:5173,http://127.0.0.1:3000,https://wa.kenes.biz.id,https://www.wa.kenes.biz.id")
+    .split(',')
+    .map(origin => origin.trim())
+    .filter(Boolean);
 
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3003", "http://localhost:5173", "http://127.0.0.1:3000", "https://wa.kenes.biz.id", "https://www.wa.kenes.biz.id"],
+        origin: allowedOrigins,
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     }
 });
+io.use(authenticateSocket);
 
+app.set('trust proxy', 1);
+app.use(securityHeaders);
 
 // Initialize MCP Server (Must be before express.json parser for SSE transport)
 try {
@@ -41,7 +50,7 @@ try {
 
 // Pasang middleware
 app.use(cors({
-    origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3003", "http://localhost:5173", "http://127.0.0.1:3000", "https://wa.kenes.biz.id", "https://www.wa.kenes.biz.id"],
+    origin: allowedOrigins,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
 }));
@@ -53,7 +62,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/files', fileRoutes);
 const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', authMiddleware, express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
     res.send('<h1>WhatsApp API Backend</h1>');
@@ -61,7 +70,7 @@ app.get('/', (req, res) => {
 
 // Socket connection
 io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
+    console.log('Authenticated realtime client connected:', socket.id, 'user:', socket.user?.id);
 });
 
 // Init WhatsApp service dengan passing io

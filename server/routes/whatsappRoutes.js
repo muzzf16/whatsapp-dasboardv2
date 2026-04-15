@@ -16,8 +16,13 @@ const {
     updateWebhookController,
     getDashboardStatsController,
 } = require('../controllers/whatsappController');
+const auth = require('../middleware/authMiddleware');
+const { auditMutatingRequests } = require('../middleware/securityMiddleware');
 
 const router = express.Router();
+
+router.use(auth);
+router.use(auditMutatingRequests('whatsapp'));
 
 // Connection management routes
 router.post('/connections/start', startConnectionController);
