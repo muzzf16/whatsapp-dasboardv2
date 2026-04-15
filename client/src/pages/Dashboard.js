@@ -5,10 +5,8 @@ import { API_URL } from '../lib/api';
 import { AuthContext } from '../context/AuthContext';
 import Notification from '../components/Notification';
 import ConnectionManager from '../components/ConnectionManager';
-import MessageSender from '../components/MessageSender';
 import BroadcastSender from '../components/BroadcastSender';
 import WebhookManager from '../components/WebhookManager';
-import MessageLog from '../components/MessageLog';
 import ScheduledMessageManager from '../components/ScheduledMessageManager';
 import ExcelUpload from '../components/ExcelUpload';
 import Layout from '../components/Layout';
@@ -17,6 +15,7 @@ import DashboardContent from '../components/DashboardContent';
 import ContactManager from './ContactManager';
 import UserManagement from './UserManagement';
 import FileManager from '../components/FileManager';
+import WhatsAppChatView from '../components/WhatsAppChatView';
 import { Radio, CalendarClock, Webhook, Bot, PlugZap } from 'lucide-react';
 
 // Konfigurasi sub-menu untuk halaman "Tools".
@@ -38,13 +37,14 @@ export default function Dashboard() {
     const [diagnostics, setDiagnostics] = useState(null);
     const [messages, setMessages] = useState([]);
     const [outgoingMessages, setOutgoingMessages] = useState([]);
-    const [messageFilter, setMessageFilter] = useState('');
     const [activeTab, setActiveTab] = useState('dashboard'); // 'dashboard', 'whatsapp', 'account_manager', 'file_manager', 'tools'
+    const [selectedConversationId, setSelectedConversationId] = useState('');
+    const [conversationSearch, setConversationSearch] = useState('');
+    const [isNewChatMode, setIsNewChatMode] = useState(false);
+    const [isMobileThreadOpen, setIsMobileThreadOpen] = useState(false);
 
     // Sub-tabs for Tools
     const [activeToolTab, setActiveToolTab] = useState('broadcast');
-
-    const [logTab, setLogTab] = useState('incoming');
 
     const [sendTo, setSendTo] = useState('');
     const [sendMessageText, setSendMessageText] = useState('');
@@ -62,7 +62,6 @@ export default function Dashboard() {
 
     const [notification, setNotification] = useState({ message: '', type: '' });
 
-    const messagesEndRef = useRef(null);
     const activeConnectionRef = useRef('');
     const socketRef = useRef(null);
 
@@ -167,10 +166,6 @@ export default function Dashboard() {
             socketRef.current = null;
         };
     }, [token]);
-
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages, outgoingMessages]);
 
     useEffect(() => {
         const fetchConnectionData = async () => {
@@ -312,9 +307,15 @@ export default function Dashboard() {
                 file: file,
             });
             showNotification('Pesan berhasil dikirim!', 'success');
-            setSendTo('');
+            if (!selectedConversationId && !isNewChatMode) {
+                setSendTo('');
+            }
             setSendMessageText('');
             setSelectedFile(null);
+            if (isNewChatMode && sendTo) {
+                setSelectedConversationId(sendTo.replace(/\D/g, '') || sendTo);
+                setIsNewChatMode(false);
+            }
         } catch (error) {
             console.error("Error sending message:", error);
             showNotification(error.response?.data?.details || 'Gagal mengirim pesan.', 'error');
@@ -495,35 +496,28 @@ export default function Dashboard() {
                 );
             case 'whatsapp':
                 return (
-                    <div className="h-full flex flex-col xl:flex-row gap-4 xl:gap-6 p-4 md:p-6 overflow-hidden">
-                        <div className="w-full xl:w-1/3 flex flex-col gap-4 md:gap-6 overflow-y-auto">
-                            <MessageSender
-                                sendTo={sendTo}
-                                setSendTo={setSendTo}
-                                sendMessageText={sendMessageText}
-                                setSendMessageText={setSendMessageText}
-                                activeConnection={activeConnection}
-                                isSending={isSending}
-                                onSendMessage={handleSendMessage}
-                                onFileChange={handleFileChange}
-                            />
-                        </div>
-                        <div className="w-full xl:w-2/3 flex flex-col bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[320px]">
-                            <MessageLog
-                                activeTab={logTab}
-                                setActiveTab={setLogTab}
-                                messageFilter={messageFilter}
-                                setMessageFilter={setMessageFilter}
-                                messages={messages}
-                                outgoingMessages={outgoingMessages}
-                                messagesEndRef={messagesEndRef}
-                                onReply={(to, text) => {
-                                    setSendTo(to);
-                                    setSendMessageText(text);
-                                }}
-                            />
-                        </div>
-                    </div>
+                    <WhatsAppChatView
+                        activeConnection={activeConnection}
+                        messages={messages}
+                        outgoingMessages={outgoingMessages}
+                        selectedConversationId={selectedConversationId}
+                        setSelectedConversationId={setSelectedConversationId}
+                        conversationSearch={conversationSearch}
+                        setConversationSearch={setConversationSearch}
+                        isNewChatMode={isNewChatMode}
+                        setIsNewChatMode={setIsNewChatMode}
+                        isMobileThreadOpen={isMobileThreadOpen}
+                        setIsMobileThreadOpen={setIsMobileThreadOpen}
+                        sendTo={sendTo}
+                        setSendTo={setSendTo}
+                        sendMessageText={sendMessageText}
+                        setSendMessageText={setSendMessageText}
+                        selectedFile={selectedFile}
+                        setSelectedFile={setSelectedFile}
+                        isSending={isSending}
+                        onSendMessage={handleSendMessage}
+                        onFileChange={handleFileChange}
+                    />
                 )
             case 'file_manager':
                 return <div className="h-full overflow-y-auto p-4 md:p-6"><FileManager /></div>;
