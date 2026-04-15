@@ -25,10 +25,7 @@ class MessageProcessor {
         console.log(`[WA-DEBUG][${this.connectionId}] messages.upsert type: ${m.type}, messages: ${m.messages.length}`);
         const msg = m.messages[0];
         if (!msg.key.fromMe && (m.type === 'notify' || m.type === 'append')) {
-            // Log to file for debugging
-            const logPath = path.join(__dirname, '..', '..', 'incoming_message_log.json');
-            console.log(`[WA-DEBUG] Writing log to: ${logPath}`);
-            fs.writeFileSync(logPath, JSON.stringify(msg, null, 2));
+            this.writeIncomingMessageDebugLog(msg);
 
             let sender = msg.key.remoteJid;
 
@@ -51,33 +48,8 @@ class MessageProcessor {
                 sender = msg.key.remoteJidAlt;
             }
 
-            const unwrapMessage = (m) => {
-                if (!m) return null;
-                return m.ephemeralMessage?.message || m.viewOnceMessage?.message || m.viewOnceMessageV2?.message || m.documentWithCaptionMessage?.message || m;
-            };
-
-            const messageContent = unwrapMessage(msg.message);
-            let text = '';
-
-            if (messageContent) {
-                text = messageContent.conversation
-                    || messageContent.extendedTextMessage?.text
-                    || messageContent.imageMessage?.caption
-                    || messageContent.videoMessage?.caption
-                    || messageContent.documentMessage?.caption
-                    || messageContent.documentMessage?.fileName
-                    || (messageContent.stickerMessage ? '[Sticker]' : null)
-                    || (messageContent.audioMessage ? '[Audio]' : null)
-                    || (messageContent.imageMessage ? '[Image]' : null)
-                    || (messageContent.videoMessage ? '[Video]' : null)
-                    || (messageContent.documentMessage ? '[Document]' : null)
-                    || (messageContent.contactMessage ? '[Contact]' : null)
-                    || (messageContent.locationMessage ? '[Location]' : null)
-                    || (messageContent.protocolMessage && messageContent.protocolMessage.type === 'REVOKE' ? '[Message Revoked]' : null)
-                    || 'No text content';
-            } else {
-                text = 'No text content';
-            }
+            const messageContent = this.unwrapMessage(msg.message);
+            let text = this.extractMessageText(messageContent);
 
             // We are filtering out group messages above so groupName will always be null for now
             // But keeping logic in case we enable groups later
@@ -168,7 +140,6 @@ class MessageProcessor {
 
             // 2. AI Auto-reply — ONLY for nasabah tagihan kredit
             const senderNumber = sender.split('@')[0];
-            const googleSheetsService = require('../googleSheetsService');
             const nasabah = await googleSheetsService.isNasabah(senderNumber);
 
             if (!nasabah) {
@@ -207,6 +178,49 @@ class MessageProcessor {
         } catch (error) {
             console.error(`[WEBHOOK][${this.connectionId}] Error sending payload:`, error.message);
         }
+    }
+
+    writeIncomingMessageDebugLog(message) {
+        const logPath = path.join(__dirname, '..', '..', 'incoming_message_log.json');
+        console.log(`[WA-DEBUG] Writing log to: ${logPath}`);
+
+        try {
+            fs.writeFileSync(logPath, JSON.stringify(message, null, 2));
+        } catch (error) {
+            console.error(`[WA-DEBUG][${this.connectionId}] Failed to write incoming message debug log:`, error.message);
+        }
+    }
+
+    unwrapMessage(message) {
+        if (!message) return null;
+
+        return message.ephemeralMessage?.message
+            || message.viewOnceMessage?.message
+            || message.viewOnceMessageV2?.message
+            || message.documentWithCaptionMessage?.message
+            || message;
+    }
+
+    extractMessageText(messageContent) {
+        if (!messageContent) {
+            return 'No text content';
+        }
+
+        return messageContent.conversation
+            || messageContent.extendedTextMessage?.text
+            || messageContent.imageMessage?.caption
+            || messageContent.videoMessage?.caption
+            || messageContent.documentMessage?.caption
+            || messageContent.documentMessage?.fileName
+            || (messageContent.stickerMessage ? '[Sticker]' : null)
+            || (messageContent.audioMessage ? '[Audio]' : null)
+            || (messageContent.imageMessage ? '[Image]' : null)
+            || (messageContent.videoMessage ? '[Video]' : null)
+            || (messageContent.documentMessage ? '[Document]' : null)
+            || (messageContent.contactMessage ? '[Contact]' : null)
+            || (messageContent.locationMessage ? '[Location]' : null)
+            || (messageContent.protocolMessage?.type === 'REVOKE' ? '[Message Revoked]' : null)
+            || 'No text content';
     }
 }
 
