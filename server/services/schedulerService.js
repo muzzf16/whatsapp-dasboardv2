@@ -74,21 +74,28 @@ class SchedulerService {
         this.loadScheduledMessages();
     }
 
-    getScheduledMessages() {
-        return this.scheduledMessages;
+    getScheduledMessages({ connectionId, userId } = {}) {
+        let messages = this.scheduledMessages;
+        if (connectionId) {
+            messages = messages.filter(m => m.connectionId === connectionId);
+        }
+        if (userId) {
+            messages = messages.filter(m => m.userId === userId || !m.userId);
+        }
+        return messages;
     }
 
-    addScheduledMessage(connectionId, recipient, message, scheduledTime, isRecurring = false) {
+    addScheduledMessage(connectionId, recipient, message, scheduledTime, isRecurring = false, userId = null) {
         const id = uuidv4();
-        this.scheduleMessage(id, connectionId, recipient, message, scheduledTime, isRecurring);
-        return { id, connectionId, recipient, message, scheduledTime, isRecurring };
+        this.scheduleMessage(id, connectionId, recipient, message, scheduledTime, isRecurring, userId);
+        return { id, connectionId, recipient, message, scheduledTime, isRecurring, userId };
     }
 
     deleteScheduledMessage(id) {
         this.cancelMessage(id);
     }
 
-    async syncWithGoogleSheets(spreadsheetId, connectionId) {
+    async syncWithGoogleSheets(spreadsheetId, connectionId, userId = null) {
         const messages = await googleSheetsService.getScheduledMessagesFromSheet(spreadsheetId);
         let count = 0;
         for (const msg of messages) {
@@ -115,7 +122,7 @@ class SchedulerService {
                 const scheduledTime = dateObj.toISOString();
                 const message = `Halo ${name}, ini adalah pengingat tagihan kredit Anda sebesar ${amount} untuk rekening ${account}. Jatuh tempo pada ${dueDate}.`;
 
-                this.addScheduledMessage(connectionId, phoneNumber, message, scheduledTime, false);
+                this.addScheduledMessage(connectionId, phoneNumber, message, scheduledTime, false, userId);
                 count++;
             } catch (err) {
                 console.error(`Error processing row for ${name}:`, err.message);
@@ -131,7 +138,7 @@ class SchedulerService {
                 this.scheduledMessages = JSON.parse(data);
                 // Re-schedule messages that were active before shutdown
                 this.scheduledMessages.forEach(msg => {
-                    this.scheduleMessage(msg.id, msg.connectionId, msg.recipient, msg.message, msg.scheduledTime, msg.isRecurring || false, false);
+                    this.scheduleMessage(msg.id, msg.connectionId, msg.recipient, msg.message, msg.scheduledTime, msg.isRecurring || false, msg.userId || null, false);
                 });
             } catch (error) {
                 console.error("Error loading scheduled messages:", error);
@@ -144,7 +151,7 @@ class SchedulerService {
         fs.writeFileSync(SCHEDULE_FILE, JSON.stringify(this.scheduledMessages, null, 2), 'utf8');
     }
 
-    scheduleMessage(id, connectionId, recipient, message, scheduledTime, isRecurring = false, save = true) {
+    scheduleMessage(id, connectionId, recipient, message, scheduledTime, isRecurring = false, userId = null, save = true) {
         // Cancel existing job if any (for updates)
         if (this.jobs.has(id)) {
             this.jobs.get(id).stop();
@@ -153,7 +160,7 @@ class SchedulerService {
 
         if (save) {
             const existingMessageIndex = this.scheduledMessages.findIndex(msg => msg.id === id);
-            const newMessage = { id, connectionId, recipient, message, scheduledTime, isRecurring };
+            const newMessage = { id, connectionId, recipient, message, scheduledTime, isRecurring, userId };
             if (existingMessageIndex !== -1) {
                 this.scheduledMessages[existingMessageIndex] = newMessage;
             } else {
@@ -225,10 +232,23 @@ class SchedulerService {
         this.saveScheduledMessages();
     }
 
-    deleteAllScheduledMessages() {
-        this.jobs.forEach(job => job.stop());
-        this.jobs.clear();
-        this.scheduledMessages = [];
+    deleteAllScheduledMessages({ connectionId, userId } = {}) {
+        const toDelete = this.scheduledMessages.filter(msg => {
+            if (connectionId && msg.connectionId !== connectionId) return false;
+            if (userId && msg.userId && msg.userId !== userId) return false;
+            return true;
+        });
+
+        toDelete.forEach(msg => {
+            const job = this.jobs.get(msg.id);
+            if (job) {
+                job.stop();
+                this.jobs.delete(msg.id);
+            }
+        });
+
+        const deleteIds = new Set(toDelete.map(m => m.id));
+        this.scheduledMessages = this.scheduledMessages.filter(msg => !deleteIds.has(msg.id));
         this.saveScheduledMessages();
     }
 }

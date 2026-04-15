@@ -2,13 +2,14 @@ const schedulerService = require('../services/schedulerService');
 
 const addScheduledMessageController = (req, res) => {
     const { connectionId, number, message, scheduledTime, isRecurring } = req.body;
+    const userId = req.user?.id || null;
 
     if (!connectionId || !number || !message || !scheduledTime) {
         return res.status(400).json({ status: 'error', message: 'All fields are required: connectionId, number, message, scheduledTime' });
     }
 
     try {
-        const newMessage = schedulerService.addScheduledMessage(connectionId, number, message, scheduledTime, isRecurring);
+        const newMessage = schedulerService.addScheduledMessage(connectionId, number, message, scheduledTime, isRecurring, userId);
         res.status(201).json({ status: 'success', message: 'Message scheduled successfully', data: newMessage });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to schedule message', details: error.message });
@@ -17,7 +18,9 @@ const addScheduledMessageController = (req, res) => {
 
 const getScheduledMessagesController = (req, res) => {
     try {
-        const messages = schedulerService.getScheduledMessages();
+        const userId = req.user?.id || null;
+        const connectionId = req.query.connectionId || null;
+        const messages = schedulerService.getScheduledMessages({ connectionId, userId });
         res.status(200).json({ status: 'success', data: messages });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to fetch scheduled messages', details: error.message });
@@ -36,7 +39,9 @@ const deleteScheduledMessageController = (req, res) => {
 
 const deleteAllScheduledMessagesController = (req, res) => {
     try {
-        schedulerService.deleteAllScheduledMessages();
+        const userId = req.user?.id || null;
+        const connectionId = req.query.connectionId || req.body.connectionId || null;
+        schedulerService.deleteAllScheduledMessages({ connectionId, userId });
         res.status(200).json({ status: 'success', message: 'All scheduled messages deleted successfully' });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to delete all scheduled messages', details: error.message });
@@ -45,6 +50,7 @@ const deleteAllScheduledMessagesController = (req, res) => {
 
 const syncScheduledMessagesController = async (req, res) => {
     let { connectionId, spreadsheetId } = req.body;
+    const userId = req.user?.id || null;
 
     if (!spreadsheetId) {
         spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
@@ -55,7 +61,7 @@ const syncScheduledMessagesController = async (req, res) => {
     }
 
     try {
-        const count = await schedulerService.syncWithGoogleSheets(spreadsheetId, connectionId);
+        const count = await schedulerService.syncWithGoogleSheets(spreadsheetId, connectionId, userId);
         res.status(200).json({ status: 'success', message: `Successfully synced ${count} messages from Google Sheets.` });
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to sync with Google Sheets', details: error.message });
@@ -79,6 +85,8 @@ const uploadExcelController = async (req, res) => {
     }
 
     const { connectionId, isRecurring } = req.body;
+    const userId = req.user?.id || null;
+
     if (!connectionId) {
         return res.status(400).json({ status: 'error', message: 'connectionId is required' });
     }
@@ -163,7 +171,7 @@ const uploadExcelController = async (req, res) => {
 
                     if (phoneNumber) {
                         try {
-                            schedulerService.addScheduledMessage(connectionId, phoneNumber, message, scheduledTimeStr, isRecurringBool);
+                            schedulerService.addScheduledMessage(connectionId, phoneNumber, message, scheduledTimeStr, isRecurringBool, userId);
                             scheduledCount++;
                         } catch (schError) {
                             console.error(`[ExcelUpload] Failed to schedule for row ${index + 1}:`, schError);

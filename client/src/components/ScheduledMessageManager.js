@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
 import { API_BASE } from '../lib/api';
+import { AuthContext } from '../context/AuthContext';
 import { Calendar, Trash2, RefreshCw, Plus, Clock, MessageSquare, AlertCircle } from 'lucide-react';
 
 const ScheduledMessageManager = ({ activeConnectionId, status }) => {
+    const { token } = useContext(AuthContext);
     const [scheduledMessages, setScheduledMessages] = useState([]);
     const [number, setNumber] = useState('');
     const [message, setMessage] = useState('');
@@ -14,28 +16,38 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
     const [isSyncing, setIsSyncing] = useState(false);
     const [notification, setNotification] = useState({ message: '', type: '' });
 
-    // Use API_BASE so we connect to the configured backend server
-    const API_URL = API_BASE;
-
-    const showNotification = (message, type) => {
-        setNotification({ message, type });
+    const showNotification = (msg, type) => {
+        setNotification({ message: msg, type });
         setTimeout(() => setNotification({ message: '', type: '' }), 4000);
     };
 
-    const fetchScheduledMessages = async () => {
+    // Build auth headers for API requests
+    const getAuthHeaders = useCallback(() => {
+        const headers = {};
+        if (token) {
+            headers['x-auth-token'] = token;
+        }
+        return headers;
+    }, [token]);
+
+    const fetchScheduledMessages = useCallback(async () => {
+        if (!activeConnectionId) return;
         try {
-            const res = await axios.get(`${API_URL}/schedule`);
+            const res = await axios.get(`${API_BASE}/schedule`, {
+                headers: getAuthHeaders(),
+                params: { connectionId: activeConnectionId }
+            });
             setScheduledMessages(res.data.data);
         } catch (error) {
             console.error("Error fetching scheduled messages:", error);
         }
-    };
+    }, [activeConnectionId, getAuthHeaders]);
 
     useEffect(() => {
         fetchScheduledMessages();
-        const interval = setInterval(fetchScheduledMessages, 10000); // Refresh every 10s
+        const interval = setInterval(fetchScheduledMessages, 10000);
         return () => clearInterval(interval);
-    }, []);
+    }, [fetchScheduledMessages]);
 
     const handleScheduleMessage = async (e) => {
         e.preventDefault();
@@ -50,12 +62,14 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
 
         setIsScheduling(true);
         try {
-            await axios.post(`${API_URL}/schedule`, {
+            await axios.post(`${API_BASE}/schedule`, {
                 connectionId: activeConnectionId,
                 number,
                 message,
                 scheduledTime,
                 isRecurring
+            }, {
+                headers: getAuthHeaders()
             });
             showNotification('Message scheduled successfully!', 'success');
             setNumber('');
@@ -83,9 +97,11 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
 
         setIsSyncing(true);
         try {
-            const res = await axios.post(`${API_URL}/schedule/sync`, {
+            const res = await axios.post(`${API_BASE}/schedule/sync`, {
                 connectionId: activeConnectionId,
                 spreadsheetId
+            }, {
+                headers: getAuthHeaders()
             });
             showNotification(res.data.message, 'success');
             fetchScheduledMessages();
@@ -99,7 +115,9 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`${API_URL}/schedule/${id}`);
+            await axios.delete(`${API_BASE}/schedule/${id}`, {
+                headers: getAuthHeaders()
+            });
             showNotification('Schedule deleted.', 'success');
             fetchScheduledMessages();
         } catch (error) {
@@ -109,11 +127,14 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
     };
 
     const handleDeleteAll = async () => {
-        if (!window.confirm('Are you sure you want to delete ALL scheduled messages?')) {
+        if (!window.confirm('Are you sure you want to delete ALL scheduled messages for this session?')) {
             return;
         }
         try {
-            await axios.delete(`${API_URL}/schedule`);
+            await axios.delete(`${API_BASE}/schedule`, {
+                headers: getAuthHeaders(),
+                params: { connectionId: activeConnectionId }
+            });
             showNotification('All schedules deleted.', 'success');
             fetchScheduledMessages();
         } catch (error) {
@@ -250,7 +271,14 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
             {/* Scheduled List */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h3 className="text-lg font-bold text-gray-800">Scheduled Queue</h3>
+                    <h3 className="text-lg font-bold text-gray-800">
+                        Scheduled Queue
+                        {activeConnectionId && (
+                            <span className="ml-2 text-sm font-normal text-gray-500">
+                                — Sesi: <span className="font-mono text-gray-600">{activeConnectionId}</span>
+                            </span>
+                        )}
+                    </h3>
                     {scheduledMessages.length > 0 && (
                         <button
                             onClick={handleDeleteAll}
@@ -267,7 +295,7 @@ const ScheduledMessageManager = ({ activeConnectionId, status }) => {
                             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                                 <Clock className="w-8 h-8 text-gray-300" />
                             </div>
-                            <p className="text-sm">No messages scheduled</p>
+                            <p className="text-sm">No messages scheduled for this session</p>
                         </div>
                     ) : (
                         <div className="divide-y divide-gray-100 max-h-[500px] overflow-y-auto">
