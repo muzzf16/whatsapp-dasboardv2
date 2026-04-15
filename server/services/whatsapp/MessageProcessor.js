@@ -47,6 +47,11 @@ class MessageProcessor {
         this.connectionId = connectionId;
         this.io = io;
         this.sendMessageCallback = sendMessageCallback;
+        this.userId = null;
+    }
+
+    setUserId(userId) {
+        this.userId = userId;
     }
 
     async processMessage(m) {
@@ -60,6 +65,15 @@ class MessageProcessor {
             // Filter out status messages and group messages
             if (sender === 'status@broadcast' || sender.endsWith('@g.us')) {
                 return;
+            }
+
+            // Filter out self-messages (sent from other linked devices)
+            if (this.userId) {
+                const senderNumber = sender.split('@')[0].split(':')[0];
+                const myNumber = this.userId.split('@')[0].split(':')[0];
+                if (senderNumber === myNumber) {
+                    return;
+                }
             }
 
             // Fix for LID: Use remoteJidAlt if available and current sender is LID
@@ -173,26 +187,34 @@ class MessageProcessor {
                 return;
             }
 
-            // Only reply to direct messages or mentions (optional refinement, for now all text messages)
-            // Avoid replying to status updates or very short messages if needed
-            if (text && text.length > 1) {
-                // 1. Check Auto-Replies first
-                const autoReply = autoReplyService.findReply(text);
-                if (autoReply) {
-                    console.log(`[AutoReply][${this.connectionId}] Matched keyword for ${sender}`);
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    await this.sendMessageCallback(sender, autoReply);
-                } else {
-                    // 2. Fallback to AI
-                    // Pass sender phone for context
-                    const aiResponse = await aiService.generateReply(text, sender);
-                    if (aiResponse) {
-                        console.log(`[AI][${this.connectionId}] Replying to ${sender}`);
-                        // Add a small delay to simulate typing
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        await this.sendMessageCallback(sender, aiResponse);
-                    }
-                }
+            // Only reply to meaningful messages
+            if (!text || text.length <= 1) return;
+
+            // 1. Check Auto-Replies first (works for ALL senders)
+            const autoReply = autoReplyService.findReply(text);
+            if (autoReply) {
+                console.log(`[AutoReply][${this.connectionId}] Matched keyword for ${sender}`);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await this.sendMessageCallback(sender, autoReply);
+                return;
+            }
+
+            // 2. AI Auto-reply — ONLY for nasabah tagihan kredit
+            const senderNumber = sender.split('@')[0];
+            const nasabah = await googleSheetsService.isNasabah(senderNumber);
+
+            if (!nasabah) {
+                console.log(`[AI][${this.connectionId}] Sender ${senderNumber} is NOT a nasabah. Skipping AI reply.`);
+                return;
+            }
+
+            console.log(`[AI][${this.connectionId}] Sender ${senderNumber} is nasabah: ${nasabah.name}. Generating AI reply...`);
+            const aiResponse = await aiService.generateReply(text, senderNumber);
+            if (aiResponse) {
+                console.log(`[AI][${this.connectionId}] Replying to ${sender} (${nasabah.name})`);
+                // Add a small delay to simulate typing
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                await this.sendMessageCallback(sender, aiResponse);
             }
         } catch (error) {
             console.error(`[AI][${this.connectionId}] Error generating/sending reply:`, error);

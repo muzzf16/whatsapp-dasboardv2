@@ -95,8 +95,9 @@ class GoogleSheetsService {
             })).filter(row => row.name && row.account && row.amount && row.dueDate && row.phoneNumber);
 
         } catch (error) {
-            console.error('Error fetching data from Google Sheets:', error?.message || error);
-            throw new Error('Failed to fetch data from Google Sheets. Check Spreadsheet ID and permissions.');
+            const detail = error?.response?.data?.error?.message || error?.message || error;
+            console.error('Error fetching data from Google Sheets:', detail);
+            throw new Error(`Failed to fetch data from Google Sheets: ${detail}. Check Spreadsheet ID, sheet name, and service account permissions.`);
         }
     }
 
@@ -154,6 +155,34 @@ class GoogleSheetsService {
             console.log(`[GoogleSheets] Updated row at ${range}`);
         } catch (error) {
             console.error(`Error updating row at ${range}:`, error?.message || error);
+        }
+    }
+
+    /**
+     * Check if a phone number belongs to a nasabah (credit customer) in DataNasabah sheet.
+     * Returns the customer data if found, null otherwise.
+     */
+    async isNasabah(phone) {
+        const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+        if (!spreadsheetId) return null;
+
+        try {
+            const rows = await this.getCollectionData(spreadsheetId, 'DataNasabah!A2:H');
+            if (!rows || rows.length === 0) return null;
+
+            // Clean the incoming phone number
+            const cleanPhone = phone.replace(/\D/g, '');
+
+            const customer = rows.find(r => {
+                if (!r.phone) return false;
+                const rPhone = r.phone.replace(/\D/g, '');
+                return rPhone === cleanPhone || rPhone.endsWith(cleanPhone) || cleanPhone.endsWith(rPhone);
+            });
+
+            return customer || null;
+        } catch (err) {
+            console.error('[GoogleSheets] Error checking isNasabah:', err?.message || err);
+            return null;
         }
     }
 

@@ -1,8 +1,21 @@
-import React, { useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 import { Search, Send, FileText, CheckCircle, Smartphone, Activity } from 'lucide-react';
 import StatusBadge from './StatusBadge';
+import { AuthContext } from '../context/AuthContext';
 
 const DashboardContent = ({ activeConnection, connections, messages }) => {
+    const { user } = useContext(AuthContext);
+
+    // Derive display values from user profile
+    const displayName = user?.full_name || user?.username || 'User';
+    const displayRole = user?.role === 'admin' ? 'Administrator' : (user?.role || 'User');
+    const initials = displayName
+        .split(' ')
+        .map(n => n[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2);
+
     // Calculate stats from real data
     const stats = useMemo(() => {
         const totalSent = messages.filter(m => m.fromMe).length;
@@ -35,12 +48,20 @@ const DashboardContent = ({ activeConnection, connections, messages }) => {
                 <div className="flex items-center space-x-6">
                     <div className="flex items-center gap-3">
                         <div className="text-right hidden sm:block">
-                            <div className="text-sm font-semibold text-gray-800">Admin User</div>
-                            <div className="text-xs text-gray-500">Administrator</div>
+                            <div className="text-sm font-semibold text-gray-800">{displayName}</div>
+                            <div className="text-xs text-gray-500 capitalize">{displayRole}</div>
                         </div>
-                        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-green-400 to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white">
-                            AU
-                        </div>
+                        {user?.avatar_url ? (
+                            <img
+                                src={user.avatar_url}
+                                alt={displayName}
+                                className="h-10 w-10 rounded-full object-cover shadow-lg ring-2 ring-white"
+                            />
+                        ) : (
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-green-400 to-emerald-600 flex items-center justify-center text-white font-bold text-sm shadow-lg ring-2 ring-white">
+                                {initials}
+                            </div>
+                        )}
                     </div>
                 </div>
             </header>

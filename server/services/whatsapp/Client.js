@@ -58,6 +58,12 @@ class Client {
                 logger: pino({ level: 'silent' }),
             });
 
+            // Set initial user ID if available
+            if (state && state.creds && state.creds.me) {
+                this.messageProcessor.setUserId(state.creds.me.id);
+            }
+
+
             this.sock.ev.on('connection.update', async (update) => {
                 const { connection, lastDisconnect, qr } = update;
 
@@ -133,7 +139,13 @@ class Client {
                 }
             });
 
-            this.sock.ev.on('creds.update', saveCreds);
+            this.sock.ev.on('creds.update', (creds) => {
+                saveCreds(creds);
+                if (creds && creds.me) {
+                    this.messageProcessor.setUserId(creds.me.id);
+                }
+            });
+
 
             // Delegate message processing
             this.sock.ev.on('messages.upsert', (m) => this.messageProcessor.processMessage(m));

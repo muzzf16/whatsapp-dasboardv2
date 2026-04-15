@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { API_BASE } from '../lib/api';
 import { FileSpreadsheet, Upload, Download, CheckCircle, AlertCircle, File } from 'lucide-react';
+import { AuthContext } from '../context/AuthContext';
 
 export default function ExcelUpload({ activeConnectionId, status }) {
+    const { token } = useContext(AuthContext);
     const [file, setFile] = useState(null);
     const [isRecurring, setIsRecurring] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -35,10 +37,14 @@ export default function ExcelUpload({ activeConnectionId, status }) {
         formData.append('isRecurring', isRecurring);
 
         try {
+            const headers = {
+                'Content-Type': 'multipart/form-data',
+            };
+            if (token) {
+                headers['x-auth-token'] = token;
+            }
             const res = await axios.post(`${API_BASE}/upload-excel`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+                headers,
             });
             setUploadStatus({
                 message: res.data.message,

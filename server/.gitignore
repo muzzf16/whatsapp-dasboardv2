@@ -2,3 +2,7 @@ node_modules
 auth_info_baileys
 auth_info_multi_device
 service-account.json
+database.sqlite
+incoming_message_log.json
+logs/
+scheduledMessages.json
