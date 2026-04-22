@@ -14,6 +14,7 @@ import AISettings from '../components/AISettings';
 import DashboardContent from '../components/DashboardContent';
 import ContactManager from './ContactManager';
 import UserManagement from './UserManagement';
+import ApprovalsManager from './ApprovalsManager';
 import FileManager from '../components/FileManager';
 import WhatsAppChatView from '../components/WhatsAppChatView';
 import { Radio, CalendarClock, Webhook, Bot, PlugZap } from 'lucide-react';
@@ -28,7 +29,7 @@ const TOOL_TABS = [
 ];
 
 export default function Dashboard() {
-    const { token } = useContext(AuthContext);
+    const { token, user } = useContext(AuthContext);
     const [connections, setConnections] = useState([]);
     const [activeConnectionId, setActiveConnectionId] = useState('');
     const [newConnectionId, setNewConnectionId] = useState('');
@@ -50,6 +51,7 @@ export default function Dashboard() {
     const [sendMessageText, setSendMessageText] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
     const [isSending, setIsSending] = useState(false);
+    const [sendPolicy, setSendPolicy] = useState(null);
 
     const [broadcastNumbers, setBroadcastNumbers] = useState('');
     const [broadcastMessage, setBroadcastMessage] = useState('');
@@ -64,6 +66,7 @@ export default function Dashboard() {
 
     const activeConnectionRef = useRef('');
     const socketRef = useRef(null);
+    const canSendMessages = ['user', 'operator', 'supervisor', 'admin'].includes(user?.role);
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
@@ -154,6 +157,22 @@ export default function Dashboard() {
         socket.on('new_outgoing_message', ({ connectionId, log }) => {
             if (connectionId === activeConnectionRef.current) {
                 setOutgoingMessages(prevOutgoingMessages => [log, ...prevOutgoingMessages]);
+                setSendPolicy((prevPolicy) => {
+                    if (!prevPolicy) return prevPolicy;
+                    return {
+                        ...prevPolicy,
+                        userDaily: log.initiatedByUserId === user?.id ? {
+                            ...prevPolicy.userDaily,
+                            sent: prevPolicy.userDaily.sent + 1,
+                            remaining: Math.max(prevPolicy.userDaily.remaining - 1, 0),
+                        } : prevPolicy.userDaily,
+                        sessionDaily: {
+                            ...prevPolicy.sessionDaily,
+                            sent: prevPolicy.sessionDaily.sent + 1,
+                            remaining: Math.max(prevPolicy.sessionDaily.remaining - 1, 0),
+                        },
+                    };
+                });
             }
         });
 
@@ -165,7 +184,7 @@ export default function Dashboard() {
             socket.disconnect();
             socketRef.current = null;
         };
-    }, [token]);
+    }, [token, user?.id]);
 
     useEffect(() => {
         const fetchConnectionData = async () => {
@@ -183,13 +202,25 @@ export default function Dashboard() {
                     } catch (err) {
                         setDiagnostics(null);
                     }
+                    if (canSendMessages) {
+                        try {
+                            const sendPolicyRes = await axios.get(`${API_URL}/api/${activeConnectionId}/send-policy`);
+                            setSendPolicy(sendPolicyRes.data.data);
+                        } catch (err) {
+                            setSendPolicy(null);
+                        }
+                    } else {
+                        setSendPolicy(null);
+                    }
                 } catch (error) {
                     console.error(`Error fetching data for ${activeConnectionId}:`, error);
                 }
+            } else {
+                setSendPolicy(null);
             }
         };
         fetchConnectionData();
-    }, [activeConnectionId]);
+    }, [activeConnectionId, canSendMessages]);
 
     const handleStartConnection = async (connectionId) => {
         try {
@@ -316,9 +347,17 @@ export default function Dashboard() {
                 setSelectedConversationId(sendTo.replace(/\D/g, '') || sendTo);
                 setIsNewChatMode(false);
             }
+            if (canSendMessages) {
+                try {
+                    const sendPolicyRes = await axios.get(`${API_URL}/api/${activeConnectionId}/send-policy`);
+                    setSendPolicy(sendPolicyRes.data.data);
+                } catch (policyError) {
+                    setSendPolicy(null);
+                }
+            }
         } catch (error) {
             console.error("Error sending message:", error);
-            showNotification(error.response?.data?.details || 'Gagal mengirim pesan.', 'error');
+            showNotification(error.response?.data?.message || 'Gagal mengirim pesan.', 'error');
         } finally {
             setIsSending(false);
         }
@@ -342,9 +381,17 @@ export default function Dashboard() {
             showNotification('Pesan broadcast berhasil dikirim!', 'success');
             setBroadcastNumbers('');
             setBroadcastMessage('');
+            if (canSendMessages) {
+                try {
+                    const sendPolicyRes = await axios.get(`${API_URL}/api/${activeConnectionId}/send-policy`);
+                    setSendPolicy(sendPolicyRes.data.data);
+                } catch (policyError) {
+                    setSendPolicy(null);
+                }
+            }
         } catch (error) {
             console.error("Error sending broadcast message:", error);
-            showNotification(error.response?.data?.details || 'Gagal mengirim pesan broadcast.', 'error');
+            showNotification(error.response?.data?.message || 'Gagal mengirim pesan broadcast.', 'error');
         } finally {
             setIsBroadcasting(false);
         }
@@ -515,6 +562,7 @@ export default function Dashboard() {
                         selectedFile={selectedFile}
                         setSelectedFile={setSelectedFile}
                         isSending={isSending}
+                        sendPolicy={sendPolicy}
                         onSendMessage={handleSendMessage}
                         onFileChange={handleFileChange}
                     />
@@ -525,6 +573,8 @@ export default function Dashboard() {
                 return <div className="p-4 md:p-6 h-full overflow-y-auto"><ContactManager /></div>;
             case 'users':
                 return <div className="p-4 md:p-6 h-full overflow-y-auto"><UserManagement /></div>;
+            case 'approvals':
+                return <div className="h-full overflow-y-auto"><ApprovalsManager /></div>;
             default:
                 return (
                     <div className="p-4 md:p-6">Select a menu item</div>

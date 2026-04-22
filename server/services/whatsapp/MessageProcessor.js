@@ -8,6 +8,7 @@ const aiService = require('../aiService');
 const googleSheetsService = require('../googleSheetsService');
 const autoReplyService = require('../autoReplyService');
 const databaseService = require('../databaseService');
+const contactPolicyService = require('../contactPolicyService');
 
 function unwrapMessage(message) {
     if (!message) return null;
@@ -182,6 +183,31 @@ class MessageProcessor {
 
     async handleAutoReply(text, sender) {
         try {
+            const senderNumber = sender.split('@')[0];
+
+            if (contactPolicyService.isOptOutKeyword(text)) {
+                await contactPolicyService.upsertConsent(senderNumber, {
+                    optedOut: true,
+                    source: 'whatsapp_inbound_keyword'
+                });
+                await this.sendMessageCallback(sender, 'Permintaan berhenti pesan sudah kami terima. Anda tidak akan menerima pesan operasional lebih lanjut sampai Anda mengirim START atau menghubungi kanal resmi.');
+                return;
+            }
+
+            if (contactPolicyService.isOptInKeyword(text)) {
+                await contactPolicyService.upsertConsent(senderNumber, {
+                    optedOut: false,
+                    source: 'whatsapp_inbound_keyword'
+                });
+                await this.sendMessageCallback(sender, 'Status langganan pesan Anda sudah diaktifkan kembali. Terima kasih.');
+                return;
+            }
+
+            if (await contactPolicyService.isPhoneOptedOut(senderNumber)) {
+                console.log(`[Policy][${this.connectionId}] Sender ${senderNumber} is opted out. Skipping auto reply.`);
+                return;
+            }
+
             if (isRestrictedCredentialText(text)) {
                 await this.sendMessageCallback(sender, 'Demi keamanan, mohon jangan mengirim PIN, OTP, password, CVV, atau kode akses melalui chat ini. Hubungi kanal resmi bank jika Anda membutuhkan bantuan verifikasi.');
                 return;
@@ -200,7 +226,6 @@ class MessageProcessor {
             }
 
             // 2. AI Auto-reply — ONLY for nasabah tagihan kredit
-            const senderNumber = sender.split('@')[0];
             const nasabah = await googleSheetsService.isNasabah(senderNumber);
 
             if (!nasabah) {

@@ -264,25 +264,6 @@ function getModel() {
     return model;
 }
 
-    const config = currentConfig || getAiConfig();
-    currentConfig = config;
-
-    const apiKey = config.apiKey || process.env.GEMINI_API_KEY;
-
-    if (!apiKey) {
-        console.warn("AI is disabled. No API key found.");
-        return null;
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
-    model = genAI.getGenerativeModel({
-        model: config.modelName || 'gemini-2.0-flash',
-        systemInstruction: config.systemInstruction,
-        tools: tools,
-    });
-
-    return model;
-}
 async function generateReply(incomingMessage, senderPhone) { // Updated signature to accept senderPhone
     const aiModel = getModel();
     if (!aiModel) return null;

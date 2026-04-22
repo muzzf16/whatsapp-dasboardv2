@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Notification from '../components/Notification';
 import { API_URL } from '../lib/api';
-import { Users, Search, UserPlus, Edit2, Trash2, Phone, Mail, Tag, Save, X } from 'lucide-react';
+import { Users, Search, UserPlus, Edit2, Trash2, Phone, Mail, Tag, Save, ShieldAlert } from 'lucide-react';
 
 const ContactManager = () => {
     const [contacts, setContacts] = useState([]);
     const [search, setSearch] = useState('');
     const [editingContact, setEditingContact] = useState(null);
-    const [formData, setFormData] = useState({ name: '', phone: '', email: '', tags: '', notes: '' });
+    const [formData, setFormData] = useState({ name: '', phone: '', email: '', tags: '', notes: '', is_opted_out: false, consent_source: 'manual' });
     const [notification, setNotification] = useState({ message: '', type: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -34,7 +34,10 @@ const ContactManager = () => {
         return () => clearTimeout(delayDebounceFn);
     }, [search]);
 
-    const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const onChange = e => {
+        const { name, value, type, checked } = e.target;
+        setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
+    };
 
     const onSubmit = async e => {
         e.preventDefault();
@@ -47,7 +50,7 @@ const ContactManager = () => {
                 await axios.post(`${API_URL}/api/contacts`, formData);
                 showNotification('Contact added successfully', 'success');
             }
-            setFormData({ name: '', phone: '', email: '', tags: '', notes: '' });
+            setFormData({ name: '', phone: '', email: '', tags: '', notes: '', is_opted_out: false, consent_source: 'manual' });
             setEditingContact(null);
             fetchContacts();
         } catch (err) {
@@ -59,7 +62,11 @@ const ContactManager = () => {
 
     const handleEdit = contact => {
         setEditingContact(contact);
-        setFormData(contact);
+        setFormData({
+            ...contact,
+            is_opted_out: Boolean(contact.is_opted_out),
+            consent_source: contact.consent_source || 'manual'
+        });
     };
 
     const handleDelete = async id => {
@@ -75,7 +82,7 @@ const ContactManager = () => {
 
     const handleCancel = () => {
         setEditingContact(null);
-        setFormData({ name: '', phone: '', email: '', tags: '', notes: '' });
+        setFormData({ name: '', phone: '', email: '', tags: '', notes: '', is_opted_out: false, consent_source: 'manual' });
     };
 
     return (
@@ -178,6 +185,24 @@ const ContactManager = () => {
                                 ></textarea>
                             </div>
 
+                            <div className="rounded-xl border border-amber-100 bg-amber-50/60 p-4">
+                                <label className="flex items-start gap-3">
+                                    <input
+                                        type="checkbox"
+                                        name="is_opted_out"
+                                        checked={Boolean(formData.is_opted_out)}
+                                        onChange={onChange}
+                                        className="mt-1 h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                                    />
+                                    <span>
+                                        <span className="block text-sm font-semibold text-amber-900">Stop operasional messaging</span>
+                                        <span className="mt-1 block text-xs text-amber-800">
+                                            Jika aktif, nomor ini akan diblok dari pesan broadcast, schedule, dan kirim manual.
+                                        </span>
+                                    </span>
+                                </label>
+                            </div>
+
                             <div className="pt-2 flex gap-3">
                                 <button
                                     type="submit"
@@ -236,7 +261,15 @@ const ContactManager = () => {
                                                             {contact.name ? contact.name.charAt(0).toUpperCase() : '?'}
                                                         </div>
                                                         <div className="ml-4">
-                                                            <div className="text-sm font-bold text-gray-900">{contact.name || 'No Name'}</div>
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="text-sm font-bold text-gray-900">{contact.name || 'No Name'}</div>
+                                                                {Boolean(contact.is_opted_out) && (
+                                                                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700 border border-amber-200">
+                                                                        <ShieldAlert className="w-3 h-3" />
+                                                                        Opted Out
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             <div className="text-xs text-gray-500">{contact.email}</div>
                                                         </div>
                                                     </div>

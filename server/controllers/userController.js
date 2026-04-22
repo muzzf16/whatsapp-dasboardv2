@@ -1,8 +1,11 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
 const db = require('../db');
+const { ROLE_ORDER, isValidRole, normalizeRole } = require('../utils/roles');
 
-const ALLOWED_ROLES = new Set(['admin', 'user']);
+const ALLOWED_ROLES = new Set(ROLE_ORDER);
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
 
 function dbGet(sql, params = []) {
@@ -35,7 +38,7 @@ function normalizeUserInput(body) {
         email: typeof body.email === 'string' ? body.email.trim().toLowerCase() : '',
         password: typeof body.password === 'string' ? body.password : '',
         full_name: typeof body.full_name === 'string' ? body.full_name.trim() : '',
-        role: typeof body.role === 'string' ? body.role.trim().toLowerCase() : 'user',
+        role: normalizeRole(body.role || 'operator'),
         avatar_url: typeof body.avatar_url === 'string' ? body.avatar_url.trim() : ''
     };
 }
@@ -52,11 +55,12 @@ function validatePassword(password) {
         && /\d/.test(password);
 }
 
-function signToken(user) {
+function signToken(user, mfaVerified = true) {
     const payload = {
         user: {
             id: user.id,
-            role: user.role
+            role: normalizeRole(user.role),
+            mfa_verified: mfaVerified
         }
     };
 
@@ -90,7 +94,7 @@ exports.register = async (req, res) => {
         }
 
         const hashedPassword = await hashPassword(password);
-        const role = userCount.count === 0 ? 'admin' : 'user';
+        const role = userCount.count === 0 ? 'admin' : 'operator';
         const result = await dbRun(
             'INSERT INTO users (username, email, password, full_name, role) VALUES (?, ?, ?, ?, ?)',
             [username, email, hashedPassword, full_name, role]
@@ -125,7 +129,17 @@ exports.login = async (req, res) => {
             return res.status(400).json({ msg: 'Invalid Credentials' });
         }
 
-        res.json({ token: signToken(user) });
+        if (user.mfa_enabled) {
+            // User has MFA enabled, return a pre-auth token that only allows MFA verification
+            const preAuthToken = signToken(user, false);
+            return res.json({ 
+                mfa_required: true, 
+                token: preAuthToken,
+                msg: 'MFA is required to complete login' 
+            });
+        }
+
+        res.json({ token: signToken(user, true) });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -143,7 +157,7 @@ exports.getProfile = async (req, res) => {
             return res.status(404).json({ msg: 'User not found' });
         }
 
-        res.json(user);
+        res.json({ ...user, role: normalizeRole(user.role) });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -165,7 +179,7 @@ exports.updateProfile = async (req, res) => {
 exports.getAllUsers = async (req, res) => {
     try {
         const rows = await dbAll('SELECT id, username, email, full_name, role, created_at FROM users ORDER BY created_at DESC');
-        res.json(rows);
+        res.json(rows.map((row) => ({ ...row, role: normalizeRole(row.role) })));
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -181,7 +195,7 @@ exports.createUser = async (req, res) => {
         });
     }
 
-    if (!ALLOWED_ROLES.has(role)) {
+    if (!isValidRole(role)) {
         return res.status(400).json({ msg: 'Role is invalid' });
     }
 
@@ -223,7 +237,7 @@ exports.updateUser = async (req, res) => {
         params.push(full_name);
     }
     if (role) {
-        if (!ALLOWED_ROLES.has(role)) {
+        if (!isValidRole(role)) {
             return res.status(400).json({ msg: 'Role is invalid' });
         }
         fields.push('role = ?');
@@ -272,6 +286,93 @@ exports.deleteUser = async (req, res) => {
         res.json({ msg: 'User deleted' });
     } catch (err) {
         console.error(err.message);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.setupMFA = async (req, res) => {
+    try {
+        const user = await dbGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        const secret = speakeasy.generateSecret({
+            name: `WhatsAppDashboard:${user.email}`
+        });
+
+        // Store secret temporarily in DB (unverified)
+        await dbRun('UPDATE users SET mfa_secret = ? WHERE id = ?', [secret.base32, user.id]);
+
+        const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+        res.json({
+            qrCode: qrCodeUrl,
+            secret: secret.base32
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.verifyMFA = async (req, res) => {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ msg: 'Token is required' });
+
+    try {
+        const user = await dbGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
+        if (!user || !user.mfa_secret) return res.status(400).json({ msg: 'MFA not set up' });
+
+        const verified = speakeasy.totp.verify({
+            secret: user.mfa_secret,
+            encoding: 'base32',
+            token
+        });
+
+        if (verified) {
+            await dbRun('UPDATE users SET mfa_enabled = 1 WHERE id = ?', [user.id]);
+            res.json({ msg: 'MFA enabled successfully' });
+        } else {
+            res.status(400).json({ msg: 'Invalid verification token' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.loginMFA = async (req, res) => {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ msg: 'Token is required' });
+
+    try {
+        const user = await dbGet('SELECT * FROM users WHERE id = ?', [req.user.id]);
+        if (!user || !user.mfa_enabled || !user.mfa_secret) {
+            return res.status(400).json({ msg: 'MFA is not enabled for this user' });
+        }
+
+        const verified = speakeasy.totp.verify({
+            secret: user.mfa_secret,
+            encoding: 'base32',
+            token
+        });
+
+        if (verified) {
+            // Return a full token with mfa_verified: true
+            res.json({ token: signToken(user, true) });
+        } else {
+            res.status(400).json({ msg: 'Invalid MFA token' });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.disableMFA = async (req, res) => {
+    try {
+        await dbRun('UPDATE users SET mfa_enabled = 0, mfa_secret = NULL WHERE id = ?', [req.user.id]);
+        res.json({ msg: 'MFA disabled' });
+    } catch (err) {
+        console.error(err);
         res.status(500).send('Server Error');
     }
 };

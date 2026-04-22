@@ -2,9 +2,35 @@ const db = require('../db');
 
 const addMessage = (messageData) => {
     return new Promise((resolve, reject) => {
-        const { connection_id, type, sender, recipient, push_name, message, file_name, timestamp, group_name } = messageData;
-        const sql = `INSERT INTO messages (connection_id, type, sender, recipient, push_name, message, file_name, timestamp, group_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-        db.run(sql, [connection_id, type, sender, recipient, push_name, message, file_name, timestamp, group_name], function (err) {
+        const {
+            connection_id,
+            type,
+            sender,
+            recipient,
+            push_name,
+            message,
+            file_name,
+            timestamp,
+            group_name,
+            initiated_by_user_id = null,
+            delivery_source = null
+        } = messageData;
+        const sql = `INSERT INTO messages (
+            connection_id, type, sender, recipient, push_name, message, file_name, timestamp, group_name, initiated_by_user_id, delivery_source
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        db.run(sql, [
+            connection_id,
+            type,
+            sender,
+            recipient,
+            push_name,
+            message,
+            file_name,
+            timestamp,
+            group_name,
+            initiated_by_user_id,
+            delivery_source
+        ], function (err) {
             if (err) {
                 console.error('Error inserting message:', err.message);
                 reject(err);
@@ -52,8 +78,41 @@ const getDashboardStats = (connectionId) => {
     });
 };
 
+const countOutgoingMessages = ({ connectionId = null, initiatedByUserId = null, since = null }) => {
+    return new Promise((resolve, reject) => {
+        const clauses = [`type = 'outgoing'`];
+        const params = [];
+
+        if (connectionId) {
+            clauses.push('connection_id = ?');
+            params.push(connectionId);
+        }
+
+        if (initiatedByUserId) {
+            clauses.push('initiated_by_user_id = ?');
+            params.push(initiatedByUserId);
+        }
+
+        if (since) {
+            clauses.push('timestamp >= ?');
+            params.push(since);
+        }
+
+        const sql = `SELECT COUNT(*) as count FROM messages WHERE ${clauses.join(' AND ')}`;
+        db.get(sql, params, (err, row) => {
+            if (err) {
+                console.error('Error counting outgoing messages:', err.message);
+                reject(err);
+            } else {
+                resolve(row?.count || 0);
+            }
+        });
+    });
+};
+
 module.exports = {
     addMessage,
     getMessages,
-    getDashboardStats
+    getDashboardStats,
+    countOutgoingMessages
 };

@@ -1,4 +1,6 @@
 const schedulerService = require('../services/schedulerService');
+const approvalService = require('../services/approvalService');
+const scheduleImportService = require('../services/scheduleImportService');
 const {
     normalizeConnectionId,
     normalizePhoneNumber,
@@ -11,6 +13,7 @@ const addScheduledMessageController = (req, res) => {
     const message = normalizeMessageText(req.body.message);
     const { scheduledTime, isRecurring } = req.body;
     const userId = req.user?.id || null;
+    const userRole = req.user?.role || 'operator';
     const scheduleDate = new Date(scheduledTime);
 
     if (!connectionId || !number || !message || !scheduledTime || Number.isNaN(scheduleDate.getTime())) {
@@ -22,7 +25,7 @@ const addScheduledMessageController = (req, res) => {
     }
 
     try {
-        const newMessage = schedulerService.addScheduledMessage(connectionId, number, message, scheduledTime, isRecurring, userId);
+        const newMessage = schedulerService.addScheduledMessage(connectionId, number, message, scheduledTime, isRecurring, userId, userRole);
         res.status(201).json({ status: 'success', message: 'Message scheduled successfully', data: newMessage });
     } catch (error) {
         console.error('Failed to schedule message:', error);
@@ -79,7 +82,10 @@ const syncScheduledMessagesController = async (req, res) => {
     }
 
     try {
-        const count = await schedulerService.syncWithGoogleSheets(spreadsheetId, connectionId, userId);
+        if (approvalService.shouldRequireApproval(req.user.role)) {
+            return requestScheduleSyncApprovalController(req, res);
+        }
+        const count = await schedulerService.syncWithGoogleSheets(spreadsheetId, connectionId, userId, req.user.role);
         res.status(200).json({ status: 'success', message: `Successfully synced ${count} messages from Google Sheets.` });
     } catch (error) {
         console.error('Failed to sync with Google Sheets:', error);
@@ -97,8 +103,6 @@ const getGoogleSheetsDiagnosticsController = async (req, res) => {
     }
 };
 
-const xlsx = require('xlsx');
-
 const uploadExcelController = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ status: 'error', message: 'No file uploaded' });
@@ -114,96 +118,15 @@ const uploadExcelController = async (req, res) => {
     const isRecurringBool = isRecurring === 'true';
 
     try {
-        const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const data = xlsx.utils.sheet_to_json(sheet);
-
-        let scheduledCount = 0;
-
-        // Helper to find value with fuzzy key matching
-        const findColumnValue = (row, patterns) => {
-            const keys = Object.keys(row);
-            for (const pattern of patterns) {
-                const key = keys.find(k => {
-                    const normalizedKey = k.trim().toLowerCase().replace(/[^a-z0-9]/g, ''); // Remove non-alphanumeric
-                    const normalizedPattern = pattern.replace(/[^a-z0-9]/g, '');
-                    return normalizedKey === normalizedPattern || normalizedKey.includes(normalizedPattern);
-                });
-                if (key) return row[key];
-            }
-            return undefined;
-        };
-
-        console.log(`[ExcelUpload] Total rows found: ${data.length}`);
-
-        data.forEach((row, index) => {
-            // Fuzzy match columns
-            const name = findColumnValue(row, ['nama', 'name', 'customer']);
-            const accountNumber = findColumnValue(row, ['no rekening', 'norekening', 'rekening', 'account', 'acc']);
-            const amount = findColumnValue(row, ['tagihan', 'amount', 'bill', 'total']);
-            const dueDateStr = findColumnValue(row, ['tanggal jatuh tempo', 'jatuh tempo', 'due date', 'tgl jatuh tempo']);
-            const notes = findColumnValue(row, ['keterangan', 'notes', 'desc', 'deskripsi']);
-            const phoneNumber = findColumnValue(row, ['nomor telepon', 'telepon', 'telp', 'no hp', 'nohp', 'phone', 'mobile', 'wa']);
-
-            console.log(`[ExcelUpload] Row ${index + 1}: Name=${name}, Acc=${accountNumber}, Amount=${amount}, Due=${dueDateStr}, Phone=${phoneNumber}`);
-
-            if (name && accountNumber && amount && dueDateStr) {
-                // Parse due date. Assuming it's a valid date string or Excel serial date.
-                // If it's Excel serial date, xlsx handles it if cellDates: true is passed to read, but here we use default.
-                // Let's assume standard date string YYYY-MM-DD or similar for now, or handle JS Date if parsed.
-
-                let dueDate;
-                try {
-                    if (typeof dueDateStr === 'number') {
-                        // Excel serial date
-                        dueDate = new Date(Math.round((dueDateStr - 25569) * 86400 * 1000));
-                    } else {
-                        dueDate = new Date(dueDateStr);
-                    }
-                } catch (e) {
-                    console.warn(`[ExcelUpload] Date parse error for row ${index + 1}:`, e);
-                    return;
-                }
-
-                if (isNaN(dueDate.getTime())) {
-                    console.warn(`[ExcelUpload] Invalid date for ${name}: ${dueDateStr}`);
-                    return;
-                }
-
-                // Override year with current year
-                const currentYear = new Date().getFullYear();
-                dueDate.setFullYear(currentYear);
-
-                // Calculate offsets: h-1, h+0, h+4
-                const offsets = [-1, 0, 4];
-
-                offsets.forEach(offset => {
-                    const scheduleDate = new Date(dueDate);
-                    scheduleDate.setDate(dueDate.getDate() + offset);
-
-                    // Set a default time, e.g., 09:00 AM
-                    scheduleDate.setHours(9, 0, 0, 0);
-
-                    const scheduledTimeStr = scheduleDate.toISOString(); // Scheduler expects ISO string or similar that Date constructor accepts
-
-                    const message = `Halo ${name}, ini adalah pengingat tagihan kredit Anda sebesar ${amount} untuk rekening ${accountNumber}. Jatuh tempo pada ${dueDate.toISOString().split('T')[0]}. ${notes ? `Keterangan: ${notes}` : ''}`;
-
-                    const normalizedPhone = normalizePhoneNumber(phoneNumber);
-                    if (normalizedPhone) {
-                        try {
-                            schedulerService.addScheduledMessage(connectionId, normalizedPhone, message, scheduledTimeStr, isRecurringBool, userId);
-                            scheduledCount++;
-                        } catch (schError) {
-                            console.error(`[ExcelUpload] Failed to schedule for row ${index + 1}:`, schError);
-                        }
-                    } else {
-                        console.warn(`[ExcelUpload] No phone number for ${name}`);
-                    }
-                });
-            } else {
-                console.warn(`[ExcelUpload] Skipping row ${index + 1}: Missing required fields. Name=${!!name}, Acc=${!!accountNumber}, Amount=${!!amount}, Due=${!!dueDateStr}`);
-            }
+        if (approvalService.shouldRequireApproval(req.user.role)) {
+            return requestExcelImportApprovalController(req, res);
+        }
+        const scheduledCount = await scheduleImportService.importWorkbookBuffer({
+            buffer: req.file.buffer,
+            connectionId,
+            isRecurring: isRecurringBool,
+            userId,
+            userRole: req.user.role,
         });
 
         if (scheduledCount === 0) {
@@ -218,12 +141,76 @@ const uploadExcelController = async (req, res) => {
     }
 };
 
+const requestScheduleSyncApprovalController = async (req, res) => {
+    let { spreadsheetId } = req.body;
+    const connectionId = normalizeConnectionId(req.body.connectionId);
+    if (!spreadsheetId) {
+        spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
+    }
+
+    if (!connectionId || !spreadsheetId) {
+        return res.status(400).json({ status: 'error', message: 'connectionId is required, and spreadsheetId must be provided or set in .env' });
+    }
+
+    try {
+        const approval = await approvalService.createApprovalRequest({
+            actionType: 'schedule_sync',
+            summary: `Sync Google Sheets untuk session ${connectionId}`,
+            payload: {
+                connectionId,
+                spreadsheetId,
+                userId: req.user.id,
+                requesterRole: req.user.role,
+            },
+            requestedBy: req.user.id,
+        });
+        res.status(202).json({ status: 'pending_approval', message: 'Sync request submitted for approval.', data: approval });
+    } catch (error) {
+        console.error('Failed to request schedule sync approval:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to request approval.' });
+    }
+};
+
+const requestExcelImportApprovalController = async (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ status: 'error', message: 'No file uploaded' });
+    }
+
+    const connectionId = normalizeConnectionId(req.body.connectionId);
+    if (!connectionId) {
+        return res.status(400).json({ status: 'error', message: 'Valid connectionId is required' });
+    }
+
+    try {
+        const filePath = await approvalService.stageApprovalFile(req.file.buffer, req.file.originalname);
+        const approval = await approvalService.createApprovalRequest({
+            actionType: 'excel_import',
+            summary: `Import Excel schedule untuk session ${connectionId}`,
+            payload: {
+                connectionId,
+                isRecurring: req.body.isRecurring === 'true',
+                filePath,
+                fileName: req.file.originalname,
+                userId: req.user.id,
+                requesterRole: req.user.role,
+            },
+            requestedBy: req.user.id,
+        });
+        res.status(202).json({ status: 'pending_approval', message: 'Excel import submitted for approval.', data: approval });
+    } catch (error) {
+        console.error('Failed to request Excel import approval:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to request approval.' });
+    }
+};
+
 module.exports = {
     addScheduledMessageController,
     getScheduledMessagesController,
     deleteScheduledMessageController,
     deleteAllScheduledMessagesController,
     syncScheduledMessagesController,
+    requestScheduleSyncApprovalController,
     getGoogleSheetsDiagnosticsController,
-    uploadExcelController
+    uploadExcelController,
+    requestExcelImportApprovalController
 };

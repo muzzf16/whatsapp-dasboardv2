@@ -1,5 +1,6 @@
 const Manager = require('./Manager');
 const databaseService = require('../databaseService');
+const contactPolicyService = require('../contactPolicyService');
 
 let manager;
 
@@ -20,19 +21,30 @@ const disconnectAllConnections = async () => {
     await manager.disconnectAll();
 };
 
-const sendMessage = async (connectionId, to, message, file) => {
+const sendMessage = async (connectionId, to, message, file, metadata = {}) => {
+    const optedOut = await contactPolicyService.isPhoneOptedOut(to);
+    if (optedOut) {
+        throw new Error(`Recipient ${to} has opted out of messaging.`);
+    }
+
     const connection = manager.getConnection(connectionId);
     if (connection) {
-        await connection.sendMessage(to, message, file);
+        await connection.sendMessage(to, message, file, metadata);
     } else {
         throw new Error('Connection not found.');
     }
 };
 
-const sendBroadcastMessage = async (connectionId, numbers, message, file, delay) => {
+const sendBroadcastMessage = async (connectionId, numbers, message, file, delay, metadata = {}) => {
+    const { permittedNumbers } = await contactPolicyService.filterDeliverableNumbers(numbers);
+
+    if (permittedNumbers.length === 0) {
+        throw new Error('All target recipients have opted out of messaging.');
+    }
+
     const connection = manager.getConnection(connectionId);
     if (connection) {
-        await connection.sendBroadcastMessage(numbers, message, file, delay);
+        await connection.sendBroadcastMessage(permittedNumbers, message, file, delay, metadata);
     } else {
         throw new Error('Connection not found.');
     }

@@ -1,5 +1,6 @@
 const db = require('../db');
 const { redactSensitive } = require('../utils/security');
+const auditSink = require('./auditSink');
 
 function recordAuditLog({ userId, action, entityType, entityId, metadata, ipAddress, userAgent }) {
     return new Promise((resolve) => {
@@ -21,6 +22,18 @@ function recordAuditLog({ userId, action, entityType, entityId, metadata, ipAddr
                 if (err) {
                     console.error('[Audit] Failed to write audit log:', err.message);
                 }
+                
+                // Forward to append-only sink
+                auditSink.log({
+                    user_id: userId,
+                    action,
+                    entity_type: entityType,
+                    entity_id: entityId,
+                    metadata: safeMetadata,
+                    ip_address: ipAddress,
+                    user_agent: userAgent
+                }).catch(e => console.error('[AuditSink] Error:', e.message));
+
                 resolve();
             }
         );

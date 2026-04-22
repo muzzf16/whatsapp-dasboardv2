@@ -167,11 +167,13 @@ class Client {
         }
     }
 
-    async sendMessage(to, message, file) {
+    async sendMessage(to, message, file, metadata = {}) {
         if (this.connectionStatus !== 'connected' || !this.sock) {
             throw new Error('WhatsApp is not connected.');
         }
         const jid = to.includes('@') ? to : `${to}@s.whatsapp.net`;
+        const initiatedByUserId = metadata?.initiatedByUserId || null;
+        const deliverySource = metadata?.deliverySource || 'manual';
 
         let messageOptions = {};
         if (file) {
@@ -193,6 +195,8 @@ class Client {
             timestamp: new Date().toISOString(),
             file: file ? file.name : null,
             status: sentMessage ? 'sent' : 'failed',
+            initiatedByUserId,
+            deliverySource,
         };
 
         try {
@@ -205,7 +209,9 @@ class Client {
                 message: log.text,
                 file_name: log.file,
                 timestamp: log.timestamp,
-                group_name: null
+                group_name: null,
+                initiated_by_user_id: initiatedByUserId,
+                delivery_source: deliverySource,
             });
         } catch (err) {
             console.error('Failed to save outgoing message to DB:', err);
@@ -225,14 +231,14 @@ class Client {
         }
     }
 
-    async sendBroadcastMessage(numbers, message, file, delay = 1000) {
+    async sendBroadcastMessage(numbers, message, file, delay = 1000, metadata = {}) {
         if (this.connectionStatus !== 'connected' || !this.sock) {
             throw new Error('WhatsApp is not connected.');
         }
         for (const number of numbers) {
             // Add a delay to avoid being flagged as spam
             await new Promise(resolve => setTimeout(resolve, delay));
-            await this.sendMessage(number, message, file);
+            await this.sendMessage(number, message, file, metadata);
         }
     }
 

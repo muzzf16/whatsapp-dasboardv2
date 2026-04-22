@@ -12,7 +12,7 @@ const UserManagement = () => {
         email: '',
         password: '',
         full_name: '',
-        role: 'user'
+        role: 'operator'
     });
     const [editMode, setEditMode] = useState(false);
     const [editId, setEditId] = useState(null);
@@ -95,7 +95,7 @@ const UserManagement = () => {
             email: '',
             password: '',
             full_name: '',
-            role: 'user'
+            role: 'operator'
         });
     };
 
@@ -130,7 +130,9 @@ const UserManagement = () => {
                         <div className="mb-4">
                             <label className="block text-gray-700">Role</label>
                             <select name="role" value={formData.role} onChange={onChange} className="w-full px-3 py-2 border rounded">
-                                <option value="user">User</option>
+                                <option value="viewer">Viewer</option>
+                                <option value="operator">Operator</option>
+                                <option value="supervisor">Supervisor</option>
                                 <option value="admin">Admin</option>
                             </select>
                         </div>

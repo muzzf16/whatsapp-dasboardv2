@@ -12,6 +12,7 @@ const TAB_TITLES = {
     file_manager: 'File Manager',
     tools: 'Automation Tools',
     users: 'User Management',
+    approvals: 'Approval Queue',
 };
 
 const Layout = ({ children, activeTab: propActiveTab, setActiveTab: propSetActiveTab, activeConnection }) => {

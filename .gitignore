@@ -15,6 +15,7 @@ server/scheduledMessages.json
 server/incoming_message_log.json
 server/services/incoming_message_log.json
 server/uploads/
+server/approval_payloads/
 server/logs/
 
 auth_info_multi_device/

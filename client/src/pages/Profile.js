@@ -3,7 +3,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Profile = () => {
-    const { user, updateProfile, logout } = useContext(AuthContext);
+    const { user, updateProfile, logout, setupMfa, verifyMfa, disableMfa } = useContext(AuthContext);
     const [formData, setFormData] = useState({
         full_name: '',
         email: '',
@@ -11,6 +11,8 @@ const Profile = () => {
         avatar_url: ''
     });
     const [msg, setMsg] = useState('');
+    const [mfaSetupData, setMfaSetupData] = useState(null);
+    const [mfaToken, setMfaToken] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -34,6 +36,39 @@ const Profile = () => {
             setTimeout(() => setMsg(''), 3000);
         } else {
             setMsg(res.msg);
+        }
+    };
+
+    const handleMfaSetup = async () => {
+        const res = await setupMfa();
+        if (res.success) {
+            setMfaSetupData(res.data);
+        } else {
+            setMsg(res.msg);
+        }
+    };
+
+    const handleMfaVerify = async () => {
+        const res = await verifyMfa(mfaToken);
+        if (res.success) {
+            setMsg('MFA Enabled Successfully');
+            setMfaSetupData(null);
+            setMfaToken('');
+            setTimeout(() => setMsg(''), 3000);
+        } else {
+            setMsg(res.msg);
+        }
+    };
+
+    const handleMfaDisable = async () => {
+        if (window.confirm('Are you sure you want to disable MFA? Your account will be less secure.')) {
+            const res = await disableMfa();
+            if (res.success) {
+                setMsg('MFA Disabled');
+                setTimeout(() => setMsg(''), 3000);
+            } else {
+                setMsg(res.msg);
+            }
         }
     };
 
@@ -113,6 +148,77 @@ const Profile = () => {
                         </button>
                     </div>
                 </form>
+
+                {/* MFA Section */}
+                <div className="mt-10 pt-8 border-t border-gray-200">
+                    <h3 className="text-xl font-bold mb-4 flex items-center">
+                        <span className="mr-2">🛡️</span> Multi-Factor Authentication
+                    </h3>
+                    
+                    {!user?.mfa_enabled ? (
+                        <div className="bg-blue-50 p-4 rounded border border-blue-100">
+                            <p className="text-sm text-blue-800 mb-4">
+                                Protect your account with an additional security layer. Once enabled, you'll need to enter a code from your authenticator app to log in.
+                            </p>
+                            
+                            {!mfaSetupData ? (
+                                <button
+                                    onClick={handleMfaSetup}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
+                                >
+                                    Set Up MFA
+                                </button>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="flex flex-col items-center p-4 bg-white rounded border">
+                                        <p className="text-xs font-bold uppercase text-gray-500 mb-2">Scan this QR Code</p>
+                                        <img src={mfaSetupData.qrCode} alt="MFA QR Code" className="w-48 h-48 mb-2" />
+                                        <p className="text-xs text-gray-500 break-all">Secret: <code className="bg-gray-100 p-1 rounded">{mfaSetupData.secret}</code></p>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Verification Code</label>
+                                        <input
+                                            type="text"
+                                            value={mfaToken}
+                                            onChange={(e) => setMfaToken(e.target.value)}
+                                            placeholder="Enter 6-digit code"
+                                            className="w-full px-4 py-2 border rounded focus:ring-2 focus:ring-blue-400 focus:outline-none"
+                                        />
+                                    </div>
+                                    
+                                    <div className="flex space-x-2">
+                                        <button
+                                            onClick={handleMfaVerify}
+                                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                        >
+                                            Verify & Enable
+                                        </button>
+                                        <button
+                                            onClick={() => setMfaSetupData(null)}
+                                            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                                        >
+                                            Cancel
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="bg-green-50 p-4 rounded border border-green-100 flex items-center justify-between">
+                            <div>
+                                <p className="text-green-800 font-medium">✅ MFA is Active</p>
+                                <p className="text-xs text-green-700">Your account is protected with 2FA.</p>
+                            </div>
+                            <button
+                                onClick={handleMfaDisable}
+                                className="px-3 py-1 text-xs bg-red-100 text-red-700 border border-red-200 rounded hover:bg-red-200 transition"
+                            >
+                                Disable MFA
+                            </button>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

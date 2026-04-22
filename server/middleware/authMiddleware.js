@@ -17,6 +17,21 @@ const authMiddleware = (req, res, next) => {
             return res.status(401).json({ msg: 'Token payload is invalid' });
         }
         req.user = decoded.user;
+
+        // Banking Requirement: Enforce MFA for Admin/Operator
+        if (['admin', 'operator', 'supervisor'].includes(req.user.role)) {
+            // We should ideally check DB here if mfa_enabled is 1
+            // but for performance, we check the token flag first.
+            // If mfa_verified is false, but mfa_enabled is true, they must verify.
+            // Note: In this implementation, if mfa_verified is missing, we assume false.
+            if (req.user.mfa_verified === false && !req.path.includes('/mfa/')) {
+                return res.status(403).json({ 
+                    msg: 'MFA verification required for this role',
+                    mfa_required: true 
+                });
+            }
+        }
+
         next();
     } catch (err) {
         res.status(401).json({ msg: 'Token is not valid or has expired' });

@@ -9,6 +9,7 @@ import {
     LogOut,
     X,
     Sparkles,
+    ShieldCheck,
 } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 
@@ -29,6 +30,9 @@ const MainSidebar = ({ activeTab, setActiveTab, isMobileMenuOpen = false, onClos
     // Menu admin hanya muncul jika role user = admin.
     if (user && user.role === 'admin') {
         mainMenuItems.push({ id: 'users', label: 'User Management', icon: UserCog });
+    }
+    if (user && ['admin', 'supervisor', 'operator'].includes(user.role)) {
+        mainMenuItems.push({ id: 'approvals', label: 'Approvals', icon: ShieldCheck });
     }
 
     // Logout sederhana: hapus token lalu redirect ke halaman login.

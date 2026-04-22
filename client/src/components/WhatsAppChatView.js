@@ -77,6 +77,11 @@ const getConversationName = (message, id, type) => {
     return message.name || id;
 };
 
+const formatQuotaLabel = (quota) => {
+    if (!quota) return '--';
+    return `${quota.remaining}/${quota.limit}`;
+};
+
 const buildConversations = (incomingMessages, outgoingMessages) => {
     const conversations = new Map();
 
@@ -146,6 +151,7 @@ const WhatsAppChatView = ({
     selectedFile,
     setSelectedFile,
     isSending,
+    sendPolicy,
     onSendMessage,
     onFileChange,
 }) => {
@@ -340,8 +346,20 @@ const WhatsAppChatView = ({
                         )}
                     </div>
 
-                    <div className="hidden border-t border-slate-100 px-4 py-3 text-center text-xs text-emerald-700 md:block">
-                        Gunakan desktop app style untuk percakapan operasional.
+                    <div className="border-t border-slate-100 px-4 py-3">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="rounded-lg bg-slate-50 px-3 py-2">
+                                <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Kuota Anda</div>
+                                <div className="mt-1 text-sm font-semibold text-slate-800">{formatQuotaLabel(sendPolicy?.userDaily)}</div>
+                            </div>
+                            <div className="rounded-lg bg-slate-50 px-3 py-2">
+                                <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Kuota Session</div>
+                                <div className="mt-1 text-sm font-semibold text-slate-800">{formatQuotaLabel(sendPolicy?.sessionDaily)}</div>
+                            </div>
+                        </div>
+                        <div className="mt-2 text-center text-[11px] text-slate-500">
+                            Batas campaign per request: {sendPolicy?.campaignRecipientLimit ?? '--'} penerima.
+                        </div>
                     </div>
                 </aside>
 
@@ -376,6 +394,11 @@ const WhatsAppChatView = ({
                                         <p className="truncate text-xs text-slate-500">
                                             {isConnected ? 'online melalui session aktif' : activeConnection?.status || 'session tidak aktif'}
                                         </p>
+                                        {sendPolicy && (
+                                            <p className="truncate text-[11px] text-emerald-700">
+                                                Sisa kuota hari ini: {sendPolicy.userDaily.remaining} personal, {sendPolicy.sessionDaily.remaining} session
+                                            </p>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-1 text-slate-600">

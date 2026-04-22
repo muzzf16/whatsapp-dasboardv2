@@ -14,9 +14,11 @@ const aiRoutes = require('./routes/aiRoutes');
 const userRoutes = require('./routes/userRoutes');
 const contactRoutes = require('./routes/contactRoutes');
 const fileRoutes = require('./routes/fileRoutes');
+const approvalRoutes = require('./routes/approvalRoutes');
 const { initWhatsApp } = require('./services/whatsapp');
 const googleSheetsService = require('./services/googleSheetsService');
 const { initMCP } = require('./services/mcpService');
+const retentionService = require('./services/retentionService');
 const authMiddleware = require('./middleware/authMiddleware');
 const { authenticateSocket, securityHeaders } = require('./middleware/securityMiddleware');
 
@@ -55,12 +57,14 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json({ limit: '35mb' }));
+app.use('/api/users', userRoutes);
 app.use('/api', whatsappRoutes);
 app.use('/api', schedulerRoutes);
 app.use('/api', aiRoutes);
-app.use('/api/users', userRoutes);
+
 app.use('/api/contacts', contactRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/approvals', approvalRoutes);
 const path = require('path');
 app.use('/uploads', authMiddleware, express.static(path.join(__dirname, 'uploads')));
 
@@ -75,6 +79,7 @@ io.on('connection', (socket) => {
 
 // Init WhatsApp service dengan passing io
 initWhatsApp(io);
+retentionService.init();
 
 // Initialize Google Sheets integration at startup if configured
 if (process.env.GOOGLE_SPREADSHEET_ID) {

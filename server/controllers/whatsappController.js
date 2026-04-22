@@ -1,6 +1,9 @@
 const whatsappService = require('../services/whatsapp');
 const configService = require('../services/configService');
 const qrcode = require('qrcode');
+const approvalService = require('../services/approvalService');
+const contactPolicyService = require('../services/contactPolicyService');
+const messageQuotaService = require('../services/messageQuotaService');
 const {
     normalizeConnectionId,
     normalizePhoneNumber,
@@ -89,11 +92,45 @@ const sendMessageController = async (req, res) => {
         return res.status(400).json({ status: 'error', message: 'Valid `connectionId`, `number`, and `message` (or file) are required.' });
     }
     try {
-        await whatsappService.sendMessage(connectionId, number, message, file);
+        await messageQuotaService.assertCanDispatch({
+            connectionId,
+            userId: req.user.id,
+            role: req.user.role,
+            requestedCount: 1,
+        });
+        await whatsappService.sendMessage(connectionId, number, message, file, {
+            initiatedByUserId: req.user.id,
+            deliverySource: 'manual',
+        });
         res.status(200).json({ status: 'success', message: `Message sent to ${number} via ${connectionId}` });
     } catch (error) {
         console.error('Failed to send message:', error);
+        if (error.message.includes('opted out')) {
+            return res.status(409).json({ status: 'error', message: error.message });
+        }
+        if (messageQuotaService.isQuotaExceededError(error)) {
+            return res.status(error.statusCode).json({ status: 'error', message: error.message, details: error.details });
+        }
         res.status(500).json({ status: 'error', message: 'Failed to send message.' });
+    }
+};
+
+const getSendPolicyController = async (req, res) => {
+    const connectionId = normalizeConnectionId(req.params.connectionId);
+    if (!connectionId) {
+        return res.status(400).json({ status: 'error', message: 'Valid `connectionId` is required.' });
+    }
+
+    try {
+        const policy = await messageQuotaService.getSendPolicyStatus({
+            connectionId,
+            userId: req.user.id,
+            role: req.user.role,
+        });
+        res.status(200).json({ status: 'success', data: policy });
+    } catch (error) {
+        console.error('Failed to get send policy:', error);
+        res.status(500).json({ status: 'error', message: 'Failed to get send policy.' });
     }
 };
 
@@ -188,18 +225,85 @@ const sendBroadcastMessageController = async (req, res) => {
             if (numbers.length === 0 || !message) {
                 return res.status(400).json({ status: 'error', message: 'Valid `numbers` and `message` are required.' });
             }
-            await whatsappService.sendBroadcastMessage(connectionId, numbers, message, null, delay);
+            const { permittedNumbers } = await contactPolicyService.filterDeliverableNumbers(numbers);
+            if (permittedNumbers.length === 0) {
+                return res.status(409).json({ status: 'error', message: 'All target recipients have opted out of messaging.' });
+            }
+            messageQuotaService.assertCampaignLimit(permittedNumbers.length);
+            await messageQuotaService.assertCanDispatch({
+                connectionId,
+                userId: req.user.id,
+                role: req.user.role,
+                requestedCount: permittedNumbers.length,
+            });
+            if (approvalService.shouldRequireApproval(req.user.role)) {
+                const approval = await approvalService.createApprovalRequest({
+                    actionType: 'broadcast_message',
+                    summary: `Broadcast ke ${permittedNumbers.length} nomor via session ${connectionId}`,
+                    payload: {
+                        mode: 'broadcast',
+                        connectionId,
+                        numbers: permittedNumbers,
+                        message,
+                        delay,
+                        userId: req.user.id,
+                        requesterRole: req.user.role,
+                    },
+                    requestedBy: req.user.id,
+                });
+                return res.status(202).json({ status: 'pending_approval', message: 'Broadcast submitted for approval.', data: approval });
+            }
+            await whatsappService.sendBroadcastMessage(connectionId, permittedNumbers, message, null, delay, {
+                initiatedByUserId: req.user.id,
+                deliverySource: 'broadcast',
+            });
             return res.status(200).json({ status: 'success', message: 'Broadcast started.' });
         }
 
         if (req.body.messages && Array.isArray(req.body.messages)) {
+            const messages = [];
             for (const msg of req.body.messages) {
                 const to = normalizePhoneNumber(msg.to);
                 const text = normalizeMessageText(msg.text);
                 if (!to || !text) {
                     return res.status(400).json({ status: 'error', message: 'Each broadcast item must contain valid `to` and `text`.' });
                 }
-                await whatsappService.sendMessage(connectionId, to, text);
+                messages.push({ to, text });
+            }
+            const { permittedNumbers } = await contactPolicyService.filterDeliverableNumbers(messages.map((msg) => msg.to));
+            const filteredMessages = messages.filter((msg) => permittedNumbers.includes(msg.to));
+            if (filteredMessages.length === 0) {
+                return res.status(409).json({ status: 'error', message: 'All target recipients have opted out of messaging.' });
+            }
+            messageQuotaService.assertCampaignLimit(filteredMessages.length);
+            await messageQuotaService.assertCanDispatch({
+                connectionId,
+                userId: req.user.id,
+                role: req.user.role,
+                requestedCount: filteredMessages.length,
+            });
+
+            if (approvalService.shouldRequireApproval(req.user.role)) {
+                const approval = await approvalService.createApprovalRequest({
+                    actionType: 'broadcast_message',
+                    summary: `Batch send ${filteredMessages.length} pesan via session ${connectionId}`,
+                    payload: {
+                        mode: 'messages',
+                        connectionId,
+                        messages: filteredMessages,
+                        userId: req.user.id,
+                        requesterRole: req.user.role,
+                    },
+                    requestedBy: req.user.id,
+                });
+                return res.status(202).json({ status: 'pending_approval', message: 'Batch send submitted for approval.', data: approval });
+            }
+
+            for (const msg of filteredMessages) {
+                await whatsappService.sendMessage(connectionId, msg.to, msg.text, null, {
+                    initiatedByUserId: req.user.id,
+                    deliverySource: 'broadcast',
+                });
             }
             return res.status(200).json({ status: 'success', message: 'Broadcast sent.' });
         }
@@ -208,6 +312,12 @@ const sendBroadcastMessageController = async (req, res) => {
 
     } catch (error) {
         console.error('Failed to start broadcast:', error);
+        if (error.message.includes('opted out')) {
+            return res.status(409).json({ status: 'error', message: error.message });
+        }
+        if (messageQuotaService.isQuotaExceededError(error)) {
+            return res.status(error.statusCode).json({ status: 'error', message: error.message, details: error.details });
+        }
         res.status(500).json({ status: 'error', message: 'Failed to start broadcast.' });
     }
 };
@@ -236,9 +346,26 @@ const updateWebhookController = async (req, res) => {
         return res.status(400).json({ status: 'error', message: validation.message });
     }
     try {
+        const normalizedSecret = secret !== undefined
+            ? (typeof secret === 'string' ? secret.trim() : '')
+            : undefined;
+
+        if (approvalService.shouldRequireApproval(req.user.role)) {
+            const approval = await approvalService.createApprovalRequest({
+                actionType: 'webhook_update',
+                summary: `Update webhook endpoint ke ${validation.value || '(disabled)'}`,
+                payload: {
+                    url: validation.value,
+                    secret: normalizedSecret,
+                },
+                requestedBy: req.user.id,
+            });
+            return res.status(202).json({ status: 'pending_approval', message: 'Webhook update submitted for approval.', data: approval });
+        }
+
         await configService.setWebhookUrl(validation.value);
-        if (secret !== undefined) {
-            await configService.setWebhookSecret(typeof secret === 'string' ? secret.trim() : '');
+        if (normalizedSecret !== undefined) {
+            await configService.setWebhookSecret(normalizedSecret);
         }
         res.status(200).json({ status: 'success', message: 'Webhook settings updated successfully.' });
     } catch (error) {
@@ -253,6 +380,7 @@ module.exports = {
     getAllConnectionsController,
     sendMessageController,
     sendBroadcastMessageController,
+    getSendPolicyController,
     getStatusController,
     getMessagesController,
     getOutgoingMessagesController,

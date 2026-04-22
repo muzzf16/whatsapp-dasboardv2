@@ -24,6 +24,13 @@ router.post('/login', authRateLimiter, login);
 // @access  Private
 router.get('/profile', auth, getProfile);
 
+// MFA Routes
+const { setupMFA, verifyMFA, loginMFA, disableMFA } = require('../controllers/userController');
+router.post('/mfa/setup', auth, setupMFA);
+router.post('/mfa/verify', auth, verifyMFA);
+router.post('/mfa/login', auth, loginMFA);
+router.post('/mfa/disable', auth, disableMFA);
+
 // @route   PUT api/users/profile
 // @desc    Update user profile
 // @access  Private

@@ -1,6 +1,6 @@
 # Banking Messaging Readiness
 
-Tanggal analisis: 15 April 2026
+Tanggal analisis: 22 April 2026
 
 Dokumen ini merangkum kesiapan aplikasi WhatsApp Dashboard v2 untuk kebutuhan pengiriman pesan dengan standar operasional yang lebih dekat ke lingkungan perbankan. Ini bukan sertifikasi kepatuhan hukum/regulator, tetapi baseline teknis untuk mengurangi risiko akses tidak sah, kebocoran data, kesalahan pengiriman, dan kurangnya audit trail.
 
@@ -26,6 +26,7 @@ Status setelah hardening:
 - Login/register diberi rate limit sederhana berbasis IP.
 - Register publik hanya untuk bootstrap user pertama, kecuali `ALLOW_PUBLIC_REGISTRATION=true`.
 - User pertama otomatis menjadi admin.
+- Role operasional kini mendukung `viewer`, `operator`, `supervisor`, dan `admin`.
 - Password baru minimal 12 karakter dan wajib mengandung huruf besar, huruf kecil, dan angka.
 - Admin tidak bisa menghapus akun sendiri.
 - Mutasi user dicatat di `audit_logs`.
@@ -45,7 +46,6 @@ Status setelah hardening:
 
 Gap lanjutan:
 - Belum ada approval workflow untuk membuat atau menghapus session.
-- Belum ada role khusus seperti maker/checker, supervisor, dan viewer.
 - Belum ada pemetaan session ke unit kerja/cabang.
 
 ### Pengiriman Pesan dan Broadcast
@@ -57,10 +57,10 @@ Status setelah hardening:
 - Error internal tidak lagi dikirim sebagai `details` ke client.
 
 Gap lanjutan:
-- Belum ada template approval sebelum broadcast.
-- Belum ada batas harian per operator, per session, atau per campaign.
+- Broadcast kini dapat melewati maker-checker: operator hanya bisa mengajukan, supervisor/admin dapat menyetujui.
+- Batas harian kini diterapkan per operator dan per session, dengan limit campaign per request yang bisa diatur lewat environment.
 - Belum ada deduplikasi campaign dan suppression list.
-- Belum ada mandatory opt-out/consent tracking.
+- Contact opt-out kini disimpan dan ditegakkan di jalur kirim utama, termasuk send manual, broadcast, dan scheduler.
 
 ### Scheduler dan Excel Upload
 
@@ -72,7 +72,7 @@ Status setelah hardening:
 - Response error upload tidak lagi mengirim stack trace.
 
 Gap lanjutan:
-- Belum ada preview dan approval sebelum pesan dari Excel dibuat massal.
+- Import Excel dan sync Google Sheets kini dapat melewati maker-checker: operator mengajukan, supervisor/admin menyetujui.
 - Belum ada dry-run import dengan daftar baris gagal.
 - Belum ada kontrol time window, misalnya hanya mengirim pada jam operasional.
 
@@ -102,6 +102,7 @@ Status setelah hardening:
 - Request webhook diberi timeout.
 
 Gap lanjutan:
+- Perubahan webhook kini dapat melewati maker-checker: operator mengajukan, supervisor/admin menyetujui.
 - Belum ada rotasi secret dan riwayat secret.
 - Belum ada retry queue persisten untuk webhook gagal.
 - Belum ada allowlist domain webhook.
@@ -118,7 +119,7 @@ Status setelah hardening:
 Gap lanjutan:
 - Belum ada antivirus/malware scanning.
 - Belum ada enkripsi file at rest.
-- Belum ada masa retensi otomatis.
+- Payload approval dan log operasional kini memiliki retensi otomatis dasar, tetapi upload bisnis utama belum memiliki lifecycle policy terpisah.
 
 ### Realtime Socket
 
@@ -137,11 +138,26 @@ Status setelah hardening:
 - Tabel `audit_logs` ditambahkan.
 - Request mutasi POST/PUT/PATCH/DELETE pada fitur utama dicatat.
 - Metadata audit meredaksi key sensitif seperti password, token, secret, apiKey, authorization, dan base64.
+- Approval queue untuk aksi sensitif disimpan di tabel `approval_requests`.
 
 Gap lanjutan:
-- Audit log belum immutable.
+- Audit log kini memiliki retensi otomatis dasar, tetapi belum immutable.
 - Belum ada export audit untuk tim compliance.
 - Belum ada alerting untuk aksi berisiko tinggi.
+
+### Limit dan Retensi Data
+
+Status setelah hardening:
+- Outgoing message kini menyimpan metadata pengirim operasional (`initiated_by_user_id`) dan sumber pengiriman (`manual`, `broadcast`, `approval`, `scheduler`).
+- Endpoint pengiriman menyediakan status kuota harian per user dan per session untuk ditampilkan di UI operator.
+- Broadcast dibatasi jumlah penerima per request agar campaign terlalu besar tidak bisa lolos dari endpoint utama.
+- Scheduler kini membawa identitas pembuat jadwal; saat limit harian habis, pesan one-time akan dijadwal ulang ke hari berikutnya.
+- Retensi dasar otomatis dijalankan saat startup dan setiap 24 jam untuk `messages`, `audit_logs`, approval yang sudah direview, file payload approval, dan log operasional.
+
+Gap lanjutan:
+- Retensi belum dibedakan per jenis data nasabah, unit kerja, atau kebutuhan investigasi.
+- Belum ada legal hold / exception policy untuk audit atau bukti sengketa.
+- Belum ada arsip jangka panjang ke storage terpisah sebelum purge.
 
 ### Dependency Security
 
@@ -166,14 +182,16 @@ Rekomendasi:
 - `CORS_ORIGINS`: daftar origin frontend dipisah koma.
 - `DEBUG_INCOMING_MESSAGES`: default mati. Jika `true`, hanya metadata minimal yang ditulis.
 - `WEBHOOK_INCLUDE_ORIGINAL_MESSAGE`: default mati agar payload mentah WhatsApp tidak bocor.
+- `ROLE_DAILY_SEND_LIMIT_VIEWER|OPERATOR|SUPERVISOR|ADMIN`: batas kirim harian per role.
+- `SESSION_DAILY_SEND_LIMIT`: batas kirim harian per session WhatsApp.
+- `CAMPAIGN_RECIPIENT_LIMIT`: batas jumlah penerima per request broadcast/batch.
+- `MESSAGE_RETENTION_DAYS`, `AUDIT_LOG_RETENTION_DAYS`, `APPROVAL_RETENTION_DAYS`, `OPERATIONAL_LOG_RETENTION_DAYS`: retensi dasar data operasional.
 
 ## Rekomendasi Tahap Berikutnya
 
-1. Tambahkan role-based access control yang lebih rinci: admin, supervisor, operator, viewer.
-2. Terapkan maker-checker untuk broadcast, template, import Excel, dan perubahan webhook.
-3. Tambahkan consent/opt-out management.
-4. Tambahkan batas pengiriman per hari dan per campaign.
-5. Enkripsi database dan file upload at rest.
-6. Tambahkan retensi otomatis untuk pesan, file, dan audit sesuai kebijakan internal.
-7. Tambahkan MFA untuk admin dan operator.
-8. Jadikan audit log append-only dan kirim ke sistem logging terpusat.
+1. Enkripsi database dan file upload at rest.
+2. Tambahkan MFA untuk admin dan operator.
+3. Jadikan audit log append-only dan kirim ke sistem logging terpusat.
+4. Tambahkan maker-checker untuk lifecycle session WhatsApp dan template approval yang lebih granular.
+5. Tambahkan policy exception seperti legal hold, e-discovery export, dan retention override.
+6. Tambahkan deduplikasi campaign, quiet hours, dan suppression list lanjutan.

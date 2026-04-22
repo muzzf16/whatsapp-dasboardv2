@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "dev": "nodemon index.js",
     "mcp": "node mcp-server.js"
   },
   "keywords": [],
@@ -31,6 +32,7 @@
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0",
     "socket.io": "^4.7.5",
+    "speakeasy": "^2.0.0",
     "sqlite3": "^5.1.7",
     "uuid": "^13.0.0",
     "xlsx": "^0.18.5",
