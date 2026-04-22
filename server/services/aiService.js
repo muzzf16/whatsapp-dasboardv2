@@ -264,10 +264,7 @@ function getModel() {
     return model;
 }
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 4aa9cc5dd2f6e8f9ac818cc0c751adf4486c8e9a
 async function generateReply(incomingMessage, senderPhone) { // Updated signature to accept senderPhone
     const aiModel = getModel();
     if (!aiModel) return null;

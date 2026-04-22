@@ -58,7 +58,6 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '35mb' }));
 app.use('/api/users', userRoutes);
-<<<<<<< HEAD
 app.use('/api', whatsappRoutes);
 app.use('/api', schedulerRoutes);
 app.use('/api', aiRoutes);
@@ -66,14 +65,6 @@ app.use('/api', aiRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/approvals', approvalRoutes);
-=======
-app.use('/api/contacts', contactRoutes);
-app.use('/api/files', fileRoutes);
-
-app.use('/api', whatsappRoutes);
-app.use('/api', schedulerRoutes);
-app.use('/api', aiRoutes);
->>>>>>> 4aa9cc5dd2f6e8f9ac818cc0c751adf4486c8e9a
 const path = require('path');
 app.use('/uploads', authMiddleware, express.static(path.join(__dirname, 'uploads')));
 

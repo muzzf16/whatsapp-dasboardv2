@@ -217,32 +217,48 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     const { id } = req.params;
-    const { username, email, full_name, role, password } = normalizeUserInput(req.body);
+    const { username, email, full_name, role, password, avatar_url } = req.body;
     const fields = [];
     const params = [];
 
-    if (username) {
-        fields.push('username = ?');
-        params.push(username);
-    }
-    if (email) {
-        if (!validateEmail(email)) {
-            return res.status(400).json({ msg: 'Email is invalid' });
+    if (username !== undefined) {
+        const cleanUsername = String(username).trim();
+        if (cleanUsername) {
+            fields.push('username = ?');
+            params.push(cleanUsername);
         }
-        fields.push('email = ?');
-        params.push(email);
     }
-    if (full_name) {
+
+    if (email !== undefined) {
+        const cleanEmail = String(email).trim().toLowerCase();
+        if (cleanEmail) {
+            if (!validateEmail(cleanEmail)) {
+                return res.status(400).json({ msg: 'Email is invalid' });
+            }
+            fields.push('email = ?');
+            params.push(cleanEmail);
+        }
+    }
+
+    if (full_name !== undefined) {
         fields.push('full_name = ?');
-        params.push(full_name);
+        params.push(String(full_name).trim());
     }
-    if (role) {
-        if (!isValidRole(role)) {
+
+    if (role !== undefined) {
+        const normalizedRoleVal = normalizeRole(role);
+        if (!isValidRole(normalizedRoleVal)) {
             return res.status(400).json({ msg: 'Role is invalid' });
         }
         fields.push('role = ?');
-        params.push(role);
+        params.push(normalizedRoleVal);
     }
+
+    if (avatar_url !== undefined) {
+        fields.push('avatar_url = ?');
+        params.push(String(avatar_url).trim());
+    }
+
     if (password) {
         if (!validatePassword(password)) {
             return res.status(400).json({ msg: 'Password does not meet strength requirements' });

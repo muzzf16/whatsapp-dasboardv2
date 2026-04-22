@@ -73,7 +73,6 @@ class SchedulerService {
         }
 
         const id = uuidv4();
-<<<<<<< HEAD
         this.scheduleMessage(id, safeConnectionId, safeRecipient, safeMessage, date.toISOString(), isRecurring, userId, safeUserRole);
         return {
             id,
@@ -85,10 +84,6 @@ class SchedulerService {
             userId,
             userRole: safeUserRole,
         };
-=======
-        this.scheduleMessage(id, safeConnectionId, safeRecipient, safeMessage, date.toISOString(), isRecurring, userId);
-        return { id, connectionId: safeConnectionId, recipient: safeRecipient, message: safeMessage, scheduledTime: date.toISOString(), isRecurring, userId };
->>>>>>> 4aa9cc5dd2f6e8f9ac818cc0c751adf4486c8e9a
     }
 
     deleteScheduledMessage(id) {
