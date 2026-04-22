@@ -100,7 +100,6 @@ class SchedulerService {
         this.scheduleMessage(id, safeConnectionId, safeRecipient, safeMessage, date.toISOString(), isRecurring, userId);
         return { id, connectionId: safeConnectionId, recipient: safeRecipient, message: safeMessage, scheduledTime: date.toISOString(), isRecurring, userId };
     }
-    }
 
     deleteScheduledMessage(id) {
         this.cancelMessage(id);
