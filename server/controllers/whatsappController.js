@@ -70,9 +70,17 @@ const disconnectAllConnectionsController = async (req, res) => {
     }
 };
 
-const getAllConnectionsController = (req, res) => {
+const getAllConnectionsController = async (req, res) => {
     try {
-        const connections = whatsappService.getAllConnections();
+        let connections = whatsappService.getAllConnections();
+
+        // PRIVACY: Filter connections based on access for non-admins
+        if (req.user.role !== 'admin') {
+            const databaseService = require('../services/databaseService');
+            const allowedIds = await databaseService.getSessionAccess(req.user.id);
+            connections = connections.filter(c => allowedIds.includes(c.id));
+        }
+
         res.status(200).json(connections);
     } catch (error) {
         console.error('Failed to get connections:', error);

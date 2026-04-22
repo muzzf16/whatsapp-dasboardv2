@@ -19,6 +19,10 @@ const UserManagement = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
+    const [userSessions, setUserSessions] = useState([]);
+    const [availableSessions, setAvailableSessions] = useState([]);
+    const [selectedSessionToAdd, setSelectedSessionToAdd] = useState('');
+
     const API_URL = `${BASE_API_URL}/api/users`;
 
     const config = {
@@ -38,8 +42,27 @@ const UserManagement = () => {
         }
     };
 
+    const fetchAvailableSessions = async () => {
+        try {
+            const res = await axios.get(`${BASE_API_URL}/api/whatsapp/connections`, config);
+            setAvailableSessions(res.data);
+        } catch (err) {
+            console.error('Failed to fetch available sessions');
+        }
+    };
+
+    const fetchUserSessions = async (userId) => {
+        try {
+            const res = await axios.get(`${API_URL}/${userId}/sessions`, config);
+            setUserSessions(res.data);
+        } catch (err) {
+            console.error('Failed to fetch user sessions');
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
+        fetchAvailableSessions();
     }, []);
 
     const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -60,6 +83,26 @@ const UserManagement = () => {
             resetForm();
         } catch (err) {
             setError(err.response?.data?.msg || 'Operation failed');
+        }
+    };
+
+    const handleGrantAccess = async () => {
+        if (!selectedSessionToAdd) return;
+        try {
+            await axios.post(`${API_URL}/${editId}/sessions`, { connectionId: selectedSessionToAdd }, config);
+            fetchUserSessions(editId);
+            setSelectedSessionToAdd('');
+        } catch (err) {
+            setError('Failed to grant session access');
+        }
+    };
+
+    const handleRevokeAccess = async (connectionId) => {
+        try {
+            await axios.delete(`${API_URL}/${editId}/sessions/${connectionId}`, config);
+            fetchUserSessions(editId);
+        } catch (err) {
+            setError('Failed to revoke session access');
         }
     };
 
@@ -85,6 +128,7 @@ const UserManagement = () => {
             full_name: user.full_name,
             role: user.role
         });
+        fetchUserSessions(user.id);
     };
 
     const resetForm = () => {
@@ -97,6 +141,7 @@ const UserManagement = () => {
             full_name: '',
             role: 'operator'
         });
+        setUserSessions([]);
     };
 
     if (loading) return <div>Loading...</div>;
@@ -141,6 +186,52 @@ const UserManagement = () => {
                             {editMode && <button type="button" onClick={resetForm} className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</button>}
                         </div>
                     </form>
+
+                    {/* Session Assignment Section */}
+                    {editMode && formData.role !== 'admin' && (
+                        <div className="mt-8 bg-blue-50 p-6 rounded shadow-md border border-blue-200">
+                            <h3 className="text-lg font-semibold mb-4">Assigned WhatsApp Sessions</h3>
+                            <div className="flex gap-2 mb-4">
+                                <select 
+                                    value={selectedSessionToAdd} 
+                                    onChange={(e) => setSelectedSessionToAdd(e.target.value)}
+                                    className="flex-1 px-3 py-2 border rounded"
+                                >
+                                    <option value="">Select session to assign...</option>
+                                    {availableSessions
+                                        .filter(s => !userSessions.includes(s.id))
+                                        .map(s => (
+                                            <option key={s.id} value={s.id}>{s.id} ({s.status})</option>
+                                        ))
+                                    }
+                                </select>
+                                <button 
+                                    onClick={handleGrantAccess}
+                                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                                >
+                                    Assign
+                                </button>
+                            </div>
+                            
+                            <div className="space-y-2">
+                                {userSessions.length === 0 ? (
+                                    <p className="text-sm text-gray-500 italic">No sessions assigned. This user cannot see any chats.</p>
+                                ) : (
+                                    userSessions.map(sessionId => (
+                                        <div key={sessionId} className="flex justify-between items-center bg-white p-2 rounded border">
+                                            <span className="font-medium text-blue-700">{sessionId}</span>
+                                            <button 
+                                                onClick={() => handleRevokeAccess(sessionId)}
+                                                className="text-red-500 hover:text-red-700 text-sm font-bold"
+                                            >
+                                                Remove
+                                            </button>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div>

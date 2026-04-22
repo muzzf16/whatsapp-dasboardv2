@@ -110,9 +110,54 @@ const countOutgoingMessages = ({ connectionId = null, initiatedByUserId = null, 
     });
 };
 
+const getSessionAccess = (userId) => {
+    return new Promise((resolve, reject) => {
+        const sql = `SELECT connection_id FROM session_access WHERE user_id = ?`;
+        db.all(sql, [userId], (err, rows) => {
+            if (err) {
+                console.error('Error fetching session access:', err.message);
+                reject(err);
+            } else {
+                resolve(rows.map(row => row.connection_id));
+            }
+        });
+    });
+};
+
+const grantSessionAccess = (userId, connectionId) => {
+    return new Promise((resolve, reject) => {
+        const sql = `INSERT OR IGNORE INTO session_access (user_id, connection_id) VALUES (?, ?)`;
+        db.run(sql, [userId, connectionId], (err) => {
+            if (err) {
+                console.error('Error granting session access:', err.message);
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+};
+
+const revokeSessionAccess = (userId, connectionId) => {
+    return new Promise((resolve, reject) => {
+        const sql = `DELETE FROM session_access WHERE user_id = ? AND connection_id = ?`;
+        db.run(sql, [userId, connectionId], (err) => {
+            if (err) {
+                console.error('Error revoking session access:', err.message);
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    });
+};
+
 module.exports = {
     addMessage,
     getMessages,
     getDashboardStats,
-    countOutgoingMessages
+    countOutgoingMessages,
+    getSessionAccess,
+    grantSessionAccess,
+    revokeSessionAccess
 };

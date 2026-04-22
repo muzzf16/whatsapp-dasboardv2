@@ -31,6 +31,13 @@ router.post('/mfa/verify', auth, verifyMFA);
 router.post('/mfa/login', auth, loginMFA);
 router.post('/mfa/disable', auth, disableMFA);
 
+// Session Access Management
+const { getUserSessions, grantSessionAccess, revokeSessionAccess } = require('../controllers/userController');
+const { authorizeMinimumRole } = require('../middleware/authorizeRoles');
+router.get('/:id/sessions', auth, authorizeMinimumRole('admin'), getUserSessions);
+router.post('/:id/sessions', auth, authorizeMinimumRole('admin'), grantSessionAccess);
+router.delete('/:id/sessions/:connectionId', auth, authorizeMinimumRole('admin'), revokeSessionAccess);
+
 // @route   PUT api/users/profile
 // @desc    Update user profile
 // @access  Private

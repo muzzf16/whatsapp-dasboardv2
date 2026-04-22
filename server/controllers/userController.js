@@ -376,3 +376,44 @@ exports.disableMFA = async (req, res) => {
         res.status(500).send('Server Error');
     }
 };
+
+// --- SESSION ACCESS MANAGEMENT ---
+
+const databaseService = require('../services/databaseService');
+
+exports.getUserSessions = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const sessions = await databaseService.getSessionAccess(id);
+        res.json(sessions);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.grantSessionAccess = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { connectionId } = req.body;
+        if (!connectionId) return res.status(400).json({ msg: 'connectionId is required' });
+        
+        await databaseService.grantSessionAccess(id, connectionId);
+        res.json({ msg: 'Access granted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+
+exports.revokeSessionAccess = async (req, res) => {
+    try {
+        const { id, connectionId } = req.params;
+        await databaseService.revokeSessionAccess(id, connectionId);
+        res.json({ msg: 'Access revoked' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+};
+

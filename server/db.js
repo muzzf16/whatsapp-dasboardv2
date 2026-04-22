@@ -92,6 +92,12 @@ db.serialize(() => {
         reviewed_at DATETIME
     )`);
 
+    db.run(`CREATE TABLE IF NOT EXISTS session_access (
+        user_id INTEGER,
+        connection_id TEXT,
+        PRIMARY KEY (user_id, connection_id)
+    )`);
+
     db.run('CREATE INDEX IF NOT EXISTS idx_messages_connection_type_timestamp ON messages (connection_id, type, timestamp)');
     db.run('CREATE INDEX IF NOT EXISTS idx_messages_initiated_by_timestamp ON messages (initiated_by_user_id, timestamp)');
     db.run('CREATE INDEX IF NOT EXISTS idx_contacts_phone ON contacts (phone)');
@@ -100,6 +106,7 @@ db.serialize(() => {
     db.run('CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs (user_id)');
     db.run('CREATE INDEX IF NOT EXISTS idx_approval_requests_status_created_at ON approval_requests (status, created_at)');
     db.run('CREATE INDEX IF NOT EXISTS idx_approval_requests_requested_by ON approval_requests (requested_by)');
+    db.run('CREATE INDEX IF NOT EXISTS idx_session_access_connection_id ON session_access (connection_id)');
 });
 
 module.exports = db;
