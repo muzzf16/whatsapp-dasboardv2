@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import axios from 'axios';
 import { Send } from 'lucide-react';
-import { getTemplates } from '../lib/templateStore';
+import { getTemplates } from '../services/templateStore';
 import BroadcastTracker from './BroadcastTracker';
-import { API_BASE } from '../lib/api';
+import { API_BASE } from '../services/api';
 
 // --- Utility functions ---
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { API_URL } from '../lib/api';
+import { API_URL } from '../services/api';
 import { Bot, Save, FileSpreadsheet, Key, Terminal, AlertCircle, CheckCircle, Upload } from 'lucide-react';
 
 const AISettings = () => {

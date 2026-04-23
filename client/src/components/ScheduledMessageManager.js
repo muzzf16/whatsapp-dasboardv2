@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import axios from 'axios';
-import { API_BASE } from '../lib/api';
+import { API_BASE } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import { Calendar, Trash2, RefreshCw, Plus, Clock, MessageSquare, AlertCircle } from 'lucide-react';
 

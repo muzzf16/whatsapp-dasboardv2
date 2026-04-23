@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import { API_BASE } from '../lib/api';
+import { API_BASE } from '../services/api';
 import { FileSpreadsheet, Upload, Download, CheckCircle, AlertCircle, File } from 'lucide-react';
 import { AuthContext } from '../context/AuthContext';
 

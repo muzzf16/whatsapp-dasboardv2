@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Notification from '../components/Notification';
-import { API_URL } from '../lib/api';
+import { API_URL } from '../services/api';
 import { Users, Search, UserPlus, Edit2, Trash2, Phone, Mail, Tag, Save, ShieldAlert } from 'lucide-react';
 
 const ContactManager = () => {

@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
-import { API_URL as BASE_API_URL } from '../lib/api';
+import { API_URL as BASE_API_URL } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import { CheckCircle2, Clock3, ShieldCheck, XCircle } from 'lucide-react';
 
