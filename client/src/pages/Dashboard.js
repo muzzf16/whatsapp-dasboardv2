@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
-import { API_URL } from '../lib/api';
+import { API_URL } from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import Notification from '../components/Notification';
 import ConnectionManager from '../components/ConnectionManager';

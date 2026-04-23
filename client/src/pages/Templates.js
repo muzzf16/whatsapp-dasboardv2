@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTemplates, addTemplate, updateTemplate, deleteTemplate } from '../lib/templateStore';
+import { getTemplates, addTemplate, updateTemplate, deleteTemplate } from '../services/templateStore';
 import { Plus, Save, Edit, Trash2 } from 'lucide-react';
 
 const Templates = ({ showNotification }) => {

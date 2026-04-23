@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Save } from 'lucide-react';
-import { API_BASE } from '../lib/api';
+import { API_BASE } from '../services/api';
 const API_URL = API_BASE; // includes the /api prefix
 
 const Settings = ({ showNotification }) => {

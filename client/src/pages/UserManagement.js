@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { API_URL as BASE_API_URL } from '../lib/api';
+import { API_URL as BASE_API_URL } from '../services/api';
 
 const UserManagement = () => {
     const { token } = useContext(AuthContext);

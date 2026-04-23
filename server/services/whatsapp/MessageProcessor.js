@@ -166,7 +166,7 @@ class MessageProcessor {
         }
 
         try {
-            const logPath = path.join(__dirname, '..', '..', 'incoming_message_log.json');
+            const logPath = path.join(__dirname, '..', '..', 'logs', 'incoming_message_log.json');
             const debugPayload = {
                 timestamp: new Date().toISOString(),
                 id: msg.key?.id,

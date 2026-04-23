@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FolderOpen, Upload, Trash2, File, Image as ImageIcon, Copy, AlertCircle, FileText, CheckCircle } from 'lucide-react';
-import { API_URL } from '../lib/api';
+import { API_URL } from '../services/api';
 
 const FileManager = () => {
     const [files, setFiles] = useState([]);

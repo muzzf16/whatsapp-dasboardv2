@@ -5,7 +5,7 @@ const db = require('../db');
 const { normalizePhoneNumber } = require('../utils/security');
 require('dotenv').config();
 
-const CONFIG_PATH = path.join(__dirname, '../ai_config.json');
+const CONFIG_PATH = path.join(__dirname, '../config/ai_config.json');
 
 let model = null;
 let currentConfig = null;

@@ -2,7 +2,7 @@ const { google } = require('googleapis');
 const path = require('path');
 const fs = require('fs');
 
-const SERVICE_ACCOUNT_FILE = path.join(__dirname, '../service-account.json');
+const SERVICE_ACCOUNT_FILE = path.join(__dirname, '../config/service-account.json');
 
 class GoogleSheetsService {
     constructor() {
